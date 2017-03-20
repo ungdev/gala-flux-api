@@ -59,6 +59,6 @@
 ****************************************************************************/
 
 // module.exports.csrf = {
-//    grantTokenViaAjax: true,
-//    origin: ''
+//     grantTokenViaAjax: true,
+//     origin: ''
 // }
