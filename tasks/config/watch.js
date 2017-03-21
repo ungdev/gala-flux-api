@@ -10,6 +10,10 @@
  * - the `tasks/pipeline.js` file
  * and re-run the appropriate tasks.
  *
+ * Watch for changes on project modification to
+ * - Restart sail dev server
+ * - Rebuild documentation
+ *
  * For usage docs see:
  *   https://github.com/gruntjs/grunt-contrib-watch
  *
@@ -19,12 +23,19 @@ module.exports = function(grunt) {
   grunt.config.set('watch', {
     assets: {
 
-      // Assets to watch:
-      files: ['assets/**/*', 'tasks/pipeline.js', '!**/node_modules/**'],
+        // Assets to watch:
+        files: ['assets/**/*', 'tasks/pipeline.js', '!**/node_modules/**'],
 
-      // When assets are changed:
-      tasks: ['syncAssets' , 'linkAssets' ]
-    }
+        // When assets are changed:
+        tasks: ['syncAssets' , 'linkAssets' ]
+    },
+    dev: {
+        files: ['api/**/*', 'assets/**/*', 'config/**/*'],
+        tasks: ['stop:app', 'run:app' ],
+        options: {
+            spawn: false,
+        },
+    },
   });
 
   grunt.loadNpmTasks('grunt-contrib-watch');

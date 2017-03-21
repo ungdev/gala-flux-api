@@ -7,7 +7,7 @@
  */
 module.exports = function(grunt) {
     grunt.config.set('apidoc', {
-        flux: {
+        app: {
             src: "api/controllers/",
             dest: "apidoc/"
         }
