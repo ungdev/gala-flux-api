@@ -48,7 +48,9 @@ module.exports.routes = {
     ***************************************************************************/
 
     // Auth
-    'post /login/ip': 'UserController.ipLogin',
+    'post /login/ip': 'AuthController.ipLogin',
+    'get  /login/oauth': 'AuthController.oauthLogin',
+    'post /login/oauth/submit': 'AuthController.oauthLoginSubmit',
 
     // test
     'post /testcreate': 'MessageController.createTest',

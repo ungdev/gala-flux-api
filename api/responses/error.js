@@ -7,13 +7,13 @@
  */
 
 module.exports = function error (code, status, message, data) {
-    if(typeof data !== 'object') {
-        throw new TypeError('`data` should be an object');
-    }
-
-    if(!data) {
+    if(typeof data === 'undefined') {
         data = [];
     }
+    if(typeof data !== 'object') {
+        throw new TypeError('`data` should be an object, `' + (typeof data) + '` given');
+    }
+
 
     return this.res.json(code, data.concat({
         _error: {

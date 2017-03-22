@@ -16,6 +16,11 @@ module.exports = {
         location : {
             type: 'string',
         },
+
+        members: {
+            collection: 'user',
+            via: 'team'
+        }
     },
 
 };
