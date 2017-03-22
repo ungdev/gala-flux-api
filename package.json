@@ -24,9 +24,11 @@
     "jsonwebtoken": "^7.3.0",
     "nodemon": "^1.11.0",
     "rc": "1.0.1",
+    "request": "^2.81.0",
     "sails": "~0.12.13",
     "sails-disk": "~0.10.9",
-    "sails-mongo": "^0.12.2"
+    "sails-mongo": "^0.12.2",
+    "simple-oauth2": "^1.1.0"
   },
   "scripts": {
     "debug": "node --inspect app.js",
@@ -41,7 +43,5 @@
   },
   "author": "alabate",
   "license": "",
-  "devDependencies": {
-    "grunt-apidoc": "^0.11.0"
-  }
+  "devDependencies": {}
 }

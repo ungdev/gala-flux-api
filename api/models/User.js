@@ -37,9 +37,22 @@ module.exports = {
      * @param  {String}   ip
      * @param  {Function} cb
      */
-    attemptIpLogin: function (ip, cb) {
+    attemptIpAuth: function (ip, cb) {
         User.findOne({
             ip: ip,
+        })
+        .exec(cb);
+    },
+
+    /**
+     * Check validness of a login using the provided login
+     *
+     * @param  {String}   login
+     * @param  {Function} cb
+     */
+    attemptLoginAuth: function (login, cb) {
+        User.findOne({
+            login: login,
         })
         .exec(cb);
     }

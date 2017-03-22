@@ -1,11 +1,23 @@
 /**
- * UserController
+ * AuthController
  *
- * @description :: Server-side logic for managing Users
- * @help        :: See http://sailsjs.org/#!/documentation/concepts/Controllers
+ * @description Authenticaiton logic and JWT generation
+ *
+ *
+ * @apiDefine badRequestError
+ * @apiError BadRequest Parameters are not valid for this api endpoint
+ * @apiErrorExample BadRequest
+ *     HTTP/1.1 400 Bad Request
+ *     {
+ *         "_error": {
+ *             code: 400,
+ *             status: 'BadRequest',
+ *             message: 'Parameters are not valid for this api endpoint'
+ *         }
+ *     }
  */
 
-var Jwt = require('jsonwebtoken');
+const Jwt = require('jsonwebtoken');
 
 module.exports = {
 
@@ -50,7 +62,7 @@ module.exports = {
      */
     ipLogin: function (req, res) {
 
-        User.attemptIpLogin({
+        User.attemptIpAuth({
             ip: req.ip,
         }, function (err, user) {
             if (err) {
@@ -72,7 +84,7 @@ module.exports = {
 
 
     /**
-     * @api {post} /login/oauth Initiate OAuth log in
+     * @api {get} /login/oauth Initiate OAuth log in
      * @apiName oauthLogin
      * @apiGroup User
      *
@@ -100,7 +112,15 @@ module.exports = {
      *     }
      */
     oauthLogin: function (req, res) {
-        return res.error(501, 'NotImplemented', 'Not implemented');
+        if (!sails.config.etuutt.id
+            || !sails.config.etuutt.secret
+            || !sails.config.etuutt.baseUri) {
+            return res.error(501, 'EtuUTTNotConfigured', 'The server is not configured for the API of EtuUTT');
+        }
+
+        let redirectUri = EtuUTTService().oauthAuthorize();
+
+        return res.ok({redirectUri});
     },
 
 
@@ -112,6 +132,8 @@ module.exports = {
      * @apiDescription Submit the authorization_code of OAuth 2.0 for authentication with EtuUTT.
      * This method will check if the user is known and associated with a team.
      * If it is, a JWT will be returned.
+     *
+     * @apiParam {string} authorizationCode Authorization_code that you get after user redirection.
      *
      * @apiSuccess {String} redirectUri The URI where the user should be redirected.
      *
@@ -131,6 +153,19 @@ module.exports = {
      *             message: 'The server is not configured for the API of EtuUTT'
      *         }
      *     }
+
+     * @apiError EtuUTTError An error occurs during communications with the api of EtuUTT
+     * @apiErrorExample EtuUTTError
+     *     HTTP/1.1 503 Service Unavailable
+     *     {
+     *         "_error": {
+     *             code: 503,
+     *             status: 'EtuUTTError',
+     *             message: 'An error occurs during communications with the api of EtuUTT'
+     *         }
+     *     }
+     *
+     *
 
      * @apiError LoginNotFound There is no User associated with this login
      * @apiErrorExample LoginNotFound
@@ -153,8 +188,54 @@ module.exports = {
      *             message: 'The User is not associated with a Team'
      *         }
      *     }
+     *
+     * @apiUse badRequestError
      */
-    oauthLogin: function (req, res) {
-        return res.error(501, 'NotImplemented', 'Not implemented');
+    oauthLoginSubmit: function (req, res) {
+        if (!sails.config.etuutt.id
+            || !sails.config.etuutt.secret
+            || !sails.config.etuutt.baseUri) {
+            return res.error(501, 'EtuUTTNotConfigured', 'The server is not configured for the API of EtuUTT');
+        }
+
+        if(!req.param('authorizationCode')) {
+            return res.error(400, 'BadRequest', 'The parameter `authorizationCode` cannot be found.');
+        }
+
+        let EtuUTT = EtuUTTService();
+        let token;
+
+        EtuUTT.oauthTokenByAuthCode(req.param('authorizationCode'))
+        .then((data) => {
+            token = data;
+            return EtuUTT.publicUserAccount();
+        })
+        .then((data) => {
+            User.attemptLoginAuth({
+                login: data.data.login,
+            }, function (err, user) {
+                if (err) {
+                    return res.negotiate(err);
+                }
+                if (!user) {
+                    return res.error(401, 'LoginNotFound', 'There is no User associated with this login');
+                }
+                if (!user.team) {
+                    return res.error(403, 'UserNotInTeam', 'The User is not associated with a Team');
+                }
+
+                // TODO update user with tokens and other datas
+
+                let jwt = Jwt.sign(
+                    { user: 'user.id' },
+                    sails.config.jwt.secret,
+                    { expiresIn: sails.config.jwt.expiresIn });
+
+                return res.ok({jwt});
+            });
+        })
+        .catch((error) => {
+            return res.error(500, 'EtuUTTError', 'An error occurs during communications with the api of EtuUTT');
+        })
     },
 };

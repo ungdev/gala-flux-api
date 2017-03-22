@@ -8,9 +8,9 @@
  * @param  {Object} data
  */
 
-module.exports = function sendOK (data, options) {
+module.exports = function ok(data) {
     if(typeof data !== 'object') {
-        throw new TypeError('`data` should be an object');
+        throw new TypeError('`data` should be an object, `' + (typeof data) + '` given');
     }
 
     return this.res.json(200, data);
