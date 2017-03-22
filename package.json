@@ -18,11 +18,11 @@
     "grunt-contrib-less": "1.3.0",
     "grunt-contrib-uglify": "1.0.1",
     "grunt-contrib-watch": "1.0.0",
+    "grunt-run": "^0.6.0",
     "grunt-sails-linker": "~0.10.1",
     "grunt-sync": "0.5.2",
     "include-all": "^1.0.0",
     "jsonwebtoken": "^7.3.0",
-    "nodemon": "^1.11.0",
     "rc": "1.0.1",
     "request": "^2.81.0",
     "sails": "~0.12.13",
@@ -32,9 +32,7 @@
   },
   "scripts": {
     "debug": "node --inspect app.js",
-    "start": "node_modules/.bin/nodemon -w api -w config",
-    "doc": "node_modules/.bin/nodemon -w api -w config node_modules/.bin/grunt apidoc:flux",
-    "prod": "node app.js"
+    "start": "node_modules/.bin/grunt dev"
   },
   "main": "app.js",
   "repository": {
