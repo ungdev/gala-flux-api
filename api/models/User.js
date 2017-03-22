@@ -49,7 +49,7 @@ module.exports = {
     },
 
     /**
-     * Check validness of a login using the provided login
+     * Check validness of an auth using the provided login
      *
      * @param  {String}   login
      * @param  {Function} cb

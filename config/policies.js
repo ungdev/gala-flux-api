@@ -18,15 +18,16 @@
 
 
 module.exports.policies = {
+    // Default behavior request authentication and then forbid access
+    '*': ['jwtAuth', false],
 
-    /***************************************************************************
-    *                                                                          *
-    * Default policy for all controllers and actions (`true` allows public     *
-    * access)                                                                  *
-    *                                                                          *
-    ***************************************************************************/
-
-    // '*': true,
+    // Public actions
+    AuthController: {
+        ipLogin: true,
+        oauthLogin: true,
+        oauthLoginSubmit: true,
+        jwtLogin: true,
+    }
 
     /***************************************************************************
     *                                                                          *

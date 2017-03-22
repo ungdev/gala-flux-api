@@ -51,6 +51,7 @@ module.exports.routes = {
     'post /login/ip': 'AuthController.ipLogin',
     'get  /login/oauth': 'AuthController.oauthLogin',
     'post /login/oauth/submit': 'AuthController.oauthLoginSubmit',
+    'post /login/jwt': 'AuthController.jwtLogin',
 
     // test
     'post /testcreate': 'MessageController.createTest',
