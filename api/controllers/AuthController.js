@@ -211,9 +211,7 @@ module.exports = {
             return EtuUTT.publicUserAccount();
         })
         .then((data) => {
-            User.attemptLoginAuth({
-                login: data.data.login,
-            }, function (err, user) {
+            User.attemptLoginAuth(data.data.login, function (err, user) {
                 if (err) {
                     return res.negotiate(err);
                 }
