@@ -11,7 +11,37 @@ module.exports = {
 
         text : {
             type: 'mediumtext',
+            required: true,
+        },
+
+        sender: {
+            model: 'user',
+            required: true,
+        },
+
+        recipient: {
+            model: 'user',
+            defaultsTo: null,
+        },
+
+        group: {
+            type: 'string',
+            defaultsTo: null,
+        },
+
+        private: {
+            type: 'boolean',
+            defaultsTo: false,
         },
     },
 
+    // TODO
+    // publishCreate: function (values, req, options) {
+    //
+    //     User.publish(values.recipient, {
+    //         verb: "created",
+    //         data: values,
+    //         id: values.id
+    //     }, req);
+    // },
 };

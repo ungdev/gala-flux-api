@@ -182,15 +182,15 @@ module.exports = {
         }
 
         let EtuUTT = EtuUTTService();
-        let token;
+        let tokenObj;
 
         EtuUTT.oauthTokenByAuthCode(req.param('authorizationCode'))
         .then((data) => {
-            token = data;
+            tokenObj = data;
             return EtuUTT.publicUserAccount();
         })
-        .then((data) => {
-            User.attemptLoginAuth(data.data.login, function (err, user) {
+        .then((etuUTTUser) => {
+            User.attemptLoginAuth(etuUTTUser.data.login, function (err, user) {
                 if (err) {
                     return res.negotiate(err);
                 }
@@ -198,7 +198,16 @@ module.exports = {
                     return res.error(401, 'LoginNotFound', 'There is no User associated with this login');
                 }
 
-                // TODO update user with tokens and other datas
+                // Update user data
+                user.accessToken = tokenObj.access_token;
+                user.refreshToken = tokenObj.refresh_token;
+                user.tokenExpiration = tokenObj.expires_at;
+                user.login = etuUTTUser.data.login;
+                user.ip = etuUTTUser.data.ip;
+                user.name = etuUTTUser.data.fullName;
+                user.email = etuUTTUser.data.email;
+                user.studentId = etuUTTUser.data.studentId;
+                user.save();
 
                 let jwt = JwtService.sign(user);
                 if(req.socket) {
@@ -208,7 +217,7 @@ module.exports = {
             });
         })
         .catch((error) => {
-            return res.error(500, 'EtuUTTError', 'An error occurs during communications with the api of EtuUTT');
+            return res.error(500, 'EtuUTTError', 'An error occurs during communications with the api of EtuUTT: ' + error);
         })
     },
 
@@ -253,5 +262,72 @@ module.exports = {
         .catch((error) => {
             return res.error(500, 'InvalidJwt', 'The given JWT is not valid : ' + error);
         })
+    },
+
+    /**
+     * @api {post} /login/as/:id Auth as another user
+     * @apiName loginAs
+     * @apiGroup Authentication
+     * @apiDescription Will generate and authenticate with JWT token as another
+     * user for debugging and testing purposes. Warning: the current user
+     * for connection will be replaced.
+     *
+     * @apiParam {string} id The id of the user you want to authenticate
+     *
+     * @apiUse jwtSuccess
+     *
+     * @apiError IdNotFound There is no User associated with this id
+     * @apiErrorExample IdNotFound
+     *     HTTP/1.1 401 Unauthorized
+     *     {
+     *         "_error": {
+     *             code: 401,
+     *             status: 'IdNotFound',
+     *             message: 'There is no User associated with this id'
+     *         }
+     *     }
+     *
+     */
+    loginAs: function (req, res) {
+        User.findOne({
+            id: req.param('id'),
+        })
+        .exec((error, user) => {
+            if (error) {
+                return res.negotiate(error);
+            }
+            if (!user) {
+                return res.error(401, 'IdNotFound', 'There is no User associated with this id');
+            }
+            let jwt = JwtService.sign(user);
+            if(req.socket) {
+                req.socket.jwt = jwt;
+            }
+            return res.ok({jwt});
+        });
+    },
+
+    /**
+     * @api {get} /login/roles Get roles config
+     * @apiName getRoles
+     * @apiGroup Authentication
+     * @apiDescription Will give the roles list associated with permissions
+     *
+     * @apiSuccess {String} roles The roles object
+     * @apiSuccessExample Success
+     *     HTTP/1.1 200 OK
+     *     {
+                bar: [
+                    'chat/talk',
+                ],
+                log: [
+                    'chat/talk',
+                    'chat/talk-to-groups',
+                ]
+     *     }
+     *
+     */
+    getRoles: function (req, res) {
+        return res.ok(sails.config.roles);
     },
 };

@@ -14,12 +14,7 @@ module.exports = {
      */
     sign: function(user) {
         return Jwt.sign({
-            user: {
-                id: user.id,
-                ip: user.ip,
-                login: user.login,
-                // TODO Add other fields
-            },
+            userId: user.id
         },
         sails.config.jwt.secret,
         { expiresIn: sails.config.jwt.expiresIn });
@@ -41,7 +36,7 @@ module.exports = {
 
                 // Check if user exist
                 User.findOne({
-                    id: decoded.user.id,
+                    id: decoded.userId,
                 })
                 .exec((error, result) => {
                     if(error) {

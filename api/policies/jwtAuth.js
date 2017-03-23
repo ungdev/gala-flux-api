@@ -1,9 +1,9 @@
 /**
- * sessionAuth
+ * jwtAuth
  *
  * @module      :: Policy
- * @description :: Simple policy to allow any authenticated user
- * @docs        :: http://sailsjs.org/#!/documentation/concepts/Policies
+ * @description :: Policy that verify jwt token and expose
+ * user as `req.user` and team as `req.team`
  *
  */
 
@@ -43,6 +43,15 @@ module.exports = function (req, res, next) {
     JwtService.verify(jwt)
     .then((user) => {
         req.user = user;
-        return next();
+        Team.findOne({id: user.team}).exec((error, team) => {
+            if(error) {
+                return res.error(500, 'NoTeam', 'We didn\'t find the team associated with the logged in user');
+            }
+            req.team = team;
+            return next();
+        });
+    })
+    .catch((error) => {
+        return res.error(500, 'InvalidJwt', 'The given JWT is not valid : ' + error);
     })
 };

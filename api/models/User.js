@@ -11,10 +11,12 @@ module.exports = {
 
         login : {
             type: 'string',
+            unique: true,
         },
 
         ip : {
             type: 'string',
+            unique: true,
         },
 
         name : {
@@ -30,8 +32,16 @@ module.exports = {
         },
 
         team: {
-            model: 'team'
-        }
+            model: 'team',
+            required: true,
+        },
+
+        accessToken : {
+            type: 'string',
+        },
+        renewToken : {
+            type: 'string',
+        },
     },
 
 
@@ -64,14 +74,20 @@ module.exports = {
                 User.count((error, result) => {
                     if(result === 0) {
                         sails.log.warn('The database contain no users. We will create an admin user with the login: '+login);
-                        // TODO give admin rights to this team
                         Team.create({
-                            name: 'admin',
+                            name: 'Admins',
+                            role: 'admin',
+                            group: 'orga',
                         }).exec((error, team) => {
-                            User.create({
-                                login: login,
-                                team: team.id,
-                            }).exec(cb);
+                            if(error) {
+                                cb(error);
+                            }
+                            else {
+                                User.create({
+                                    login: login,
+                                    team: team.id,
+                                }).exec(cb);
+                            }
                         });
                     }
                     else {
@@ -83,5 +99,5 @@ module.exports = {
                 cb(error, result);
             }
         });
-    }
+    },
 };
