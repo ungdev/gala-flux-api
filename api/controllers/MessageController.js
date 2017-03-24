@@ -101,8 +101,6 @@ module.exports = {
         }
 
         Message.find(where)
-        .populate('senderUser')
-        .populate('senderTeam')
         .exec((error, messages) => {
             if (error) {
                 return res.negotiate(error);
