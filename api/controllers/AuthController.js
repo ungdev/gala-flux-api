@@ -30,10 +30,6 @@
  *       "jwt": "QnJhdm8sIHR1IGFzIGTDqWNvZMOpIGNlIGNv.ZGUgZW4gQmFzZTY0LCBqJ8Opc3DDqHJlIHF1ZSB0dSBlcyBmaWVyIGRlIHRvaSwgw6dhIG.4nYXJyaXZlIHBhcyB0b3VzIGxlcyBqb3VycyB0dSBzY"
  *     }
  */
-/**
- * @apiDefine jwtUse
- * @apiDescription
- */
 
 
 module.exports = {
@@ -46,7 +42,6 @@ module.exports = {
      * that send the request.
      *
      * @apiUse jwtSuccess
-     * @apiUse jwtUse
      *
      * @apiError IPNotFound There is no User associated with this IP
      * @apiErrorExample IPNotFound
@@ -318,11 +313,11 @@ module.exports = {
      *     HTTP/1.1 200 OK
      *     {
                 bar: [
-                    'chat/talk',
+                    'message/oneChannel',
                 ],
                 log: [
-                    'chat/talk',
-                    'chat/talk-to-groups',
+                    'message/public',
+                    'message/group',
                 ]
      *     }
      *
@@ -330,4 +325,5 @@ module.exports = {
     getRoles: function (req, res) {
         return res.ok(sails.config.roles);
     },
+
 };

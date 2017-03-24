@@ -14,34 +14,29 @@ module.exports = {
             required: true,
         },
 
-        sender: {
+        senderUser: {
             model: 'user',
             required: true,
         },
 
-        recipient: {
-            model: 'user',
-            defaultsTo: null,
+        senderTeam: {
+            model: 'team',
+            required: true,
         },
 
-        group: {
+        channel: {
             type: 'string',
-            defaultsTo: null,
-        },
-
-        private: {
-            type: 'boolean',
-            defaultsTo: false,
+            required: true,
         },
     },
 
-    // TODO
-    // publishCreate: function (values, req, options) {
-    //
-    //     User.publish(values.recipient, {
-    //         verb: "created",
-    //         data: values,
-    //         id: values.id
-    //     }, req);
-    // },
+    /**
+     * Convert a string to channel name
+     *
+     * @param  {String}  name Original name like team name or group name
+     * @return {String} return channel name (without #)
+     */
+    toChannel: function (name) {
+        return name.replace(/[^a-z0-9]/gi,'-').replace(/[-]+/gi,'-').toLowerCase();
+    },
 };

@@ -8,26 +8,33 @@
  *
  * List of permissions:
  * - auth/as : Can generate JWT token for another account (for testing and debug purposes)
- * - chat/talk : Send/read message to/from your team channel
- * - chat/talk-to-groups : Send/read message to/from each groups channels
- * - chat/talk-to-teams : Send/read message to/from each teams channels
- * - chat/talk-to-myself : Send/read message to AND from me which cannot be read by another team
+ *
+ * - message/oneChannel : Receive #group:[groupname] and #[teamname] but can send only in #[teamname]
+ * - message/public : Not compatible with `oneChannel`. Can send and receive in any public #[teamname] channel, can also receive and send in its own #group:[groupname] channel
+ * - message/group : Require `message/public`. Can send and receive in any #group:[groupname] channel
+ * - message/private : Require `message/public`. Can send and receive in its own #private:[teamname] channel
+ * - message/admin : Not compatible with `oneChannel`. Send/read message to/from everywhere also private channels
+ *
  */
 
 module.exports.roles = {
-    admin: [
-        'auth/as',
-        'chat/talk',
-        'chat/talk-to-groups',
-        'chat/talk-to-teams',
-        'chat/talk-to-myself',
-    ],
     bar: [
-        'chat/talk',
+        'message/oneChannel',
     ],
     log: [
-        'chat/talk',
-        'chat/talk-to-groups',
-        'chat/talk-to-teams',
+        'message/public',
+        'message/group',
+    ],
+    secutt: [
+        'message/public',
+        'message/group',
+        'message/private',
+    ],
+    coord: [
+        'message/admin',
+    ],
+    admin: [
+        'message/admin',
+        'auth/as',
     ],
 };

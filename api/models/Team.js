@@ -46,6 +46,6 @@ module.exports = {
      * @return {Promise} return true if user has the permission
      */
     can: function (req, permission) {
-        return Array.isArray(sails.config.roles[req.team.role]) && sails.config.roles[req.team.role].indexOf(permission) !== false;
+        return (Array.isArray(sails.config.roles[req.team.role]) && sails.config.roles[req.team.role].indexOf(permission) !== -1);
     },
 };

@@ -17,6 +17,7 @@ module.exports = {
         ip : {
             type: 'string',
             unique: true,
+            ip: true,
         },
 
         name : {
