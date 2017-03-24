@@ -32,7 +32,6 @@ module.exports.policies = {
     // Authenticated routes
     MessageController: {
         find: ['jwtAuth'],
-        findOne:  ['jwtAuth'],
         create:  ['jwtAuth'],
         getChannels:  ['jwtAuth'],
     },
