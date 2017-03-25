@@ -11,6 +11,13 @@ module.exports = {
 
         name : {
             type: 'string',
+            required: true,
+            unique: true,
+        },
+
+        group : {
+            type: 'string',
+            required: true,
         },
 
         location : {
@@ -20,7 +27,22 @@ module.exports = {
         members: {
             collection: 'user',
             via: 'team'
-        }
+        },
+
+        role: {
+            type: 'string',
+            required: true,
+        },
     },
 
+
+    /**
+     * Check if team has the given permission
+     *
+     * @param  {String}   permission Permission name
+     * @return {Promise} return true if user has the permission
+     */
+    can: function (req, permission) {
+        return (Array.isArray(sails.config.roles[req.team.role]) && sails.config.roles[req.team.role].indexOf(permission) !== -1);
+    },
 };

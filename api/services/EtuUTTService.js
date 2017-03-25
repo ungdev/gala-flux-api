@@ -12,6 +12,8 @@ module.exports = function(user) {
         id: sails.config.etuutt.id,
         secret: sails.config.etuutt.secret,
         scopes: sails.config.etuutt.scopes,
-        token: (user && user.token ? user.token : null),
+        accessToken: (user && user.accessToken ? user.accessToken : null),
+        refreshToken: (user && user.refreshToken ? user.refreshToken : null),
+        tokenExpiration: (user && user.tokenExpiration ? user.tokenExpiration : null),
     });
 }

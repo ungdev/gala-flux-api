@@ -9,6 +9,9 @@
  */
 
 module.exports = function ok(data) {
+    if(typeof data === 'undefined') {
+        data = {};
+    }
     if(typeof data !== 'object') {
         throw new TypeError('`data` should be an object, `' + (typeof data) + '` given');
     }
