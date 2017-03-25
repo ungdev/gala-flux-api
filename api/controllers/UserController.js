@@ -164,7 +164,7 @@ module.exports = {
                 return res.error(400, 'BadRequest', 'Team id is not valid.');
             }
 
-            // Create message
+            // Create user
             User.create({
                 login: req.param('login'),
                 ip: req.param('ip'),

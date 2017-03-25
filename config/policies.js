@@ -45,4 +45,12 @@ module.exports.policies = {
         destroy:  ['jwtAuth'],
     },
 
+    TeamController: {
+        find: ['jwtAuth'],
+        findOne: ['jwtAuth'],
+        create:  ['jwtAuth'],
+        update:  ['jwtAuth'],
+        destroy:  ['jwtAuth'],
+    },
+
 };

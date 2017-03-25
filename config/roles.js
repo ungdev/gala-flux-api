@@ -44,6 +44,7 @@ module.exports.roles = {
     admin: [
         'message/admin',
         'user/admin',
+        'team/admin',
         'auth/as',
     ],
 };

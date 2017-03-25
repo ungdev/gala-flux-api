@@ -30,7 +30,8 @@ module.exports = {
         },
 
         role: {
-            type: 'string'
+            type: 'string',
+            required: true,
         },
     },
 
