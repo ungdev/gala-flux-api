@@ -21,19 +21,28 @@ module.exports.policies = {
     // Default behavior request authentication
     '*': ['jwtAuth', false],
 
-    // Public routes
+
     AuthController: {
         ipLogin: true,
         oauthLogin: true,
         oauthLoginSubmit: true,
         jwtLogin: true,
+        getRoles: ['jwtAuth'],
     },
 
-    // Authenticated routes
+
     MessageController: {
         find: ['jwtAuth'],
         create:  ['jwtAuth'],
         getChannels:  ['jwtAuth'],
+    },
+
+    UserController: {
+        find: ['jwtAuth'],
+        findOne: ['jwtAuth'],
+        create:  ['jwtAuth'],
+        update:  ['jwtAuth'],
+        destroy:  ['jwtAuth'],
     },
 
 };

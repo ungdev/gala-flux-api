@@ -52,7 +52,7 @@ module.exports.routes = {
     'get  /login/oauth': 'AuthController.oauthLogin',
     'post /login/oauth/submit': 'AuthController.oauthLoginSubmit',
     'post /login/jwt': 'AuthController.jwtLogin',
-    'get /login/roles': 'AuthController.getRoles',
+    'get  /login/roles': 'AuthController.getRoles',
     'post /login/as/:id': 'AuthController.loginAs',
 
     'get /message/channels': 'MessageController.getChannels',

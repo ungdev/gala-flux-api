@@ -22,13 +22,10 @@ module.exports = {
 
         name : {
             type: 'string',
+            required: true,
         },
 
-        email : {
-            type: 'string',
-        },
-
-        studentId : {
+        phone : {
             type: 'string',
         },
 

@@ -32,10 +32,6 @@ module.exports = {
         role: {
             type: 'string'
         },
-
-        freeze: {
-            type: 'boolean'
-        },
     },
 
 

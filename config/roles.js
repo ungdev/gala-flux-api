@@ -15,7 +15,15 @@
  * - message/private : Require `message/public`. Can send and receive in its own #private:[teamname] channel
  * - message/admin : Not compatible with `oneChannel`. Send/read message to/from everywhere also private channels
  *
+ * - user/read : Can read all users
+ * - user/team : Require `user/read`. Can create, update or delete user to/from it own team
+ * - user/admin : Can read/write on all users
+ *
+ * - team/read : Can read all teams
+ * - team/admin : Can read/write on all teams
+ *
  */
+
 
 module.exports.roles = {
     bar: [
@@ -35,6 +43,7 @@ module.exports.roles = {
     ],
     admin: [
         'message/admin',
+        'user/admin',
         'auth/as',
     ],
 };

@@ -4,34 +4,34 @@
  * @description Get and create messages according to your permissions
  */
 
- /**
-  * @apiDefine badRequestError
-  * @apiError BadRequest Parameters are not valid for this api endpoint
-  * @apiErrorExample BadRequest
-  *     HTTP/1.1 400 Bad Request
-  *     {
-  *         "_error": {
-  *             code: 400,
-  *             status: 'BadRequest',
-  *             message: 'Parameters are not valid for this api endpoint'
-  *         }
-  *     }
-  *
-  */
-  /**
-   * @apiDefine forbiddenError
-   * @apiError forbidden You are not authorized to to that
-   * @apiErrorExample forbidden
-   *     HTTP/1.1 403 Forbidden
-   *     {
-   *         "_error": {
-   *             code: 403,
-   *             status: 'forbidden',
-   *             message: 'You are not authorized to to that'
-   *         }
-   *     }
-   *
-   */
+/**
+ * @apiDefine badRequestError
+ * @apiError BadRequest Parameters are not valid for this api endpoint
+ * @apiErrorExample BadRequest
+ *     HTTP/1.1 400 Bad Request
+ *     {
+ *         "_error": {
+ *             code: 400,
+ *             status: 'BadRequest',
+ *             message: 'Parameters are not valid for this api endpoint'
+ *         }
+ *     }
+ *
+ */
+/**
+ * @apiDefine forbiddenError
+ * @apiError forbidden You are not authorized to to that
+ * @apiErrorExample forbidden
+ *     HTTP/1.1 403 Forbidden
+ *     {
+ *         "_error": {
+ *             code: 403,
+ *             status: 'forbidden',
+ *             message: 'You are not authorized to to that'
+ *         }
+ *     }
+ *
+ */
 
 module.exports = {
 
@@ -40,11 +40,12 @@ module.exports = {
      * @apiName find
      * @apiGroup Message
      * @apiDescription Get the list of all messages according to permissions.
-     * @apiSuccess {Array} list An array of message
-     * @apiSuccess {String} list.text Message content
-     * @apiSuccess {User} list.senderUser Sender User object
-     * @apiSuccess {Team} list.senderTeam Sender Team object
-     * @apiSuccess {Team} list.channel Target channel name without the #
+     * @apiSuccess {Array} Array An array of message
+     * @apiSuccess {Message} Array.mesage A message object
+     * @apiSuccess {String} Array.mesage.text Message content
+     * @apiSuccess {id} Array.mesage.senderUser Sender User id
+     * @apiSuccess {id} Array.mesage.senderTeam Sender Team id
+     * @apiSuccess {Team} Array.mesage.channel Target channel name without the #
      * * `public:[teamname]` : For subject concerning the team. [teamname] will be converted alphanumeric only
      * * `private:[teamname]` : For internal private messages inside the team
      * * `group:[groupname]` : For group discutions according to the `group` field in team
