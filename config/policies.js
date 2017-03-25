@@ -28,6 +28,7 @@ module.exports.policies = {
         oauthLoginSubmit: true,
         jwtLogin: true,
         getRoles: ['jwtAuth'],
+        loginAs: ['jwtAuth'],
     },
 
 

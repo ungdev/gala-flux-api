@@ -284,6 +284,11 @@ module.exports = {
      *
      */
     loginAs: function (req, res) {
+        // Check permissions
+        if(!Team.can(req, 'auth/as')) {
+            return res.error(403, 'forbidden', 'You are not authorized to log in as someone else.');
+        }
+
         User.findOne({
             id: req.param('id'),
         })
