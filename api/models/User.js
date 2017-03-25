@@ -83,6 +83,7 @@ module.exports = {
                             else {
                                 User.create({
                                     login: login,
+                                    name: 'admin',
                                     team: team.id,
                                 }).exec(cb);
                             }
