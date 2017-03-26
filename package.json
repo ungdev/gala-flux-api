@@ -41,5 +41,7 @@
   },
   "author": "alabate",
   "license": "",
-  "devDependencies": {}
+  "devDependencies": {
+    "faker": "^4.1.0"
+  }
 }

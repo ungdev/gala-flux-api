@@ -4,6 +4,7 @@
  * @description :: TODO: You might write a short summary of how this model works and what it represents here.
  * @docs        :: http://sailsjs.org/documentation/concepts/models-and-orm/models
  */
+const faker = require('faker');
 
 module.exports = {
 
@@ -38,5 +39,128 @@ module.exports = {
      */
     toChannel: function (name) {
         return name.replace(/[^a-z0-9]/gi,'-').replace(/[-]+/gi,'-').toLowerCase();
+    },
+
+
+    fixtures: {
+        // Fixtures of message from user that have post in their own public channel
+        ownPublicChannel: function(callback) {
+            User.find().populate('team').exec((error, users) => {
+                if(error) {
+                    callback(error);
+                }
+
+                let result = {};
+                for (user of users) {
+                    if(Team.can(user.team, 'message/oneChannel')
+                        || Team.can(user.team, 'message/public')
+                        || Team.can(user.team, 'message/admin')) {
+                        result['ownPublicChannel ' + user.name] = {
+                            text: 'Hello, I try to send in my own public channel. ' + faker.hacker.phrase(),
+                            senderUser: user,
+                            senderTeam: user.team,
+                            channel: 'public:' + Message.toChannel(team.name),
+                        }
+                    }
+                }
+
+                return callback(null, result);
+            });
+        },
+
+        // Fixtures of message from user that send to others public channel
+        otherPublicChannel: function(callback) {
+            User.find().populate('team').exec((error, users) => {
+                if(error) {
+                    callback(error);
+                }
+
+                let result = {};
+                for (user of users) {
+                    if(Team.can(user.team, 'message/public')
+                        || Team.can(user.team, 'message/admin')) {
+                        result['otherPublicChannel ' + user.name] = {
+                            text: 'Hello, I try to send in the public channel of another team. ' + faker.hacker.phrase(),
+                            senderUser: user,
+                            senderTeam: user.team,
+                            channel: 'public:' + Message.toChannel(users[Math.floor(Math.random()*users.length)].team.name),
+                        }
+                    }
+                }
+
+                return callback(null, result);
+            });
+        },
+
+        // Fixtures of message from user that send to group
+        groupChannel: function(callback) {
+            User.find().populate('team').exec((error, users) => {
+                if(error) {
+                    callback(error);
+                }
+
+                let result = {};
+                for (user of users) {
+                    if(Team.can(user.team, 'message/group')
+                        || Team.can(user.team, 'message/admin')) {
+                        result['groupChannel ' + user.name] = {
+                            text: 'Hello, I try to send in a group channel. ' + faker.hacker.phrase(),
+                            senderUser: user,
+                            senderTeam: user.team,
+                            channel: 'group:' + Message.toChannel(users[Math.floor(Math.random()*users.length)].team.group),
+                        }
+                    }
+                }
+
+                return callback(null, result);
+            });
+        },
+
+        // Fixtures of message from user that send in its own private channel
+        privateChannel: function(callback) {
+            User.find().populate('team').exec((error, users) => {
+                if(error) {
+                    callback(error);
+                }
+
+                let result = {};
+                for (user of users) {
+                    if(Team.can(user.team, 'message/private')
+                        || Team.can(user.team, 'message/admin')) {
+                        result['privateChannel ' + user.name] = {
+                            text: 'Hello, I try to send in my private channel. ' + faker.hacker.phrase(),
+                            senderUser: user,
+                            senderTeam: user.team,
+                            channel: 'private:' + Message.toChannel(user.team.name),
+                        }
+                    }
+                }
+
+                return callback(null, result);
+            });
+        },
+
+        // Fixtures of message from user that send in others private channel
+        otherPrivateChannel: function(callback) {
+            User.find().populate('team').exec((error, users) => {
+                if(error) {
+                    callback(error);
+                }
+
+                let result = {};
+                for (user of users) {
+                    if(Team.can(user.team, 'message/admin')) {
+                        result['otherPrivateChannel ' + user.name] = {
+                            text: 'Hello, I try to send in private channel of other teams. ' + faker.hacker.phrase(),
+                            senderUser: user,
+                            senderTeam: user.team,
+                            channel: 'private:' + Message.toChannel(users[Math.floor(Math.random()*users.length)].team.name),
+                        }
+                    }
+                }
+
+                return callback(null, result);
+            });
+        },
     },
 };

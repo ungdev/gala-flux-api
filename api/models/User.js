@@ -4,6 +4,7 @@
  * @description :: TODO: You might write a short summary of how this model works and what it represents here.
  * @docs        :: http://sailsjs.org/documentation/concepts/models-and-orm/models
  */
+const faker = require('faker');
 
 module.exports = {
 
@@ -98,5 +99,50 @@ module.exports = {
                 cb(error, result);
             }
         });
+    },
+
+    fixtures: {
+        ipUserPerTeam: function(callback) {
+            Team.find().exec((error, teams) => {
+                if(error) {
+                    callback(error);
+                }
+
+                let result = {};
+                let i = 1;
+                for (team of teams) {
+                    result['PC ' + team.name] = {
+                        ip: '192.168.0.' + i,
+                        name: 'PC',
+                        team: team.id,
+                    }
+                    i++;
+                }
+
+                return callback(null, result);
+            });
+        },
+        etuuttUserPerTeam: function(callback) {
+            Team.find().exec((error, teams) => {
+                if(error) {
+                    callback(error);
+                }
+
+                let result = {};
+                async.each(teams, (team, cb) => {
+                    async.times((Math.floor(Math.random() * 3) + 2), (n, cb) => {
+                        let name = faker.fake("{{name.firstName}} {{name.lastName}}");
+                        result['Etu ' + team.name + ' ' + (n+1)] = {
+                            login: faker.helpers.slugify(name).substr(0, 8),
+                            name: name,
+                            phone: faker.phone.phoneNumber(),
+                            team: team.id,
+                        }
+                    });
+                });
+
+                return callback(null, result);
+            });
+        },
     },
 };
