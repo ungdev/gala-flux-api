@@ -69,35 +69,7 @@ module.exports = {
         })
         // If the database has no user, we create the first admin user with this login
         .exec((error, result) => {
-            if(!error && !result) {
-                User.count((error, result) => {
-                    if(result === 0) {
-                        sails.log.warn('The database contain no users. We will create an admin user with the login: '+login);
-                        Team.create({
-                            name: 'Admins',
-                            role: 'admin',
-                            group: 'orga',
-                        }).exec((error, team) => {
-                            if(error) {
-                                cb(error);
-                            }
-                            else {
-                                User.create({
-                                    login: login,
-                                    name: 'admin',
-                                    team: team.id,
-                                }).exec(cb);
-                            }
-                        });
-                    }
-                    else {
-                        cb(error, result);
-                    }
-                })
-            }
-            else {
-                cb(error, result);
-            }
+            cb(error, result);
         });
     },
 

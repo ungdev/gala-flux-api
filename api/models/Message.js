@@ -45,6 +45,7 @@ module.exports = {
     fixtures: {
         // Fixtures of message from user that have post in their own public channel
         ownPublicChannel: function(callback) {
+            Team.autoCreatedAt = false;
             User.find().populate('team').exec((error, users) => {
                 if(error) {
                     callback(error);
@@ -60,6 +61,7 @@ module.exports = {
                             senderUser: user,
                             senderTeam: user.team,
                             channel: 'public:' + Message.toChannel(team.name),
+                            createdAt: faker.date.recent(),
                         }
                     }
                 }
@@ -70,6 +72,7 @@ module.exports = {
 
         // Fixtures of message from user that send to others public channel
         otherPublicChannel: function(callback) {
+            Team.autoCreatedAt = false;
             User.find().populate('team').exec((error, users) => {
                 if(error) {
                     callback(error);
@@ -84,6 +87,7 @@ module.exports = {
                             senderUser: user,
                             senderTeam: user.team,
                             channel: 'public:' + Message.toChannel(users[Math.floor(Math.random()*users.length)].team.name),
+                            createdAt: faker.date.recent(),
                         }
                     }
                 }
@@ -94,6 +98,7 @@ module.exports = {
 
         // Fixtures of message from user that send to group
         groupChannel: function(callback) {
+            Team.autoCreatedAt = false;
             User.find().populate('team').exec((error, users) => {
                 if(error) {
                     callback(error);
@@ -108,6 +113,7 @@ module.exports = {
                             senderUser: user,
                             senderTeam: user.team,
                             channel: 'group:' + Message.toChannel(users[Math.floor(Math.random()*users.length)].team.group),
+                            createdAt: faker.date.recent(),
                         }
                     }
                 }
@@ -118,6 +124,7 @@ module.exports = {
 
         // Fixtures of message from user that send in its own private channel
         privateChannel: function(callback) {
+            Team.autoCreatedAt = false;
             User.find().populate('team').exec((error, users) => {
                 if(error) {
                     callback(error);
@@ -132,6 +139,7 @@ module.exports = {
                             senderUser: user,
                             senderTeam: user.team,
                             channel: 'private:' + Message.toChannel(user.team.name),
+                            createdAt: faker.date.recent(),
                         }
                     }
                 }
@@ -142,6 +150,7 @@ module.exports = {
 
         // Fixtures of message from user that send in others private channel
         otherPrivateChannel: function(callback) {
+            Team.autoCreatedAt = false;
             User.find().populate('team').exec((error, users) => {
                 if(error) {
                     callback(error);
@@ -155,6 +164,7 @@ module.exports = {
                             senderUser: user,
                             senderTeam: user.team,
                             channel: 'private:' + Message.toChannel(users[Math.floor(Math.random()*users.length)].team.name),
+                            createdAt: faker.date.recent(),
                         }
                     }
                 }

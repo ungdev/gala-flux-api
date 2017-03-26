@@ -99,7 +99,7 @@ module.exports = {
             role: 'coord',
         },
         admin: {
-            name: 'Admin',
+            name: 'Flux admins',
             group: 'orga',
             location: 'Salle asso',
             role: 'admin',
