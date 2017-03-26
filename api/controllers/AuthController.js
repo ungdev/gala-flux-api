@@ -198,11 +198,11 @@ module.exports = {
                 user.refreshToken = tokenObj.refresh_token;
                 user.tokenExpiration = tokenObj.expires_at;
                 user.login = etuUTTUser.data.login;
-                user.ip = etuUTTUser.data.ip;
-                user.name = etuUTTUser.data.fullName;
-                user.email = etuUTTUser.data.email;
-                user.studentId = etuUTTUser.data.studentId;
+                if(!user.name) {
+                    user.name = etuUTTUser.data.fullName;
+                }
                 user.save();
+
 
                 let jwt = JwtService.sign(user);
                 if(req.socket) {

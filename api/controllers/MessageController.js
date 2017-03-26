@@ -101,7 +101,7 @@ module.exports = {
             }
         }
 
-        Message.find(where)
+        Message.find(where).sort('createdAt ASC')
         .exec((error, messages) => {
             if (error) {
                 return res.negotiate(error);
