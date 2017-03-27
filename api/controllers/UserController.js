@@ -75,6 +75,7 @@ module.exports = {
                     return res.negotiate(error);
                 }
 
+                User.subscribe(req, _.pluck(user, 'id'));
                 User.watch(req);
 
                 return res.ok(user);
@@ -165,18 +166,20 @@ module.exports = {
             }
 
             // Create user
-            User.create({
-                login: req.param('login'),
-                ip: req.param('ip'),
-                name: req.param('name'),
-                phone: req.param('phone'),
-                team: req.param('team'),
-            }).exec((error, user) => {
+            let user = {};
+            if(req.param('login')) user.login = req.param('login');
+            if(req.param('ip')) user.ip = req.param('ip');
+            if(req.param('name')) user.name = req.param('name');
+            if(req.param('phone')) user.phone = req.param('phone');
+            if(req.param('team')) user.team = req.param('team');
+
+            User.create(user).exec((error, user) => {
                 if (error) {
                     return res.negotiate(error);
                 }
 
                 User.publishCreate(user);
+                User.subscribe(req, [user.id]);
 
                 return res.ok(user);
             });
@@ -209,10 +212,7 @@ module.exports = {
         }
 
         // Check parameters
-        if(!req.param('login') && !req.param('ip')) {
-            return res.error(400, 'BadRequest', 'Either `ip` or `login` field has to be set.');
-        }
-        else if(req.param('login') && req.param('ip')) {
+        if(req.param('login') && req.param('ip')) {
             return res.error(400, 'BadRequest', 'Either `ip` or `login` has to be empty.');
         }
 
@@ -244,7 +244,7 @@ module.exports = {
 
             // Check team
             Team.findOne({id: user.team}).exec((error, team) => {
-                if(!team) {
+                if(!team && req.param('team')) {
                     return res.error(400, 'BadRequest', 'Team id is not valid.');
                 }
 

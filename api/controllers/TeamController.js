@@ -75,6 +75,7 @@ module.exports = {
                 }
 
                 Team.watch(req);
+                Team.subscribe(req, _.pluck(team, 'id'));
 
                 return res.ok(team);
             });
@@ -156,17 +157,18 @@ module.exports = {
         }
 
         // Create team
-        Team.create({
-            name: req.param('name'),
-            group: req.param('group'),
-            location: req.param('location'),
-            role: req.param('role'),
-        }).exec((error, team) => {
+        let team = {};
+        if(req.param('name')) team.name = req.param('name');
+        if(req.param('group')) team.group = req.param('group');
+        if(req.param('location')) team.location = req.param('location');
+        if(req.param('role')) team.role = req.param('role');
+        Team.create(team).exec((error, team) => {
             if (error) {
                 return res.negotiate(error);
             }
 
             Team.publishCreate(team);
+            Team.subscribe(req, [team.id]);
 
             return res.ok(team);
         });
