@@ -14,13 +14,11 @@ module.exports = function error (code, status, message, data) {
         throw new TypeError('`data` should be an object, `' + (typeof data) + '` given');
     }
 
+    data._error = {
+        code: code,
+        status: status,
+        message: message
+    };
 
-    return this.res.json(code, data.concat({
-        _error: {
-            code: code,
-            status: status,
-            message: message
-        }
-
-    }));
+    return this.res.json(code, data);
 };
