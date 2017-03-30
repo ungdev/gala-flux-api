@@ -55,6 +55,6 @@ module.exports.routes = {
     'get  /login/roles': 'AuthController.getRoles',
     'post /login/as/:id': 'AuthController.loginAs',
 
-    'get /message/channels': 'MessageController.getChannels',
+    'get /message/channels': 'MessageController.getChannels'
 
 };

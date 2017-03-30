@@ -10,7 +10,12 @@ module.exports = {
     attributes: {
 
         receiver: {
-            type: "Team",
+            model: "team",
+            required: true
+        },
+
+        sender: {
+            model: "team",
             required: true
         },
 

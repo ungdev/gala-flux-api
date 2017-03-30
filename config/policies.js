@@ -54,4 +54,20 @@ module.exports.policies = {
         destroy:  ['jwtAuth'],
     },
 
+    AlertController: {
+        find: ['jwtAuth'],
+        findOne: ['jwtAuth'],
+        create:  ['jwtAuth'],
+        update:  ['jwtAuth'],
+        destroy:  ['jwtAuth']
+    },
+
+    AlertButtonController: {
+        find: ['jwtAuth'],
+        findOne: ['jwtAuth'],
+        create:  ['jwtAuth'],
+        update:  ['jwtAuth'],
+        destroy:  ['jwtAuth']
+    }
+
 };

@@ -46,5 +46,6 @@ module.exports.roles = {
         'user/admin',
         'team/admin',
         'auth/as',
+        'alertButton/admin'
     ],
 };
