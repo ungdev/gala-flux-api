@@ -31,6 +31,13 @@ module.exports.policies = {
         loginAs: ['jwtAuth'],
     },
 
+    BottleController: {
+        find: [true],
+        findOne: [true],
+        create: [true],
+        update: [true],
+        destroy: [true],
+    },
 
     MessageController: {
         find: ['jwtAuth'],
