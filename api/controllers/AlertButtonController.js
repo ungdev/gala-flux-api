@@ -9,6 +9,12 @@ module.exports = {
 
     find: (req, res) => {
 
+        // Check permissions
+        if (!(Team.can(req, 'alertButton/read') || (Team.can(req, 'alertButton/admin')))) {
+            return res.error(403, 'forbidden', 'You are not authorized to read the Alert buttons.');
+        }
+
+        // Find allowed AlterButtons
         AlertButton.find()
             .exec((error, alertsButtons) => {
                 if (error) {
@@ -54,7 +60,6 @@ module.exports = {
             // Create the AlertButton
             AlertButton.create({
                 receiver: team,
-                sender: req.team,
                 title: req.param('title'),
                 message: req.param('message'),
                 messagePlaceholder: req.param('messagePlaceholder') ? req.param('messagePlaceholder') : null
@@ -71,7 +76,48 @@ module.exports = {
 
         });
 
+    },
+
+    update: (req, res) => {
+
+        // Check permissions
+        if (!Team.can(req, 'alertButton/admin')) {
+            return res.error(403, 'forbidden', 'You are not authorized to update an Alert button.');
+        }
+
+        // Find AlertButton
+        AlertButton.findOne({id: req.param('id')})
+            .exec((error, alertButton) => {
+                if (error) {
+                    return res.negotiate(error);
+                }
+                if(!alertButton) {
+                    return res.error(404, 'notfound', 'The requested alert button cannot be found');
+                }
+
+                // Update
+                alertButton.receiver = req.param('receiver', alertButton.receiver);
+                alertButton.title = req.param('title', alertButton.title);
+                alertButton.message = req.param('message', alertButton.message);
+                alertButton.messagePlaceholder = req.param('messagePlaceholder', alertButton.messagePlaceholder);
+
+                alertButton.save((error) => {
+                    if (error) {
+                        return res.negotiate(error);
+                    }
+
+                    AlertButton.publishUpdate(alertButton.id, alertButton);
+                    AlertButton.subscribe(req, [alertButton.id]);
+
+                    return res.ok(alertButton);
+                });
+
+            });
+
     }
 
+    // create alert
+
 };
+
 

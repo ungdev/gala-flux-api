@@ -14,11 +14,6 @@ module.exports = {
             required: true
         },
 
-        sender: {
-            model: "team",
-            required: true
-        },
-
         title: {
             type: "string",
             required: true
