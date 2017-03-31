@@ -33,21 +33,29 @@ module.exports.roles = {
     ],
     log: [
         'message/public',
-        'message/group'
+        'message/group',
+        'alert/read',
+        'alert/update'
     ],
     secutt: [
         'message/public',
         'message/group',
-        'message/private'
+        'message/private',
+        'alert/read',
+        'alert/update'
     ],
     coord: [
         'message/admin',
+        'alert/read',
+        'alert/update'
     ],
     admin: [
         'message/admin',
         'user/admin',
         'team/admin',
         'auth/as',
-        'alertButton/admin'
+        'alertButton/admin',
+        'alert/read',
+        'alert/update'
     ],
 };
