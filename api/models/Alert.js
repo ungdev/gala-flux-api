@@ -10,12 +10,12 @@ module.exports = {
     attributes: {
 
         sender: {
-            type: "Team",
+            model: "team",
             required: true
         },
 
         receiver: {
-            type: "Team",
+            model: "team",
             required: true
         },
 
@@ -39,7 +39,7 @@ module.exports = {
         },
 
         button: {
-            type: "AlertButton"
+            model: "alertbutton"
         }
 
     }

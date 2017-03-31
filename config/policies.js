@@ -65,7 +65,8 @@ module.exports.policies = {
     AlertButtonController: {
         find: ['jwtAuth'],
         create:  ['jwtAuth'],
-        update:  ['jwtAuth']
+        update:  ['jwtAuth'],
+        createAlert:  ['jwtAuth']
     }
 
 };

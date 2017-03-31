@@ -28,7 +28,8 @@
 module.exports.roles = {
     bar: [
         'message/oneChannel',
-        'alertButton/read'
+        'alertButton/read',
+        'alertButton/create'
     ],
     log: [
         'message/public',

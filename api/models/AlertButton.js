@@ -19,6 +19,11 @@ module.exports = {
             required: true
         },
 
+        category: {
+            type: "string",
+            required: true
+        },
+
         // true if a message is required
         message: {
             type: "boolean",
