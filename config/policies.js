@@ -21,7 +21,6 @@ module.exports.policies = {
     // Default behavior request authentication
     '*': ['jwtAuth', false],
 
-
     AuthController: {
         ipLogin: true,
         oauthLogin: true,
@@ -30,7 +29,6 @@ module.exports.policies = {
         getRoles: ['jwtAuth'],
         loginAs: ['jwtAuth'],
     },
-
 
     MessageController: {
         find: ['jwtAuth'],
@@ -56,7 +54,6 @@ module.exports.policies = {
 
     AlertController: {
         find: ['jwtAuth'],
-        create:  ['jwtAuth'],
         update:  ['jwtAuth']
     },
 
