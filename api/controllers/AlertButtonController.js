@@ -237,10 +237,18 @@ module.exports = {
                             return res.negotiate(error);
                         }
 
-                        Alert.publishCreate(alert);
-                        Alert.subscribe(req, [alert.id]);
+                        // push this modification in the alert history
+                        AlertHistory.pushToHistory(alert, (error, result) => {
+                            if (error) {
+                                return res.negotiate(error);
+                            }
 
-                        return res.ok(alert);
+                            Alert.publishCreate(alert);
+                            Alert.subscribe(req, [alert.id]);
+
+                            return res.ok(alert);
+                        });
+
                     });
 
                 });
