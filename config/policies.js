@@ -61,7 +61,8 @@ module.exports.policies = {
         find: ['jwtAuth'],
         create:  ['jwtAuth'],
         update:  ['jwtAuth'],
-        createAlert:  ['jwtAuth']
+        createAlert:  ['jwtAuth'],
+        destroy: ['jwtAuth']
     }
 
 };

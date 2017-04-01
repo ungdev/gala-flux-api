@@ -246,7 +246,53 @@ module.exports = {
                 });
         });
 
-    }
+    },
+
+    /**
+     * @api {delete} /alertbutton/:id
+     * @apiName destroy
+     * @apiGroup AlertButton
+     * @apiDescription Delete the given AlertButton
+     *
+     * @apiParam {string} id : Id of the alert button you want to delete
+     *
+     * @apiUse badRequestError
+     * @apiUse forbiddenError
+     * @apiUse notFoundError
+     */
+    destroy: function (req, res) {
+
+        // Check permissions
+        if(!Team.can(req, 'alertButton/admin')) {
+            return res.error(403, 'forbidden', 'You are not authorized to delete an alert button.');
+        }
+
+        // Check parameters
+        if(!req.param('id')) {
+            return res.error(400, 'BadRequest', "The 'id' field must contains the AlertButton id.");
+        }
+
+        // Find the alert button
+        AlertButton.findOne({id: req.param('id')})
+            .exec((error, alertButton) => {
+                if (error) {
+                    return res.negotiate(error);
+                }
+                if(!alertButton) {
+                    return res.error(404, 'notfound', 'The requested alert button cannot be found');
+                }
+
+                AlertButton.destroy({id: alertButton.id}).exec((error) => {
+                    if (error) {
+                        return res.negotiate(error);
+                    }
+
+                    AlertButton.publishDestroy(alertButton.id);
+
+                    return res.ok();
+                });
+            });
+    },
 
 };
 

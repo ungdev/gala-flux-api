@@ -246,9 +246,10 @@ module.exports = {
      * @apiUse notFoundError
      */
     destroy: function (req, res) {
-        // Check permissions 1
+
+        // Check permissions
         if(!Team.can(req, 'team/admin')) {
-            return res.error(403, 'forbidden', 'You are not authorized to update a team.');
+            return res.error(403, 'forbidden', 'You are not authorized to delete a team.');
         }
 
         // Find team
