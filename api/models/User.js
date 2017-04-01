@@ -38,9 +38,16 @@ module.exports = {
         accessToken : {
             type: 'string',
         },
+
         renewToken : {
             type: 'string',
         },
+
+        // alerts assigned to this user
+        alerts: {
+            collection: "alert",
+            via: "users"
+        }
     },
 
 

@@ -28,23 +28,34 @@
 module.exports.roles = {
     bar: [
         'message/oneChannel',
+        'alertButton/read',
+        'alertButton/create'
     ],
     log: [
         'message/public',
         'message/group',
+        'alert/read',
+        'alert/update'
     ],
     secutt: [
         'message/public',
         'message/group',
         'message/private',
+        'alert/read',
+        'alert/update'
     ],
     coord: [
         'message/admin',
+        'alert/read',
+        'alert/update'
     ],
     admin: [
         'message/admin',
         'user/admin',
         'team/admin',
         'auth/as',
+        'alertButton/admin',
+        'alert/read',
+        'alert/update'
     ],
 };

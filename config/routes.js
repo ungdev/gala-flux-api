@@ -57,4 +57,9 @@ module.exports.routes = {
 
     'get /message/channels': 'MessageController.getChannels',
 
+    'post /alertbutton/alert': 'AlertButtonController.createAlert',
+
+    'post /alert/user/add': 'AlertController.addUser',
+    'post /alert/user/remove': 'AlertController.removeUser'
+
 };
