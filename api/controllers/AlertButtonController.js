@@ -3,6 +3,7 @@
  *
  * @description :: Server-side logic for managing AlertButtons
  * @help        :: See http://sailsjs.org/#!/documentation/concepts/Controllers
+ *
  */
 
 module.exports = {

@@ -4,12 +4,20 @@
  * @description :: Server-side logic for managing alerts
  * @help        :: See http://sailsjs.org/#!/documentation/concepts/Controllers
  *
- * severity : warning -> serious -> done
- *
  */
 
 module.exports = {
 
+    /**
+     * @api {get} /alert
+     * @apiName find
+     * @apiGroup Alert
+     * @apiDescription Get the alerts where the receiver is the the team of the requester.
+     *
+     * @apiSuccess {Array} An array of alerts
+     *
+     * @apiUse forbiddenError
+     */
     find: (req, res) => {
 
         // Check permissions
@@ -33,6 +41,21 @@ module.exports = {
 
     },
 
+    /**
+     * @api {put} /alert/:id
+     * @apiName update
+     * @apiGroup Alert
+     * @apiDescription Update the given alert. Only the severity can be updated.
+     *
+     * @apiParam {string} id : The id of the alert to update(required)
+     * @apiParam {string} severity : The alert severity (required)
+     *
+     * @apiSuccess {Alert} The alert that you've just updated
+     *
+     * @apiUse badRequestError
+     * @apiUse forbiddenError
+     * @apiUse notFoundError
+     */
     update: (req, res) => {
 
         // Check permissions
