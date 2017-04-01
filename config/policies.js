@@ -32,11 +32,11 @@ module.exports.policies = {
     },
 
     BottleController: {
-        find: [true],
-        findOne: [true],
-        create: [true],
-        update: [true],
-        destroy: [true],
+        find: ['jwtAuth'],
+        findOne: ['jwtAuth'],
+        create: ['jwtAuth'],
+        update: ['jwtAuth'],
+        destroy: ['jwtAuth'],
     },
 
     MessageController: {
