@@ -30,7 +30,8 @@ module.exports = {
         // done         => closed alert
         severity: {
             type: "string",
-            required: true
+            required: true,
+            enum: ['done', 'warning', 'serious']
         },
 
         title: {
@@ -51,6 +52,13 @@ module.exports = {
         // If the alert was created from an AlertButton
         button: {
             model: "alertbutton"
+        },
+
+        // users on this alert
+        users: {
+            collection: "user",
+            via: "alerts",
+            dominant: true
         }
 
     }
