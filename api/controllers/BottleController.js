@@ -34,7 +34,7 @@ module.exports = {
                         return res.negotiate(error);
                     }
 
-                    Bottle.subscribe(req, _.pluck(bottle, 'shortName'));
+                    Bottle.subscribe(req, _.pluck(bottle, 'id'));
                     Bottle.watch(req);
 
                     return res.ok(bottle);
@@ -46,15 +46,15 @@ module.exports = {
     },
 
     /**
-     * @api {get} /bottle/find/:shortName Find one bottle
+     * @api {get} /bottle/find/:id Find one bottle
      * @apiName findOne
      * @apiGroup Bottle
-     * @apiDescription Find one bottle based on its shortName
+     * @apiDescription Find one bottle based on its id
      *
      * @apiUse forbiddenError
      * @apiUse notFoundError
      *
-     * @apiParam {string} shortName Short name of the bottle you are looking for
+     * @apiParam {id} id Id of the bottle you are looking for
      *
      * @apiSuccess {Bottle} bottle A bottle object
      * @apiSuccess {string} bottle.name Complete display name of the bottle
@@ -66,10 +66,10 @@ module.exports = {
      */
     findOne: function (req, res) {
         // Check permissions
-        if(Team.can(req, 'bottle/read') || Team.can(req, 'bottle/admin') || req.param('shortName') == req.bottle.shortName) {
+        if(Team.can(req, 'bottle/read') || Team.can(req, 'bottle/admin')) {
 
             // Find bottle
-            Bottle.findOne({shortName: req.param('shortName')})
+            Bottle.findOne({id: req.param('id')})
                 .exec((error, bottle) => {
                     if (error) {
                         return res.negotiate(error);
@@ -78,7 +78,7 @@ module.exports = {
                         return res.error(400, 'BadRequest', 'The requested bottle cannot be found');
                     }
 
-                    Bottle.subscribe(req, [req.param('shortName')]);
+                    Bottle.subscribe(req, [req.param('id')]);
 
                     return res.ok(bottle);
                 });
@@ -112,7 +112,7 @@ module.exports = {
             return res.error(403, 'forbidden', 'You are not authorized to create a bottle.');
         }
 
-        Bottle.findOne({shortName: req.param('shortName')}).exec((error, bottle) => {
+        Bottle.findOne({id: req.param('id')}).exec((error, bottle) => {
             if(bottle) {
                 return res.error(400, 'BadRequest', 'Bottle short name is not valid.');
             }
@@ -132,7 +132,7 @@ module.exports = {
                 }
 
                 Bottle.publishCreate(bottle);
-                Bottle.subscribe(req, [bottle.shortName]);
+                Bottle.subscribe(req, [bottle.id]);
 
                 return res.ok(bottle);
             });
@@ -140,12 +140,12 @@ module.exports = {
     },
 
     /**
-     * @api {delete} /bottle/:shortName Delete a bottle
+     * @api {delete} /bottle/:id Delete a bottle
      * @apiName destroy
      * @apiGroup Bottle
      * @apiDescription Delete the given bottle
      *
-     * @apiParam {shortName} shortName Short name of the bottle you want to delete
+     * @apiParam {id} id Id of the bottle you want to delete
      *
      * @apiUse badRequestError
      * @apiUse forbiddenError
@@ -158,7 +158,7 @@ module.exports = {
         }
 
         // Find bottle
-        Bottle.findOne({shortName: req.param('shortName')})
+        Bottle.findOne({id: req.param('id')})
             .exec((error, bottle) => {
                 if (error) {
                     return res.negotiate(error);
@@ -166,7 +166,7 @@ module.exports = {
                 if(!bottle) {
                     return res.error(400, 'BadRequest', 'The requested bottle cannot be found');
                 }
-                Bottle.destroy({shortName: bottle.shortName}).exec((error) => {
+                Bottle.destroy({id: bottle.id}).exec((error) => {
                     if (error) {
                         return res.negotiate(error);
                     }
@@ -180,7 +180,7 @@ module.exports = {
 
 
     /**
-     * @api {put} /bottle/:shortName Update bottle
+     * @api {put} /bottle/:id Update bottle
      * @apiName update
      * @apiGroup Bottle
      * @apiDescription Update the given bottle
@@ -205,13 +205,13 @@ module.exports = {
         }
 
         // Find bottle
-        Bottle.findOne({shortName: req.param('shortName')})
+        Bottle.findOne({id: req.param('id')})
             .exec((error, bottle) => {
                 if (error) {
                     return res.negotiate(error);
                 }
                 if(!bottle) {
-                    return res.error(404, 'notfound', 'The requested bottle cannot be found');
+                    return res.error(404, 'NotFound', 'The requested bottle cannot be found');
                 }
 
                 // Update bottle
@@ -226,8 +226,8 @@ module.exports = {
                     if (error) {
                         return res.negotiate(error);
                     }
-                    Bottle.publishUpdate(bottle.shortName, bottle);
-                    Bottle.subscribe(req, [bottle.shortName]);
+                    Bottle.publishUpdate(bottle.id, bottle);
+                    Bottle.subscribe(req, [bottle.id]);
 
                     return res.ok(bottle);
                 });

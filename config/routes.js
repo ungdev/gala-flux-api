@@ -56,7 +56,5 @@ module.exports.routes = {
     'post /login/as/:id': 'AuthController.loginAs',
 
     'get /message/channels': 'MessageController.getChannels',
-
-    'get /bottle/:shortName': 'BottleController.findOne',
-    'delete /bottle/:shortName': 'BottleController.destroy',
+    
 };
