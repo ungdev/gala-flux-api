@@ -74,10 +74,7 @@ module.exports = {
         User.findOne({
             login: login,
         })
-        // If the database has no user, we create the first admin user with this login
-        .exec((error, result) => {
-            cb(error, result);
-        });
+        .exec(cb);
     },
 
     fixtures: {
