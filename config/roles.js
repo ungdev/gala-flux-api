@@ -22,16 +22,21 @@
  * - team/read : Can read all teams
  * - team/admin : Can read/write on all teams
  *
+ * - bottle/read : Can read all bottles
+ * - bottle/admin : Can read/write on all bottles
  */
 
 
 module.exports.roles = {
     bar: [
         'message/oneChannel',
+        'bottle/read',
     ],
     log: [
         'message/public',
         'message/group',
+        'bottle/read',
+        'bottle/admin',
     ],
     secutt: [
         'message/public',
@@ -46,5 +51,6 @@ module.exports.roles = {
         'user/admin',
         'team/admin',
         'auth/as',
+        'bottle/admin',
     ],
 };

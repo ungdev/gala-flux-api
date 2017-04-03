@@ -199,7 +199,7 @@ module.exports = {
      * @apiParam {string} phone Phone number of the user (optional)
      * @apiParam {id} team Associated team ID (required)
      *
-     * @apiSuccess {User} user The user that you've juste updated
+     * @apiSuccess {User} user The user that you've just updated
      *
      * @apiUse badRequestError
      * @apiUse forbiddenError

@@ -7,9 +7,27 @@
 
 module.exports = {
 
+    /**
+     * @api {get} /bottle/find Find all bottles and subscribe to them
+     * @apiName find
+     * @apiGroup Bottle
+     * @apiDescription Get the list of all bottles
+     *
+     * @apiUse forbiddenError
+     *
+     * @apiSuccess {Array} Array An array of bottles
+     * @apiSuccess {Bottle} Array.bottle A bottle object
+     * @apiSuccess {string} Array.bottle.name Complete display name of the bottle
+     * @apiSuccess {string} Array.bottle.shortName Short display name of the bottle
+     * @apiSuccess {integer} Array.bottle.quantityPerBox Number of bottles per box
+     * @apiSuccess {integer} Array.bottle.sellPrice Price at which the bottles are sold in cents
+     * @apiSuccess {integer} Array.bottle.supplierPrice Price at which the bottles were bought in cents
+     * @apiSuccess {integer} Array.bottle.originalStock Number of bottles at the beginning of the event
+     */
 
     find: function (req, res) {
-        if(Team.can(req, 'user/read') || Team.can(req, 'user/admin')) {
+        // Check permissions
+        if(Team.can(req, 'bottle/read') || Team.can(req, 'bottle/admin')) {
             Bottle.find()
                 .exec((error, bottle) => {
                     if (error) {
@@ -23,27 +41,84 @@ module.exports = {
                 });
         }
         else {
-            return res.error(403, 'forbidden', 'You are not authorized read user list');
+            return res.error(403, 'forbidden', 'You are not authorized to view the bottle list');
         }
     },
 
+    /**
+     * @api {get} /bottle/find/:shortName Find one bottle
+     * @apiName findOne
+     * @apiGroup Bottle
+     * @apiDescription Find one bottle based on its shortName
+     *
+     * @apiUse forbiddenError
+     * @apiUse notFoundError
+     *
+     * @apiParam {string} shortName Short name of the bottle you are looking for
+     *
+     * @apiSuccess {Bottle} bottle A bottle object
+     * @apiSuccess {string} bottle.name Complete display name of the bottle
+     * @apiSuccess {string} bottle.shortName Short display name of the bottle
+     * @apiSuccess {integer} bottle.quantityPerBox Number of bottles per box
+     * @apiSuccess {integer} bottle.sellPrice Price at which the bottles are sold in cents
+     * @apiSuccess {integer} bottle.supplierPrice Price at which the bottles were bought in cents
+     * @apiSuccess {integer} bottle.originalStock Number of bottles at the beginning of the event
+     */
+    findOne: function (req, res) {
+        // Check permissions
+        if(Team.can(req, 'bottle/read') || Team.can(req, 'bottle/admin') || req.param('shortName') == req.bottle.shortName) {
+
+            // Find bottle
+            Bottle.findOne({shortName: req.param('shortName')})
+                .exec((error, bottle) => {
+                    if (error) {
+                        return res.negotiate(error);
+                    }
+                    if(!bottle) {
+                        return res.error(400, 'BadRequest', 'The requested bottle cannot be found');
+                    }
+
+                    Bottle.subscribe(req, [req.param('shortName')]);
+
+                    return res.ok(bottle);
+                });
+        }
+        else {
+            return res.error(403, 'forbidden', 'You are not authorized to read bottle data');
+        }
+    },
+
+    /**
+     * @api {post} /bottle/create Create bottle
+     * @apiName create
+     * @apiGroup Bottle
+     * @apiDescription Create a bottle
+     *
+     * @apiParam {string} name Complete display name of the bottle you want to edit
+     * @apiParam {string} shortName Short display name of the bottle
+     * @apiParam {integer} quantityPerBox Number of bottles per box
+     * @apiParam {integer} sellPrice Price at which the bottles are sold in cents
+     * @apiParam {integer} supplierPrice Price at which the bottles were bought in cents
+     * @apiParam {integer} originalStock Number of bottles at the beginning of the event
+     *
+     * @apiSuccess {Bottle} bottle The bottle you've just created
+     *
+     * @apiUse badRequestError
+     * @apiUse forbiddenError
+     */
     create: function (req, res) {
         // Check permissions
-        if(!Team.can(req, 'user/admin') && !Team.can(req, 'user/team')) { //&& req.param('team') == req.team.id)) { je pense que cette condition ne s'applique pas aux bouteilles
-            return res.error(403, 'forbidden', 'You are not authorized to create a bottle in this team.');
+        if(!Team.can(req, 'bottle/admin')) {
+            return res.error(403, 'forbidden', 'You are not authorized to create a bottle.');
         }
 
-        // Check parameters
-        if(!req.param('name') && !req.param('shortName') && !req.param('quantityPerBox') && !req.param('sellPrice') && !req.param('supplierPrice') && !req.param('originalStock')) {
-            return res.error(400, 'BadRequest', 'All fields have to be set.');
-        }
-        Team.findOne({id: req.param('team')}).exec((error, team) => {
-            if(!team) {
-                return res.error(400, 'BadRequest', 'Team id is not valid.');
+        Bottle.findOne({shortName: req.param('shortName')}).exec((error, bottle) => {
+            if(bottle) {
+                return res.error(400, 'BadRequest', 'Bottle short name is not valid.');
             }
 
             // Create bottle
-            let bottle = {};
+            bottle = {};
             if(req.param('name')) bottle.name = req.param('name');
             if(req.param('shortName')) bottle.shortName = req.param('shortName');
             if(req.param('quantityPerBox')) bottle.quantityPerBox = req.param('quantityPerBox');
@@ -57,22 +132,79 @@ module.exports = {
                 }
 
                 Bottle.publishCreate(bottle);
-                Bottle.subscribe(req, [bottle.shortName]); // A quoi correspond cette fonction ?
+                Bottle.subscribe(req, [bottle.shortName]);
 
                 return res.ok(bottle);
             });
         })
     },
 
-    // Have a look at what's below
-    // It can't work for now because it uses findOne which isn't implemented yet
-    /* destroy: function (req, res) {
-        // Check permissions 1
-        if(!Team.can(req, 'user/admin') && !(Team.can(req, 'user/team'))) {
+    /**
+     * @api {delete} /bottle/:shortName Delete a bottle
+     * @apiName destroy
+     * @apiGroup Bottle
+     * @apiDescription Delete the given bottle
+     *
+     * @apiParam {shortName} shortName Short name of the bottle you want to delete
+     *
+     * @apiUse badRequestError
+     * @apiUse forbiddenError
+     * @apiUse notFoundError
+     */
+    destroy: function (req, res) {
+        // Check permissions
+        if(!Team.can(req, 'bottle/admin')) {
+            return res.error(403, 'forbidden', 'You are not authorized to delete a bottle.');
+        }
+
+        // Find bottle
+        Bottle.findOne({shortName: req.param('shortName')})
+            .exec((error, bottle) => {
+                if (error) {
+                    return res.negotiate(error);
+                }
+                if(!bottle) {
+                    return res.error(400, 'BadRequest', 'The requested bottle cannot be found');
+                }
+                Bottle.destroy({shortName: bottle.shortName}).exec((error) => {
+                    if (error) {
+                        return res.negotiate(error);
+                    }
+
+                    Bottle.publishDestroy(bottle.id);
+
+                    return res.ok();
+                });
+            });
+    },
+
+
+    /**
+     * @api {put} /bottle/:shortName Update bottle
+     * @apiName update
+     * @apiGroup Bottle
+     * @apiDescription Update the given bottle
+     *
+     * @apiParam {string} name Complete display name of the bottle you want to edit
+     * @apiParam {string} shortName Short display name of the bottle
+     * @apiParam {integer} quantityPerBox Number of bottles per box
+     * @apiParam {integer} sellPrice Price at which the bottles are sold in cents
+     * @apiParam {integer} supplierPrice Price at which the bottles were bought in cents
+     * @apiParam {integer} originalStock Number of bottles at the beginning of the event
+     *
+     * @apiSuccess {Bottle} bottle The bottle you have just updated
+     *
+     * @apiUse badRequestError
+     * @apiUse forbiddenError
+     * @apiUse notFoundError
+     */
+    update: function (req, res) {
+        // Check permissions
+        if(!Team.can(req, 'bottle/admin')) {
             return res.error(403, 'forbidden', 'You are not authorized to update a bottle.');
         }
 
-        // Find user
+        // Find bottle
         Bottle.findOne({shortName: req.param('shortName')})
             .exec((error, bottle) => {
                 if (error) {
@@ -82,24 +214,24 @@ module.exports = {
                     return res.error(404, 'notfound', 'The requested bottle cannot be found');
                 }
 
-                // I don't think this 'if' is needed
-                // Check permissions 2
-                if(Team.can(req, 'user/team') && user.team != req.team.id) {
-                    return res.error(403, 'forbidden', 'You are not authorized to delete an user from this team.');
-                }
+                // Update bottle
+                bottle.name = req.param('name', bottle.name);
+                bottle.shortName = req.param('shortName', bottle.shortName);
+                bottle.quantityPerBox = req.param('quantityPerBox', bottle.quantityPerBox);
+                bottle.sellPrice = req.param('sellPrice', bottle.sellPrice);
+                bottle.supplierPrice = req.param('supplierPrice', bottle.supplierPrice);
+                bottle.originalStock = req.param('originalStock', bottle.originalStock);
 
-
-                Bottle.destroy({shortName: bottle.shortName}).exec((error) => {
+                bottle.save((error) => {
                     if (error) {
                         return res.negotiate(error);
                     }
+                    Bottle.publishUpdate(bottle.shortName, bottle);
+                    Bottle.subscribe(req, [bottle.shortName]);
 
-                    Bottle.publishDestroy(bottle.shortName);
-
-                    return res.ok();
+                    return res.ok(bottle);
                 });
             });
-    }, */
-
+    },
 };
 

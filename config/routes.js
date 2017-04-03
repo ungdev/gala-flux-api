@@ -57,4 +57,6 @@ module.exports.routes = {
 
     'get /message/channels': 'MessageController.getChannels',
 
+    'get /bottle/:shortName': 'BottleController.findOne',
+    'delete /bottle/:shortName': 'BottleController.destroy',
 };
