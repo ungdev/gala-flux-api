@@ -27,12 +27,12 @@ module.exports = {
         },
 
         sellPrice: {
-            type: "integer",
+            type: "float",
             required: true
         },
 
         supplierPrice: {
-            type: "integer",
+            type: "float",
             required: true
         }
 
