@@ -59,8 +59,8 @@ module.exports = {
     create: (req, res) => {
 
         // Check permissions
-        if (!Team.can(req, 'alertButton/admin')) {
-            return res.error(403, 'forbidden', 'You are not authorized to create an Alert button.');
+        if (!Team.can(req, 'BarrelType/admin')) {
+            return res.error(403, 'forbidden', 'You are not authorized to create an Barrel Type.');
         }
 
         // Check parameters
@@ -103,6 +103,63 @@ module.exports = {
 
             return res.ok(barrelType);
         });
+
+    },
+
+    /**
+     * @api {put} /barreltype/:id
+     * @apiName update
+     * @apiGroup BarrelType
+     * @apiDescription Update the given barrel type
+     *
+     * @apiParam {string} id : Id of the barrel type to edit (required)
+     * @apiParam {string} name : The name of the contents of the barrel (optional)
+     * @apiParam {string} shortName : A short unique code from the name of the contents (optional)
+     * @apiParam {integer} liters : The amount of drink in the barrel (optional)
+     * @apiParam {float} supplierPrice : purchasing price (optional)
+     * @apiParam {float} sellPrice : sell price(optional)
+     *
+     * @apiSuccess {BarrelType} The barrel type that you've just updated
+     *
+     * @apiUse forbiddenError
+     * @apiUse notFoundError
+     */
+    update: (req, res) => {
+
+        // Check permissions
+        if (!Team.can(req, 'barrelType/admin')) {
+            return res.error(403, 'forbidden', 'You are not authorized to update a Barrel Type.');
+        }
+
+        // Find the barrel type
+        BarrelType.findOne({id: req.param('id')})
+            .exec((error, barrelType) => {
+                if (error) {
+                    return res.negotiate(error);
+                }
+                if(!barrelType) {
+                    return res.error(404, 'notfound', 'The requested barrel type cannot be found');
+                }
+
+                // Update
+                barrelType.name = req.param('name', barrelType.name);
+                barrelType.shortName = req.param('shortName', barrelType.shortName);
+                barrelType.liters = req.param('liters', barrelType.liters);
+                barrelType.sellPrice = req.param('sellPrice', barrelType.sellPrice);
+                barrelType.supplierPrice = req.param('supplierPrice', barrelType.supplierPrice);
+
+                barrelType.save((error) => {
+                    if (error) {
+                        return res.negotiate(error);
+                    }
+
+                    BarrelType.publishUpdate(barrelType.id, barrelType);
+                    BarrelType.subscribe(req, [barrelType.id]);
+
+                    return res.ok(barrelType);
+                });
+
+            });
 
     },
 
