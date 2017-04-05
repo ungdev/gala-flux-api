@@ -35,7 +35,8 @@ module.exports.roles = {
         'message/public',
         'message/group',
         'alert/read',
-        'alert/update'
+        'alert/update',
+        'barrelType/admin'
     ],
     secutt: [
         'message/public',
@@ -56,6 +57,7 @@ module.exports.roles = {
         'auth/as',
         'alertButton/admin',
         'alert/read',
-        'alert/update'
+        'alert/update',
+        'barrelType/admin'
     ],
 };

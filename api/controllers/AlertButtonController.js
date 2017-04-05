@@ -72,7 +72,7 @@ module.exports = {
         if (!req.param('title')) {
             missingParameters.push('title');
         }
-        if (!req.param('message')) {
+        if (req.param('message') === undefined) {
             missingParameters.push('message');
         }
         if (!req.param('category')) {
