@@ -60,6 +60,8 @@ module.exports.routes = {
     'post /alertbutton/alert': 'AlertButtonController.createAlert',
 
     'post /alert/user/add': 'AlertController.addUser',
-    'post /alert/user/remove': 'AlertController.removeUser'
+    'post /alert/user/remove': 'AlertController.removeUser',
+
+    'post /barreltype/barrel': 'BarrelTypeController.createBarrel'
 
 };
