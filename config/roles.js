@@ -29,14 +29,16 @@ module.exports.roles = {
     bar: [
         'message/oneChannel',
         'alertButton/read',
-        'alertButton/create'
+        'alertButton/create',
+        'barrel/restricted'
     ],
     log: [
         'message/public',
         'message/group',
         'alert/read',
         'alert/update',
-        'barrelType/admin'
+        'barrelType/admin',
+        'barrel/admin'
     ],
     secutt: [
         'message/public',
@@ -48,7 +50,8 @@ module.exports.roles = {
     coord: [
         'message/admin',
         'alert/read',
-        'alert/update'
+        'alert/update',
+        'barrel/admin'
     ],
     admin: [
         'message/admin',
@@ -58,6 +61,7 @@ module.exports.roles = {
         'alertButton/admin',
         'alert/read',
         'alert/update',
-        'barrelType/admin'
+        'barrelType/admin',
+        'barrel/admin'
     ],
 };
