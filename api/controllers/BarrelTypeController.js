@@ -59,7 +59,7 @@ module.exports = {
     create: (req, res) => {
 
         // Check permissions
-        if (!Team.can(req, 'BarrelType/admin')) {
+        if (!Team.can(req, 'barrelType/admin')) {
             return res.error(403, 'forbidden', 'You are not authorized to create an Barrel Type.');
         }
 
@@ -161,6 +161,46 @@ module.exports = {
 
             });
 
+    },
+
+    /**
+     * @api {delete} /barreltype/:id
+     * @apiName destroy
+     * @apiGroup BarrelType
+     * @apiDescription Delete the given BarrelType
+     *
+     * @apiParam {string} id : Id of the barrel type to delete
+     *
+     * @apiUse forbiddenError
+     * @apiUse notFoundError
+     */
+    destroy: function (req, res) {
+
+        // Check permissions
+        if(!Team.can(req, 'barrelType/admin')) {
+            return res.error(403, 'forbidden', 'You are not authorized to delete a barrel type.');
+        }
+
+        // Find the barrel type
+        BarrelType.findOne({id: req.param('id')})
+            .exec((error, barrelType) => {
+                if (error) {
+                    return res.negotiate(error);
+                }
+                if(!barrelType) {
+                    return res.error(404, 'notfound', 'The requested barrel type cannot be found');
+                }
+
+                BarrelType.destroy({id: barrelType.id}).exec((error) => {
+                    if (error) {
+                        return res.negotiate(error);
+                    }
+
+                    BarrelType.publishDestroy(barrelType.id);
+
+                    return res.ok();
+                });
+            });
     },
 
 };
