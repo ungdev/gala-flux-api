@@ -1,7 +1,7 @@
 /**
  * AlertHistory.js
  *
- * @description :: An AlertHistory is created each team an Alert is created or updated. This is a copy of this alert.
+ * @description :: An AlertHistory is created each time an Alert is created or updated. This is a copy of this alert.
  * The goal of this model is to log all about the alerts.
  *
  * @docs        :: http://sailsjs.org/documentation/concepts/models-and-orm/models

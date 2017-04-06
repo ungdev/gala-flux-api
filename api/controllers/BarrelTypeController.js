@@ -1,7 +1,7 @@
 /**
  * BarrelTypeController
  *
- * @description :: Server-side logic for managing Barreltypes
+ * @description :: Server-side logic for managing BarrelTypes
  * @help        :: See http://sailsjs.org/#!/documentation/concepts/Controllers
  */
 
