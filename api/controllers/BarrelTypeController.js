@@ -304,9 +304,18 @@ function saveBarrels(inputs, outputs, callback) {
                 return callback(error);
             }
 
-            // save the result and continue
-            outputs.push(barrel);
-            return saveBarrels(inputs, outputs, callback);
+            // log the new barrel
+            BarrelHistory.pushToHistory(barrel, (error, barrelHistory) => {
+                // if an error happened, call the callback with the error
+                if (error) {
+                    return callback(error);
+                }
+
+                // save the result and continue
+                outputs.push(barrel);
+                return saveBarrels(inputs, outputs, callback);
+
+            });
 
         });
     } else {

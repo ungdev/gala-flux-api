@@ -83,7 +83,7 @@ module.exports = {
                     return res.negotiate(error);
                 }
                 if (!alert) {
-                    return res.error(404, 'notfound', 'The requested alert cannot be found');
+                    return res.error(404, 'notFound', 'The requested alert cannot be found');
                 }
 
                 // Check if the requester is in the receiver team

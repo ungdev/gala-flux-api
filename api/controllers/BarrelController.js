@@ -101,10 +101,18 @@ module.exports = {
                         return res.negotiate(error);
                     }
 
-                    Barrel.publishUpdate(barrel.id, barrel);
-                    Barrel.subscribe(req, [barrel.id]);
+                    // log the new barrel state
+                    BarrelHistory.pushToHistory(barrel, (error, barrelHistory) => {
+                        if (error) {
+                            return res.negotiate(error);
+                        }
 
-                    return res.ok(barrel);
+                        Barrel.publishUpdate(barrel.id, barrel);
+                        Barrel.subscribe(req, [barrel.id]);
+
+                        return res.ok(barrel);
+
+                    });
                 });
 
             });
