@@ -117,6 +117,46 @@ module.exports = {
 
             });
 
+    },
+
+    /**
+     * @api {delete} /barrel/:id
+     * @apiName destroy
+     * @apiGroup Barrel
+     * @apiDescription Delete the given Barrel
+     *
+     * @apiParam {string} id : Id of the barrel to delete
+     *
+     * @apiUse forbiddenError
+     * @apiUse notFoundError
+     */
+    destroy: function (req, res) {
+
+        // Check permissions
+        if(!Team.can(req, 'barrel/admin')) {
+            return res.error(403, 'forbidden', 'You are not authorized to delete a barrel.');
+        }
+
+        // Find the barrel
+        Barrel.findOne({id: req.param('id')})
+            .exec((error, barrel) => {
+                if (error) {
+                    return res.negotiate(error);
+                }
+                if(!barrel) {
+                    return res.error(404, 'notfound', 'The requested barrel cannot be found');
+                }
+
+                Barrel.destroy({id: barrel.id}).exec((error) => {
+                    if (error) {
+                        return res.negotiate(error);
+                    }
+
+                    Barrel.publishDestroy(barrel.id);
+
+                    return res.ok();
+                });
+            });
     }
 
 };
