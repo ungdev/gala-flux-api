@@ -1,7 +1,8 @@
 /**
  * BarrelHistory.js
  *
- * @description :: TODO: You might write a short summary of how this model works and what it represents here.
+ * @description :: A BarrelHistory is created each time a Barrel is created or updated. This is a copy of the main
+ * attributes of this Barrel. The goal is to log all about barrels.
  * @docs        :: http://sailsjs.org/documentation/concepts/models-and-orm/models
  */
 
