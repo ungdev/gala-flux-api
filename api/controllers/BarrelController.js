@@ -104,7 +104,7 @@ module.exports = {
                 // if admin and send a new value for the 'place' attribute
                 if (req.param('place') !== undefined && Team.can(req, 'barrel/admin')) {
                     // the place can be null
-                    if (req.param('place') === "null") {
+                    if (req.param('place') === "null" || req.param('place') === null) {
                         barrel.place = null;
                         return updateBarrel(barrel, req, res);
                     }
@@ -218,6 +218,7 @@ function isStateValid(state, currentState) {
         }
     }
 
-    // check if it's allowed to set the barrel state with this value
-    return Math.abs(states.indexOf(currentState) - states.indexOf(state)) === 1;
+    // check if it's allowed to set the barrel state with this value (same or neighbor)
+    const d = Math.abs(states.indexOf(currentState) - states.indexOf(state))
+    return d === 1 || d === 0;
 }
