@@ -71,13 +71,13 @@ module.exports = {
         if (!req.param('shortName')) {
             missingParameters.push('shortName');
         }
-        if (!req.param('liters')) {
-            missingParameters.push('message');
+        if (req.param('liters') === undefined) {
+            missingParameters.push('liters');
         }
-        if (!req.param('supplierPrice')) {
+        if (req.param('supplierPrice') === undefined) {
             missingParameters.push('supplierPrice');
         }
-        if (!req.param('sellPrice')) {
+        if (req.param('sellPrice') === undefined) {
             missingParameters.push('sellPrice');
         }
         // return error with missing parameters if there are missing parameters
@@ -229,7 +229,7 @@ module.exports = {
         if (!req.param('id')) {
             return res.error(400, 'BadRequest', "Missing barrel type id");
         }
-        if (req.param('number') && (Number.isInteger(req.param('number')) || req.param('number') < 1)) {
+        if (req.param('number') && (!Number.isInteger(req.param('number')) || req.param('number') < 1)) {
             return res.error(400, 'BadRequest', "The number of barrels to create must be a positive integer.");
         }
 
