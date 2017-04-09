@@ -20,7 +20,7 @@ module.exports = {
     find: (req, res) => {
 
         // Check permissions
-        if (!(Team.can(req, 'barrelType/admin'))) {
+        if (!(Team.can(req, 'barrel/admin') || Team.can(req, 'barrel/restricted'))) {
             return res.error(403, 'forbidden', 'You are not authorized to read the barrel types.');
         }
 
@@ -82,7 +82,6 @@ module.exports = {
         }
         // return error with missing parameters if there are missing parameters
         if (missingParameters.length) {
-            console.log(missingParameters.join(', '));
             return res.error(400, 'BadRequest', 'Unknown parameters : ' + missingParameters.join(', '));
         }
 

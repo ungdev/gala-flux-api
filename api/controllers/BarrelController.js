@@ -27,9 +27,9 @@ module.exports = {
         // if the requester is not admin, show only his team's barrels
         let where = {};
         if (!(Team.can(req, 'barrel/admin'))) {
-            where.place = req.team;
+            where.place = req.team.id;
         }
-
+        
         // Find barrels
         Barrel.find(where)
             .exec((error, barrels) => {
