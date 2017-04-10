@@ -66,7 +66,6 @@ module.exports = {
      * @apiSuccess {string} Array.user.login Login of EtuUTT user
      * @apiSuccess {string} Array.user.ip IP of IP user
      * @apiSuccess {string} Array.user.name Display name of the user
-     * @apiSuccess {string} Array.user.phone Phone number of the user
      * @apiSuccess {id} Array.user.team Associated team ID
      */
     find: function (req, res) {
@@ -106,7 +105,6 @@ module.exports = {
      * @apiSuccess {string} user.login Login of EtuUTT user
      * @apiSuccess {string} user.ip IP of IP user
      * @apiSuccess {string} user.name Display name of the user
-     * @apiSuccess {string} user.phone Phone number of the user
      * @apiSuccess {id} user.team Associated team ID
      */
     findOne: function (req, res) {
@@ -142,7 +140,6 @@ module.exports = {
      * @apiParam {string} login Login of EtuUTT user (required if `ip` empty, but has to be empty if `ip` is filled)
      * @apiParam {string} ip IP of IP user (required if `login` empty, but has to be empty if `login` is filled)
      * @apiParam {string} name Display name of the user (required)
-     * @apiParam {string} phone Phone number of the user (optional)
      * @apiParam {id} team Associated team ID (required)
      *
      * @apiSuccess {User} user The user that you've juste created
@@ -173,7 +170,6 @@ module.exports = {
             if(req.param('login')) user.login = req.param('login');
             if(req.param('ip')) user.ip = req.param('ip');
             if(req.param('name')) user.name = req.param('name');
-            if(req.param('phone')) user.phone = req.param('phone');
             if(req.param('team')) user.team = req.param('team');
 
             User.create(user).exec((error, user) => {
@@ -199,7 +195,6 @@ module.exports = {
      * @apiParam {string} login Login of EtuUTT user (required if `ip` empty, but has to be empty if `ip` is filled)
      * @apiParam {string} ip IP of IP user (required if `login` empty, but has to be empty if `login` is filled)
      * @apiParam {string} name Display name of the user (required)
-     * @apiParam {string} phone Phone number of the user (optional)
      * @apiParam {id} team Associated team ID (required)
      *
      * @apiSuccess {User} user The user that you've juste updated
@@ -242,7 +237,6 @@ module.exports = {
             user.login = req.param('login', user.login);
             user.ip = req.param('ip', user.ip);
             user.name = req.param('name', user.name);
-            user.phone = req.param('phone', user.phone);
             user.team = req.param('team', user.team);
 
             // Check team
