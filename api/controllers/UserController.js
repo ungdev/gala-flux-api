@@ -381,7 +381,6 @@ module.exports = {
                     // find user official image link
                     let etuuttLink = Url.parse(sails.config.etuutt.baseUri);
                     etuuttLink = etuuttLink.protocol + '//' + etuuttLink.host;
-                    console.log(etuuttLink);
                     let imageLink = null;
                     if(user._links && Array.isArray(user._links)) {
                         for (let link of user._links) {
@@ -399,6 +398,7 @@ module.exports = {
                     out.push({
                         login: user.login,
                         name: user.fullName,
+                        image: imageLink,
                     })
                 }
                 return res.ok(out);
