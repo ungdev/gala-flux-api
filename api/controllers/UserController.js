@@ -1,3 +1,6 @@
+const Url = require('url');
+
+
 /**
  * UserController
  *
@@ -306,5 +309,112 @@ module.exports = {
                 return res.ok();
             });
         });
+    },
+
+
+
+
+    /**
+     * @api {get} /user/etuutt Search for an user from the etuutt database
+     * @apiName etuuttFind
+     * @apiGroup User
+     *
+     * @apiDescription Search from partial fullname in the etuutt db and return a list
+     * of 25 matched user with informations which can be usefull to create a new user.
+     * User that call this request has to be logged vie EtuUTT.
+     *
+     * @apiParam {string} search Search string : part of name, login, or student id
+
+     * @apiError EtuUTTNotConfigured The server is not configured for the API of EtuUTT
+     * @apiErrorExample EtuUTTNotConfigured
+     *     HTTP/1.1 501 Not Implemented
+     *     {
+     *         "_error": {
+     *             code: 501,
+     *             status: 'EtuUTTNotConfigured',
+     *             message: 'The server is not configured for the API of EtuUTT'
+     *         }
+     *     }
+
+     * @apiError EtuUTTError An error occurs during communications with the api of EtuUTT
+     * @apiErrorExample EtuUTTError
+     *     HTTP/1.1 503 Service Unavailable
+     *     {
+     *         "_error": {
+     *             code: 503,
+     *             status: 'EtuUTTError',
+     *             message: 'An error occurs during communications with the api of EtuUTT'
+     *         }
+     *     }
+     *
+     *
+     * @apiError NotEtuuttUser Authenticated user is not logged in via EtuUTT
+     * @apiErrorExample LoginNotFound
+     *     HTTP/1.1 403 Unauthorized
+     *     {
+     *         "_error": {
+     *             code: 403,
+     *             status: 'NotEtuuttUser',
+     *             message: 'Authenticated user is not logged in via EtuUTT'
+     *         }
+     *     }
+     *
+     * @apiUse badRequestError
+     */
+    etuuttFind: function (req, res) {
+        console.log('hello')
+        if (!sails.config.etuutt.id
+            || !sails.config.etuutt.secret
+            || !sails.config.etuutt.baseUri) {
+            return res.error(501, 'EtuUTTNotConfigured', 'The server is not configured for the API of EtuUTT');
+        }
+
+        if(!req.user.accessToken || !req.user.refreshToken || !req.user.login) {
+            return res.error(403, 'NotEtuuttUser', 'Authenticated user is not logged in via EtuUTT.');
+        }
+
+        if(!req.param('search')) {
+            return res.error(400, 'BadRequest', 'Search field is missing.');
+        }
+
+        let EtuUTT = EtuUTTService(req.user);
+        let out = [];
+        EtuUTT.publicUsers({multifield: req.param('search')})
+        .then((data) => {
+            // Filter user informations
+            if(data.data && Array.isArray(data.data)) {
+                for (let user of data.data) {
+                    // find user official image link
+                    let etuuttLink = Url.parse(sails.config.etuutt.baseUri);
+                    etuuttLink = etuuttLink.protocol + '//' + etuuttLink.host;
+                    console.log(etuuttLink);
+                    let imageLink = null;
+                    if(user._links && Array.isArray(user._links)) {
+                        for (let link of user._links) {
+                            if(link.rel == 'user.image') {
+                                imageLink = etuuttLink + link.uri;
+                            }
+                            else if(link.rel == 'user.official_image') {
+                                imageLink = etuuttLink + link.uri;
+                                break;
+                            }
+                        }
+                    }
+
+                    // Add to output
+                    out.push({
+                        login: user.login,
+                        name: user.fullName,
+                    })
+                }
+                return res.ok(out);
+            }
+
+            return res.error(500, 'EtuUTTError', 'Unexpected EtuUTT answer format');
+        })
+        .catch((error) => {
+            console.log(error);
+            return res.error(500, 'EtuUTTError', 'An error occurs during communications with the api of EtuUTT: ' + error);
+        })
     },
 };

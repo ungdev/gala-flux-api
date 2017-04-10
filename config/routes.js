@@ -55,6 +55,8 @@ module.exports.routes = {
     'get  /login/roles': 'AuthController.getRoles',
     'post /login/as/:id': 'AuthController.loginAs',
 
+    'get /user/etuutt': 'UserController.etuuttFind',
+
     'get /message/channels': 'MessageController.getChannels',
 
     'post /alertbutton/alert': 'AlertButtonController.createAlert',
