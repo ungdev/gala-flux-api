@@ -356,7 +356,6 @@ module.exports = {
      * @apiUse badRequestError
      */
     etuuttFind: function (req, res) {
-        console.log('hello')
         if (!sails.config.etuutt.id
             || !sails.config.etuutt.secret
             || !sails.config.etuutt.baseUri) {
@@ -367,13 +366,13 @@ module.exports = {
             return res.error(403, 'NotEtuuttUser', 'Authenticated user is not logged in via EtuUTT.');
         }
 
-        if(!req.param('search')) {
-            return res.error(400, 'BadRequest', 'Search field is missing.');
+        if(!req.param('query')) {
+            return res.error(400, 'BadRequest', 'query parameter is missing.');
         }
 
         let EtuUTT = EtuUTTService(req.user);
         let out = [];
-        EtuUTT.publicUsers({multifield: req.param('search')})
+        EtuUTT.publicUsers({multifield: req.param('query')})
         .then((data) => {
             // Filter user informations
             if(data.data && Array.isArray(data.data)) {
