@@ -67,23 +67,30 @@ module.exports = {
      * @apiSuccess {id} Array.user.team Associated team ID
      */
     find: function (req, res) {
-        if(Team.can(req, 'user/read')
-        || Team.can(req, 'user/admin')) {
-            User.find()
-            .exec((error, user) => {
-                if (error) {
-                    return res.negotiate(error);
-                }
 
-                User.subscribe(req, _.pluck(user, 'id'));
-                User.watch(req);
-
-                return res.ok(user);
-            });
-        }
-        else {
+        // check permissions
+        if (!(Team.can(req, 'user/read') || Team.can(req, 'user/admin'))) {
             return res.error(403, 'forbidden', 'You are not authorized read user list');
         }
+
+        // read filters
+        let where = {};
+        if (req.allParams().filters) {
+            where = req.allParams().filters;
+        }
+
+        User.find(where)
+        .exec((error, user) => {
+            if (error) {
+                return res.negotiate(error);
+            }
+
+            User.subscribe(req, _.pluck(user, 'id'));
+            User.watch(req);
+
+            return res.ok(user);
+        });
+        
     },
 
 

@@ -24,8 +24,14 @@ module.exports = {
             return res.error(403, 'forbidden', 'You are not authorized to read the barrel types.');
         }
 
+        // read filters
+        let where = {};
+        if (req.allParams().filters) {
+            where = req.allParams().filters;
+        }
+
         // Find BarrelType
-        BarrelType.find()
+        BarrelType.find(where)
             .exec((error, barrelTypes) => {
                 if (error) {
                     return res.negotiate(error);

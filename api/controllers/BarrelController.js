@@ -24,11 +24,16 @@ module.exports = {
             return res.error(403, 'forbidden', 'You are not authorized to read barrels.');
         }
 
-        // if the requester is not admin, show only his team's barrels
+        // read filters
         let where = {};
+        if (req.allParams().filters) {
+            where = req.allParams().filters;
+        }
+        // if the requester is not admin, show only his team's barrels
         if (!(Team.can(req, 'barrel/admin'))) {
             where.place = req.team.id;
         }
+    
         
         // Find barrels
         Barrel.find(where)
