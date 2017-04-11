@@ -42,6 +42,9 @@ module.exports.policies = {
         create:  ['jwtAuth'],
         update:  ['jwtAuth'],
         destroy:  ['jwtAuth'],
+        etuuttFind:  ['jwtAuth'],
+        uploadAvatar:  ['jwtAuth'],
+        getAvatar:  true,
     },
 
     TeamController: {

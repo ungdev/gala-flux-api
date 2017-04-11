@@ -26,10 +26,6 @@ module.exports = {
             required: true,
         },
 
-        phone : {
-            type: 'string',
-        },
-
         team: {
             model: 'team',
             required: true,
@@ -111,7 +107,6 @@ module.exports = {
                         result['Etu ' + team.name + ' ' + (n+1)] = {
                             login: faker.helpers.slugify(name).substr(0, 8),
                             name: name,
-                            phone: faker.phone.phoneNumber(),
                             team: team.id,
                         }
                     });
