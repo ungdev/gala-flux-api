@@ -25,6 +25,12 @@ module.exports = {
             return res.error(403, 'forbidden', 'You are not authorized to read the Alert buttons.');
         }
 
+        // read filters
+        let where = {};
+        if (req.allParams().filters) {
+            where = req.allParams().filters;
+        }
+
         // Find AlterButtons
         AlertButton.find()
             .exec((error, alertsButtons) => {
