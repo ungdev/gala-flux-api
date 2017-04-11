@@ -56,6 +56,8 @@ module.exports.routes = {
     'post /login/as/:id': 'AuthController.loginAs',
 
     'get /user/etuutt': 'UserController.etuuttFind',
+    'get /user/avatar/:id': 'UserController.getAvatar',
+    'post /user/avatar/:id': 'UserController.uploadAvatar',
 
     'get /message/channels': 'MessageController.getChannels',
 

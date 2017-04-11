@@ -7,6 +7,7 @@
   "dependencies": {
     "apidoc": "^0.17.5",
     "ejs": "2.3.4",
+    "gm": "^1.23.0",
     "grunt": "1.0.1",
     "grunt-apidoc": "^0.11.0",
     "grunt-contrib-clean": "1.0.0",

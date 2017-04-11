@@ -1,4 +1,6 @@
 const Url = require('url');
+const fs = require('fs');
+const gm = require('gm');
 
 
 /**
@@ -397,7 +399,7 @@ module.exports = {
                     out.push({
                         login: user.login,
                         name: user.fullName,
-                        image: imageLink,
+                        avatar: imageLink,
                     })
                 }
                 return res.ok(out);
@@ -406,8 +408,111 @@ module.exports = {
             return res.error(500, 'EtuUTTError', 'Unexpected EtuUTT answer format');
         })
         .catch((error) => {
-            console.log(error);
             return res.error(500, 'EtuUTTError', 'An error occurs during communications with the api of EtuUTT: ' + error);
         })
+    },
+
+    /**
+     * @api {post} /user/avatar/:id Upload avater of given user
+     * @apiName uploadAvatar
+     * @apiGroup User
+     *
+     * @apiDescription Upload avatar of the given user
+     *
+     * @apiParam {string} id User id
+     * @apiParam {file} avtar Avatar image, in jpg max 200x200px
+     *
+     * @apiUse badRequestError
+     * @apiUse forbiddenError
+     */
+    uploadAvatar: function (req, res) {
+        // Check permissions
+        if(!Team.can(req, 'user/admin') && !(Team.can(req, 'user/team'))) {
+            return res.error(403, 'forbidden', 'You are not authorized to create another user in this team.');
+        }
+
+        // Find target user
+        User.findOne({id: req.param('id')})
+        .exec((error, user) => {
+            if (error) {
+                return res.negotiate(error);
+            }
+            if(!user) {
+                return res.error(404, 'notfound', 'The requested user cannot be found');
+            }
+
+            // Check permissions 2
+            if(Team.can(req, 'user/team') && user.team != req.team.id) {
+                return res.error(403, 'forbidden', 'You are not authorized to update an user from this team.');
+            }
+
+            req.file('avatar').upload({
+                maxBytes: 10000000,
+                dirname: sails.config.appPath + '/assets/uploads/user/avatar/',
+                saveAs: user.id,
+            },
+            (error, uploadedFiles) => {
+                if(error) {
+                    return res.negotiate(err);
+                }
+
+                if (uploadedFiles.length === 0){
+                    return res.error(400, 'BadRequest', 'Missing avatar file');
+                }
+
+                // Resize and move avatar file
+                gm(sails.config.appPath + '/assets/uploads/user/avatar/' + user.id)
+                .resize(200, 200)
+                .noProfile()
+                .setFormat('jpg')
+                .compress('JPEG')
+                .write(sails.config.appPath + '/assets/uploads/user/avatar/' + user.id, (err) => {
+                    if(error) {
+                        // Delete file on error
+                        fs.unlink(sails.config.appPath + '/assets/uploads/user/avatar/' + user.id)
+                        return res.negotiate(err);
+                    }
+                    return res.ok();
+                });
+            });
+        });
+    },
+
+    /**
+     * @api {get} /user/avatar/:id Get avater of given user
+     * @apiName getAvatar
+     * @apiGroup User
+     *
+     * @apiDescription Get avatar of the given user. No authentication required.
+     * If the user or the avatar is not found, a default avatar will be shown
+     */
+    getAvatar: function (req, res) {
+        // Find target user
+        User.findOne({id: req.param('id')})
+        .exec((userError, user) => {
+            fs.access(sails.config.appPath + '/assets/uploads/user/avatar/' + req.param('id'), fs.constants.R_OK, (accessError) => {
+                if (userError || !user || accessError) {
+                    res.setHeader("Content-Disposition", "inline; filename=avatar.png");
+                    res.setHeader("Content-Type", "image/png");
+                    fs.createReadStream(sails.config.appPath + '/assets/images/default-avatar.png')
+                    .on('error', (error) => {
+                        sails.log.error('Error while streaming default avatar:', userError, accessError, error);
+                        res.end();
+                    })
+                    .pipe(res);
+                    return;
+                }
+
+                res.setHeader("Content-Disposition", "inline; filename=avatar.jpg");
+                res.setHeader("Content-Type", "image/jpeg");
+                fs.createReadStream(sails.config.appPath + '/assets/uploads/user/avatar/' + user.id)
+                .on('error', (error) => {
+                    sails.log.error('Error while streaming user avatar:', error);
+                    res.end();
+                })
+                .pipe(res);
+                return;
+            });
+        });
     },
 };
