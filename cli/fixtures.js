@@ -3,7 +3,7 @@
  *
  * This file will load fixtures into your database.
  *
- * See https://github.com/ungdev/flux2-server/wiki/Fixtures for more informations
+ * See https://github.com/ungdev/flux2-server/wiki/Fixtures for more information
  */
 
 const Sails = require('sails');
