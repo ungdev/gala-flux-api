@@ -43,6 +43,20 @@ module.exports = {
         alerts: {
             collection: "alert",
             via: "users"
+        },
+
+        // timestamp
+        lastConnection: {
+            type: 'integer',
+            defaultsTo: Date.now(),
+            required: true
+        },
+
+        // timestamp
+        lastDisconnection: {
+            type: 'integer',
+            defaultsTo: Date.now(),
+            required: true
         }
     },
 
