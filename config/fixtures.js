@@ -6,12 +6,14 @@
 
 module.exports.fixtures = {
 
-
     /**
      * Specify fixtures generation order    
      */
     order: [
         'Team',
         'User',
+        'BarrelType',
+        'Barrel',
     ],
+
 };

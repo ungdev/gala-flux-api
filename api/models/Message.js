@@ -41,7 +41,6 @@ module.exports = {
         return name.replace(/[^a-z0-9]/gi,'-').replace(/[-]+/gi,'-').toLowerCase();
     },
 
-
     fixtures: {
         // Fixtures of message from user that have post in their own public channel
         ownPublicChannel: function(callback) {
