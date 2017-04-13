@@ -14,6 +14,8 @@ module.exports.fixtures = {
         'User',
         'BarrelType',
         'Barrel',
+        'AlertButton',
+        'Alert'
     ],
 
 };
