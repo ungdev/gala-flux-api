@@ -39,6 +39,66 @@ module.exports = {
             type: "string"
         }
 
+    },
+
+    fixtures: {
+        generateLogAlertButtons: function(callback) {
+            // get the teams
+            Team.findOne({name: "Log"}).exec((error, team) => {
+                if(error) {
+                    callback(error);
+                }
+
+                let data = {
+                    "Technique": [
+                        {
+                            title: "Problème avec une tireuse",
+                            message: true,
+                            messagePlaceholder: "Quel est le problème ?"
+                        },
+                        {
+                            title: "Problème avec un fût",
+                            message: true,
+                            messagePlaceholder: "Quel est le problème ?"
+                        }
+                    ],
+                    "Manque": [
+                        {
+                            title: "Flutes de champagne",
+                            message: false,
+                            messagePlaceholder: ""
+                        },
+                        {
+                            title: "Sacs poubelle",
+                            message: false,
+                            messagePlaceholder: ""
+                        },
+                        {
+                            title: "Gobelets bière",
+                            message: false,
+                            messagePlaceholder: ""
+                        }
+                    ]
+                };
+
+                let result = {};
+
+                // loop through the data array
+                for (let category in data) {
+                    // loop through each item of this category
+                    let i = 0;
+                    for (let item of data[category]) {
+                        result[category + i] = Object.assign(item, {
+                            category,
+                            receiver: team
+                        });
+                        i++;
+                    }
+                }
+
+                return callback(null, result);
+            });
+        }
     }
 
 };
