@@ -20,7 +20,6 @@ module.exports = {
         { expiresIn: sails.config.jwt.expiresIn });
     },
 
-
     /**
      * verify - Assyncronously verify JWT validity and return associated user
      *
@@ -47,4 +46,4 @@ module.exports = {
             });
         });
     },
-}
+};
