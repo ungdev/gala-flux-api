@@ -66,6 +66,8 @@ module.exports = {
      */
     update: (req, res) => {
 
+        let checkState = false;
+
         // check permissions and parameters
         if (Team.can(req, 'barrel/admin')) {
             // an admin can update both place and state
@@ -102,6 +104,10 @@ module.exports = {
                     if (!isStateValid(req.param('state'), barrel.state)) {
                         return res.error(400, 'BadRequest', "You are not allowed to set the state with this value.");
                     }
+                    // check if an alert has to be sent or removed
+                    if ((barrel.state === "new" && req.param("state") === "opened") || (barrel.state === "opened" && req.param("state") === "new")) {
+                        checkState = true;
+                    }
                     // set the state
                     barrel.state = req.param('state');
                 }
@@ -111,7 +117,7 @@ module.exports = {
                     // the place can be null
                     if (req.param('place') === "null" || req.param('place') === null) {
                         barrel.place = null;
-                        return updateBarrel(barrel, req, res);
+                        return updateBarrel(barrel, req, res, checkState);
                     }
                     // if not null, check if the team exists
                     Team.findOne({id: req.param('place')})
@@ -125,10 +131,10 @@ module.exports = {
 
                             // the team exists, save the barrel with this new place
                             barrel.place = team;
-                            return updateBarrel(barrel, req, res);
+                            return updateBarrel(barrel, req, res, checkState);
                         });
                 } else {
-                    return updateBarrel(barrel, req, res);
+                    return updateBarrel(barrel, req, res, checkState);
                 }
 
             });
@@ -177,7 +183,93 @@ module.exports = {
 
 };
 
-function updateBarrel(barrel, req, res) {
+/**
+ * Check the remaining barrels of this type for the concerned bar.
+ * If 1 : send warning alert
+ * If 0 : send serious alert
+ *
+ * @param barrel
+ */
+function checkTeamStocks(barrel) {
+
+    // if there is a team, get all his barrels of this type
+    if (barrel.place) {
+
+        BarrelType.findOne({
+            id: barrel.type
+        })
+            .exec((error, type) => {
+                if (error) return;
+
+                // count how many new barrel of this type this the team still have
+                Barrel.count({
+                    place: barrel.place,
+                    type: type.id,
+                    state: "new"
+                })
+                    .exec((error, count) => {
+                        if (error) return;
+
+                        // if state is new, check if there is an alert to remove (if a missClick triggered an alert)
+                        if (barrel.state === "new") {
+                            // count how many barrels are news
+                            // if 2 or 1, an alert was created
+                            if (count < 3) {
+                                // Find the alert sent
+                                Alert.findOne({
+                                    severity: count === 2 ? "warning" : "serious",
+                                    category: "Manque auto",
+                                    sender: barrel.place
+                                })
+                                    .limit(1).sort({$natural:-1})
+                                    .exec((error, alert) => {
+                                        if (error || !alert) return;
+
+                                        Alert.destroy({id: alert.id}).exec((error) => {
+                                            if (error) return;
+
+                                            Alert.publishDestroy(alert.id);
+                                        });
+                                    });
+                            }
+                        } else {
+                            // if 1 or 0 remaining, create alert
+                            if (count < 2) {
+                                Alert.create({
+                                    sender: barrel.place,
+                                    severity: count === 1 ? "warning" : "serious",
+                                    title: "Stock : " + type.name,
+                                    category: "Manque auto"
+                                })
+                                    .exec((error, alert) => {
+                                        if (error) return;
+
+                                        // push this modification in the alert history
+                                        AlertHistory.pushToHistory(alert, (error, result) => {
+                                            if (error) return;
+
+                                            Alert.publishCreate(alert);
+                                            Alert.subscribe(req, [alert.id]);
+                                        });
+
+                                    });
+                            }
+                        }
+                    })
+
+            });
+    }
+}
+
+/**
+ * Save a barrel and push it to the history
+ *
+ * @param {object} barrel: the barrel to save
+ * @param {object} req: the request
+ * @param {object} res: the response
+ * @param {boolean} checkState: true if the barrel's team stocks have to be check
+ */
+function updateBarrel(barrel, req, res, checkState) {
 
     barrel.save((error) => {
         if (error) {
@@ -192,6 +284,10 @@ function updateBarrel(barrel, req, res) {
 
             Barrel.publishUpdate(barrel.id, barrel);
             Barrel.subscribe(req, [barrel.id]);
+
+            if (checkState) {
+                checkTeamStocks(barrel);
+            }
 
             return res.ok(barrel);
 

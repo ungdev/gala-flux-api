@@ -21,7 +21,7 @@ module.exports = {
         // the team targeted by the alert. (who can see it)
         receiver: {
             model: "team",
-            required: true
+            defaultsTo: null
         },
 
         // alert degree :
