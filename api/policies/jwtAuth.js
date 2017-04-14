@@ -10,7 +10,7 @@ module.exports = function (req, res, next) {
     let jwt;
 
     // If socket already authenticated
-    if(req.socket && req.socket.jwt) {
+    if (req.socket && req.socket.jwt) {
         jwt = req.socket.jwt;
     }
 
@@ -37,24 +37,24 @@ module.exports = function (req, res, next) {
 
 
     JwtService.verify(jwt)
-    .then((user) => {
-        req.user = user;
-        Team.findOne({id: user.team}).exec((error, team) => {
-            if(error) {
-                return res.error(500, 'NoTeam', 'We didn\'t find the team associated with the logged in user');
-            }
-            user.lastConnection = Date.now();
-            user.save((error) => {
-                if (error) {
-                    return res.negotiate(error);
+        .then((user) => {
+            req.user = user;
+            Team.findOne({id: user.team}).exec((error, team) => {
+                if(error) {
+                    return res.error(500, 'NoTeam', 'We didn\'t find the team associated with the logged in user');
                 }
-
-                req.team = team;
-                return next();
+                user.lastConnection = Date.now();
+                user.save((error) => {
+                    if (error) {
+                        return res.negotiate(error);
+                    }
+                    AlertService.checkTeamActivity(user.team);
+                    req.team = team;
+                    return next();
+                });
             });
-        });
-    })
-    .catch((error) => {
-        return res.error(500, 'InvalidJwt', 'The given JWT is not valid : ' + error);
-    })
+        })
+        .catch((error) => {
+            return res.error(500, 'InvalidJwt', 'The given JWT is not valid : ' + error);
+        })
 };

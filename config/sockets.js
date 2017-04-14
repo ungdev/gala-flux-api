@@ -127,13 +127,17 @@ module.exports.sockets = {
         JwtService.verify(socket.jwt)
             .then((user) => {
                 user.lastDisconnection = Date.now();
-                user.save();
+                user.save((error) => {
+                    if (error) {
+                        return res.negotiate(error);
+                    }
+                    AlertService.checkTeamActivity(user.team);
+                    return cb();
+                });
             })
             .catch((error) => {
                 return res.error(500, 'InvalidJwt', 'The given JWT is not valid : ' + error);
             });
-
-            return cb();
     },
 
     /***************************************************************************
