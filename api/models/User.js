@@ -101,7 +101,7 @@ module.exports = {
                         ip: '192.168.0.' + i,
                         name: 'PC',
                         team: team.id,
-                    }
+                    };
                     i++;
                 }
 

@@ -54,6 +54,7 @@ module.exports.routes = {
     'post /login/jwt': 'AuthController.jwtLogin',
     'get  /login/roles': 'AuthController.getRoles',
     'post /login/as/:id': 'AuthController.loginAs',
+    'post /logout': 'AuthController.logout',
 
     'get /user/etuutt': 'UserController.etuuttFind',
     'get /user/avatar/:id': 'UserController.getAvatar',

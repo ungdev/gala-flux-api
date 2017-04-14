@@ -27,6 +27,7 @@ module.exports = {
      * @return {Promise}    The promise that will give associated user on success
      */
     verify: function(jwt) {
+
         return new Promise((resolve, reject) => {
             return Jwt.verify(jwt, sails.config.jwt.secret, (error, decoded) => {
                 if(error) {
@@ -37,11 +38,12 @@ module.exports = {
                 User.findOne({
                     id: decoded.userId,
                 })
-                .exec((error, result) => {
+                .exec((error, user) => {
                     if(error) {
                         return reject(error);
                     }
-                    return resolve(result);
+
+                    return resolve(user);
                 });
             });
         });

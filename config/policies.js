@@ -28,6 +28,7 @@ module.exports.policies = {
         jwtLogin: true,
         getRoles: ['jwtAuth'],
         loginAs: ['jwtAuth'],
+        logout: ['jwtAuth'],
     },
 
     MessageController: {
