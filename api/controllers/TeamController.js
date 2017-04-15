@@ -67,7 +67,7 @@ module.exports = {
      * @apiSuccess {string} Array.team.role Role of the team
      */
     find: function (req, res) {
-        
+
         // check permissions
         if(!(Team.can(req, 'team/read') || Team.can(req, 'team/admin'))) {
             return res.error(403, 'forbidden', 'You are not authorized read team list');
@@ -161,7 +161,7 @@ module.exports = {
 
         // Check parameters
         if(!req.param('role') || !Array.isArray(sails.config.roles[req.param('role')])) {
-            return res.error(400, 'BadRequest', 'Unknown role.');
+            return res.error(400, 'UnknownRole', 'Unknown role.');
         }
 
         // Create team
