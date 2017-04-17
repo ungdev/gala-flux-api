@@ -179,6 +179,72 @@ module.exports = {
                     return res.ok();
                 });
             });
+    },
+
+    /**
+     * @api {put} /barrel/location
+     * @apiName updateLocation
+     * @apiGroup Barrel
+     * @apiDescription update the location of a list of barrels
+     *
+     * @apiParam {Array} barrels: The barrels to update
+     * @apiParem {string} location: the new location
+     *
+     * @apiUse forbiddenError
+     * @apiUse notFoundError
+     */
+    setLocation: function (req, res) {
+
+        // check permissions
+        if (!(Team.can(req, 'barrel/admin'))) {
+            return res.error(403, 'forbidden', "You are not authorized to update barrels's location.");
+        }
+
+        // check team
+        Team.findOne({id: req.param('location')})
+            .then(team => {
+                // if the location is not the log (null) and the asked team can't be found, return error
+                if (req.param('location') !== null && req.param('location') !== "null" && !team) {
+                    return res.error(403, 'forbidden', "The location is not valid.");
+                }
+
+                // prepare each update
+                let promises = [];
+                for (let i in req.param('barrels')) {
+                    promises.push(new Promise((resolve, reject) => {
+                        Barrel.findOne({id: req.param('barrels')[i].id})
+                            .then(barrel => {
+                                // update his location and save it
+                                barrel.place = req.param('location');
+                                barrel.save(error => {
+                                    if (error) return reject(error);
+
+                                    // log the barrel state
+                                    BarrelHistory.pushToHistory(barrel, (error, barrelHistory) => {
+                                        if (error) return reject(error);
+
+                                        Barrel.publishUpdate(barrel.id, barrel);
+                                        Barrel.subscribe(req, [barrel.id]);
+
+                                        checkTeamStocks(barrel);
+
+                                        return resolve(barrel);
+
+                                    });
+                                })
+                            })
+                            .catch(error => reject(error));
+                    }));
+                }
+
+                // run all promises
+                Promise.all(promises)
+                    .then(_ => res.ok())
+                    .catch(error => res.negotiate(error));
+
+            })
+            .catch(error => res.negotiate(error));
+
     }
 
 };
