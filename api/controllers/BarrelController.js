@@ -202,7 +202,9 @@ module.exports = {
 
         // check team
         Team.findOne({id: req.param('location')})
-            .then(team => {
+            .exec((error, team) => {
+                if (error) return res.negotiate(error);
+
                 // if the location is not the log (null) and the asked team can't be found, return error
                 if (req.param('location') !== null && req.param('location') !== "null" && !team) {
                     return res.error(403, 'forbidden', "The location is not valid.");
@@ -224,11 +226,10 @@ module.exports = {
                                         if (error) return reject(error);
 
                                         Barrel.publishUpdate(barrel.id, barrel);
-                                        Barrel.subscribe(req, [barrel.id]);
 
                                         checkTeamStocks(barrel);
 
-                                        return resolve(barrel);
+                                        return resolve(barrel.id);
 
                                     });
                                 })
@@ -239,11 +240,14 @@ module.exports = {
 
                 // run all promises
                 Promise.all(promises)
-                    .then(_ => res.ok())
-                    .catch(error => res.negotiate(error));
+                    .then(ids => {
 
-            })
-            .catch(error => res.negotiate(error));
+                        Barrel.subscribe(req, ids);
+
+                        return res.ok();
+                    })
+                    .catch(error => res.negotiate(error));
+            });
 
     }
 
