@@ -206,7 +206,7 @@ module.exports = {
      * @apiParam {string} name Display name of the user (required)
      * @apiParam {id} team Associated team ID (required)
      *
-     * @apiSuccess {User} user The user that you've juste updated
+     * @apiSuccess {User} user The user that you've just updated
      *
      * @apiUse badRequestError
      * @apiUse forbiddenError
