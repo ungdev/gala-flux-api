@@ -57,9 +57,7 @@ module.exports = {
      */
     ipLogin: function (req, res) {
 
-        User.attemptIpAuth({
-            ip: req.ip,
-        }, function (err, user) {
+        User.attemptIpAuth((req.ip ? req.ip : req.socket.handshake.address), (err, user) => {
             if (err) {
                 return res.negotiate(err);
             }
@@ -198,16 +196,23 @@ module.exports = {
                 user.refreshToken = tokenObj.refresh_token;
                 user.tokenExpiration = tokenObj.expires_at;
                 user.login = etuUTTUser.data.login;
-                if(!user.name) {
+                user.lastConnection = Date.now();
+                if (!user.name) {
                     user.name = etuUTTUser.data.fullName;
                 }
-                user.save();
+
+                user.save((error) => {
+                    if (error) return res.negotiate(error);
+
+                    AlertService.checkTeamActivity(user.team);
+                });
 
 
                 let jwt = JwtService.sign(user);
                 if(req.socket) {
                     req.socket.jwt = jwt;
                 }
+
                 return res.ok({jwt});
             });
         })
@@ -252,6 +257,7 @@ module.exports = {
             if(req.socket) {
                 req.socket.jwt = jwt;
             }
+
             return res.ok({jwt});
         })
         .catch((error) => {
@@ -331,4 +337,22 @@ module.exports = {
         return res.ok(sails.config.roles);
     },
 
+    /**
+     * @api {post} /logout Inform that a user is disconnected
+     * @apiName logout
+     * @apiGroup Authentication
+     * @apiDescription Will give the disconnected user
+     */
+    logout: function (req, res) {
+        const user = req.user;
+
+        user.lastDisconnection = Date.now();
+        user.save((error) => {
+            if (error) {
+                return res.negotiate(error);
+            }
+            AlertService.checkTeamActivity(user.team);
+            return res.ok();
+        });
+    }
 };

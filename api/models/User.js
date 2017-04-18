@@ -26,10 +26,6 @@ module.exports = {
             required: true,
         },
 
-        phone : {
-            type: 'string',
-        },
-
         team: {
             model: 'team',
             required: true,
@@ -38,9 +34,30 @@ module.exports = {
         accessToken : {
             type: 'string',
         },
+
         renewToken : {
             type: 'string',
         },
+
+        // alerts assigned to this user
+        alerts: {
+            collection: "alert",
+            via: "users"
+        },
+
+        // timestamp
+        lastConnection: {
+            type: 'integer',
+            defaultsTo: Date.now(),
+            required: true
+        },
+
+        // timestamp
+        lastDisconnection: {
+            type: 'integer',
+            defaultsTo: Date.now(),
+            required: true
+        }
     },
 
 
@@ -67,10 +84,7 @@ module.exports = {
         User.findOne({
             login: login,
         })
-        // If the database has no user, we create the first admin user with this login
-        .exec((error, result) => {
-            cb(error, result);
-        });
+        .exec(cb);
     },
 
     fixtures: {
@@ -87,7 +101,7 @@ module.exports = {
                         ip: '192.168.0.' + i,
                         name: 'PC',
                         team: team.id,
-                    }
+                    };
                     i++;
                 }
 
@@ -107,7 +121,6 @@ module.exports = {
                         result['Etu ' + team.name + ' ' + (n+1)] = {
                             login: faker.helpers.slugify(name).substr(0, 8),
                             name: name,
-                            phone: faker.phone.phoneNumber(),
                             team: team.id,
                         }
                     });

@@ -54,7 +54,19 @@ module.exports.routes = {
     'post /login/jwt': 'AuthController.jwtLogin',
     'get  /login/roles': 'AuthController.getRoles',
     'post /login/as/:id': 'AuthController.loginAs',
+    'post /logout': 'AuthController.logout',
+
+    'get /user/etuutt': 'UserController.etuuttFind',
+    'get /user/avatar/:id': 'UserController.getAvatar',
+    'post /user/avatar/:id': 'UserController.uploadAvatar',
 
     'get /message/channels': 'MessageController.getChannels',
-    
+
+    'post /alertbutton/alert': 'AlertButtonController.createAlert',
+
+    'post /alert/user/add': 'AlertController.addUser',
+    'post /alert/user/remove': 'AlertController.removeUser',
+
+    'post /barreltype/barrel': 'BarrelTypeController.createBarrel'
+
 };

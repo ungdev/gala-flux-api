@@ -8,7 +8,7 @@
 
 module.exports = function error (code, status, message, data) {
     if(typeof data === 'undefined') {
-        data = [];
+        data = {};
     }
     if(typeof data !== 'object') {
         throw new TypeError('`data` should be an object, `' + (typeof data) + '` given');

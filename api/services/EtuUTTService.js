@@ -15,5 +15,17 @@ module.exports = function(user) {
         accessToken: (user && user.accessToken ? user.accessToken : null),
         refreshToken: (user && user.refreshToken ? user.refreshToken : null),
         tokenExpiration: (user && user.tokenExpiration ? user.tokenExpiration : null),
+        tokenRefreshCallback: (accessToken, refreshToken, tokenExpiration) => {
+            if(user) {
+                user.accessToken = accessToken;
+                user.refreshToken = refreshToken;
+                user.tokenExpiration = tokenExpiration;
+                user.save((error) => {
+                    if (error) {
+                        sails.log.warn('Error while trying to save new etuutt token to user:', user, error)
+                    }
+                });
+            }
+        },
     });
 }

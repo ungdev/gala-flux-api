@@ -51,11 +51,6 @@ Sails.lift({}, (error) => {
             name: 'name',
         },
         {
-            message: 'Phone',
-            default: '03 25 71 76 74',
-            name: 'phone',
-        },
-        {
             type: 'list',
             message: 'Team',
             name: 'team',
@@ -85,7 +80,6 @@ Sails.lift({}, (error) => {
         .then((answers) => {
             let user = {
                 name: answers1.name,
-                phone: answers1.phone,
                 team: teamMap[answers1.team],
             }
             if(answers.login) {

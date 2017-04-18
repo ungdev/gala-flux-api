@@ -1,3 +1,5 @@
+const Jwt = require('jsonwebtoken');
+
 /**
  * WebSocket Server Settings
  * (sails.config.sockets)
@@ -106,12 +108,10 @@ module.exports.sockets = {
     * app's security.                                                          *
     *                                                                          *
     ***************************************************************************/
-    // beforeConnect: function(handshake, cb) {
-    //   // `true` allows the connection
-    //   return cb(null, true);
-    //
-    //   // (`false` would reject the connection)
-    // },
+    //  beforeConnect: function(handshake, cb) {
+    //      //console.log(handshake);
+    //      return cb(null, true);
+    //  },
 
 
     /***************************************************************************
@@ -122,10 +122,23 @@ module.exports.sockets = {
     * disconnects                                                              *
     *                                                                          *
     ***************************************************************************/
-    // afterDisconnect: function(session, socket, cb) {
-    //   // By default: do nothing.
-    //   return cb();
-    // },
+    afterDisconnect: function(session, socket, cb) {
+
+        JwtService.verify(socket.jwt)
+            .then((user) => {
+                user.lastDisconnection = Date.now();
+                user.save((error) => {
+                    if (error) {
+                        return res.negotiate(error);
+                    }
+                    AlertService.checkTeamActivity(user.team);
+                    return cb();
+                });
+            })
+            .catch((error) => {
+                return res.error(500, 'InvalidJwt', 'The given JWT is not valid : ' + error);
+            });
+    },
 
     /***************************************************************************
     *                                                                          *
