@@ -97,10 +97,10 @@ module.exports = {
                         return res.negotiate(error);
                     }
 
-                    Bottle.publishCreate(bottle);
-                    Bottle.subscribe(req, [bottle.id]);
+                    Bottle.publishCreate(bottleAction);
+                    Bottle.subscribe(req, [bottleAction.id]);
 
-                    return res.ok(bottle);
+                    return res.ok(bottleAction);
                 });
             })
         }

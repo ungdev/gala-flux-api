@@ -17,6 +17,7 @@ module.exports = {
       shortName: {
           type: 'string',
           required: true,
+          unique: true
       },
 
       quantityPerBox: {

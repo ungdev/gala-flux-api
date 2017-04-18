@@ -15,7 +15,7 @@ module.exports = {
       },
 
       bottleId : {
-          type: 'id',
+          type: 'string',
           required: true,
       },
 
