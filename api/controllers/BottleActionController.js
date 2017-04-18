@@ -18,7 +18,7 @@ module.exports = {
      * @apiSuccess {Array} Array An array of bottles actions
      * @apiSuccess {BottleAction} Array.bottleAction A bottle action object
      * @apiSuccess {string} Array.bottle.team Team which produced a bottle action
-     * @apiSuccess {id} Array.bottle.bottleId Id of the concerned bottle
+     * @apiSuccess {string} Array.bottle.bottleId Id of the concerned bottle
      * @apiSuccess {integer} Array.bottle.quantity Number of bottles sold or moved (can be negative)
      * @apiSuccess {string} Array.bottle.operation Operation performed on the bottle (sold or moved)
      */
@@ -50,6 +50,23 @@ module.exports = {
     },
 
 
+    /**
+     * @api {get} /bottleaction/find/:id Find one bottle action
+     * @apiName findOne
+     * @apiGroup BottleAction
+     * @apiDescription Find one bottle action based on its id
+     *
+     * @apiUse forbiddenError
+     * @apiUse notFoundError
+     *
+     * @apiParam {id} id Id of the bottle action you are looking for
+     *
+     * @apiSuccess {BottleAction} Array.bottleAction A bottle action object
+     * @apiSuccess {string} Array.bottle.team Team which produced a bottle action
+     * @apiSuccess {string} Array.bottle.bottleId Id of the concerned bottle
+     * @apiSuccess {integer} Array.bottle.quantity Number of bottles sold or moved (can be negative)
+     * @apiSuccess {string} Array.bottle.operation Operation performed on the bottle (sold or moved)
+     */
 
     findOne: function (req, res) {
         // Check permissions
@@ -74,6 +91,23 @@ module.exports = {
             return res.error(403, 'forbidden', 'You are not authorized to read bottle action data');
         }
     },
+
+    /**
+     * @api {post} /bottleaction/create Create a bottle action
+     * @apiName create
+     * @apiGroup BottleAction
+     * @apiDescription Create a bottle action
+     *
+     * @apiParam {string} team Name of the team performing the bottle action
+     * @apiParam {string} bottleId Id of the bottle
+     * @apiParam {integer} quantity Number of bottles concerned (can be negative)
+     * @apiParam {string} operation Operation performed on the bottle (purchased or moved)
+     *
+     * @apiSuccess {BottleAction} bottleAction The bottle action you've just created
+     *
+     * @apiUse badRequestError
+     * @apiUse forbiddenError
+     */
 
     create: function (req, res) {
         // Check permissions
