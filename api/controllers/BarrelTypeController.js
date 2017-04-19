@@ -69,28 +69,6 @@ module.exports = {
             return res.error(403, 'forbidden', 'You are not authorized to create an Barrel Type.');
         }
 
-        // Check parameters
-        let missingParameters = [];
-        if (!req.param('name')) {
-            missingParameters.push('name');
-        }
-        if (!req.param('shortName')) {
-            missingParameters.push('shortName');
-        }
-        if (req.param('liters') === undefined) {
-            missingParameters.push('liters');
-        }
-        if (req.param('supplierPrice') === undefined) {
-            missingParameters.push('supplierPrice');
-        }
-        if (req.param('sellPrice') === undefined) {
-            missingParameters.push('sellPrice');
-        }
-        // return error with missing parameters if there are missing parameters
-        if (missingParameters.length) {
-            return res.error(400, 'BadRequest', 'Unknown parameters : ' + missingParameters.join(', '));
-        }
-
         // Create the BarrelType
         BarrelType.create({
             name: req.param('name'),
@@ -210,20 +188,20 @@ module.exports = {
 
     /**
      * @api {post} /barreltype/barrel
-     * @apiName create barrel
+     * @apiName Set barrel count
      * @apiGroup BarrelType
-     * @apiDescription Create a barrel from a barrel type
+     * @apiDescription Set the number of barrels from a barrel type
      *
      * @apiParam {string} id : The id of the barrel type (required)
-     * @apiParam {integer} number : the number of barrels to create (1 by default) (optional)
+     * @apiParam {integer} number : the number of barrels to set for this Type
      *
-     * @apiSuccess {Barrel} The created barrel
+     * @apiSuccess {null} This endpoint return nothing, if you want to whole new list of barrel ask `find`
      *
      * @apiUse badRequestError
      * @apiUse forbiddenError
      * @apiUse notFoundError
      */
-    createBarrel: (req, res) => {
+    setBarrelNumber: (req, res) => {
 
         // Check permissions
         if(!Team.can(req, 'barrelType/admin')) {
@@ -234,8 +212,8 @@ module.exports = {
         if (!req.param('id')) {
             return res.error(400, 'BadRequest', "Missing barrel type id");
         }
-        if (req.param('number') && (!Number.isInteger(req.param('number')) || req.param('number') < 1)) {
-            return res.error(400, 'BadRequest', "The number of barrels to create must be a positive integer.");
+        if (req.param('number') && (parseInt(req.param('number')) < 0 || parseInt(req.param('number')) > 500)) {
+            return res.error(400, 'BadRequest', "The number of barrels to create must be a positive integer (less than 500).");
         }
 
         // get the barrel type
@@ -251,81 +229,77 @@ module.exports = {
                 return res.error(404, 'notFound', "Can't find the requested barrel type.");
             }
 
-            // search the highest num (integer part of the reference) for this type of barrel
+            // Get current list of barrel
             Barrel.find({
                 type: barrelType.id
-            }).sort({num:-1}).limit(1).exec((error, result) => {
+            }).exec((error, barrels) => {
                 if (error) {
                     return res.negotiate(error);
                 }
 
-                let lastBarrel = result.length ? result[0] : null;
-
-                // get the reference number (0 if there is no barrel of this type)
-                let number = lastBarrel && lastBarrel.num ? lastBarrel.num : 0;
-
+                // Insert if the barrel doesn't exists
                 let toInsert = [];
-                // prepare the barrels to insert in the database
-                const nbBarrelsToCreate = req.param('number') ? req.param('number') : 1;
-                for (let i = 0; i < nbBarrelsToCreate ; i++) {
-                    number++;
-                    toInsert.push({
-                        type: barrelType,
-                        reference: barrelType.shortName + number,
-                        num: number
+                for (let i = 1; i <= parseInt(req.param('number')); i++) {
+                    // Find in barrel list
+                    let found = false;
+                    for (let index in barrels) {
+                        if(barrels[index].num == i) {
+                            found = true;
+                            delete barrels[index];
+                            break;
+                        }
+                    }
+
+                    // If not found, add to insert list
+                    if(!found) {
+                        toInsert.push({
+                            type: req.param('id'),
+                            num: i,
+                            reference: barrelType.shortName + i,
+                        })
+                    }
+                }
+
+                // Add id of what's left to the delete list
+                let toDelete = [];
+                for (let barrel of barrels) {
+                    if(barrel) {
+                        toDelete.push(barrel.id);
+                    }
+                }
+
+                // Insert
+                Barrel.create(toInsert).exec((error, barrels) => {
+                    if (error) {
+                        return res.negotiate(error);
+                    }
+
+                    // Publish information to client
+                    Barrel.publishCreate(barrels);
+
+                    // log the list of new barrels
+                    BarrelHistory.pushToHistory(barrels, (error, barrelHistory) => {
+                        // if an error happened, call the callback with the error
+                        if (error) {
+                            return res.negotiate(error);
+                        }
+
+                        // Delete what's left
+                        Barrel.destroy({id: toDelete}).exec((error) => {
+                            if (error) {
+                                return res.negotiate(error);
+                            }
+
+                            // Publish information to client
+                            for (let id of toDelete) {
+                                Barrel.publishDestroy(id);
+                            }
+
+                            return res.ok();
+                        });
                     });
-                }
-
-                return saveBarrels(toInsert, [], (error, data) => {
-                    return error ? res.negotiate(error) : res.ok({data});
                 });
-
             });
         });
-
     }
-
 };
-
-/**
- * Save an array of barrels recursively
- *
- * @param inputs        => the barrels to save
- * @param outputs       => the barrels saved
- * @param callback      => callback
- * @returns callback
- */
-function saveBarrels(inputs, outputs, callback) {
-
-    // get the first element
-    let input = inputs.shift();
-
-    // if there is a first element (inputs was not empty)
-    if (input) {
-        // save this new barrel in the database
-        Barrel.create(input).exec((error, barrel) => {
-            // if an error happened, call the callback with the error
-            if (error) {
-                return callback(error);
-            }
-
-            // log the new barrel
-            BarrelHistory.pushToHistory(barrel, (error, barrelHistory) => {
-                // if an error happened, call the callback with the error
-                if (error) {
-                    return callback(error);
-                }
-
-                // save the result and continue
-                outputs.push(barrel);
-                return saveBarrels(inputs, outputs, callback);
-
-            });
-
-        });
-    } else {
-        // all the barrels has been saved, exit the function
-        return callback(null, outputs);
-    }
-
-}

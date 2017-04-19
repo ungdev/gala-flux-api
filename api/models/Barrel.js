@@ -21,7 +21,6 @@ module.exports = {
         reference: {
             type: "string",
             required: true,
-            unique: true
         },
 
         // (number of barrels of this type + 1)
