@@ -71,4 +71,5 @@ module.exports.routes = {
 
     'put /barrel/location': 'BarrelController.setLocation'
 
+    'get /bottleAction': 'BottleActionController.find',
 };
