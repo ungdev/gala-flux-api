@@ -1,5 +1,5 @@
 /**
- * Bottle.js
+ * BottleAction.js
  *
  * @description :: TODO: You might write a short summary of how this model works and what it represents here.
  * @docs        :: http://sailsjs.org/documentation/concepts/models-and-orm/models
@@ -9,35 +9,25 @@ module.exports = {
 
   attributes: {
 
-      name : {
+      team : {
+          model: 'team',
+          required: true,
+      },
+
+      bottleId : {
           type: 'string',
           required: true,
       },
 
-      shortName: {
+      quantity : {
+          type: 'integer',
+          required: true,
+          defaultsTo: '1',
+      },
+
+      operation : {
           type: 'string',
-          required: true,
-          unique: true
-      },
-
-      quantityPerBox: {
-          type: 'integer',
-          required: true,
-      },
-
-      sellPrice: {
-          type: 'integer',
-          required: true,
-      },
-
-      supplierPrice: {
-          type: 'integer',
-          required: true,
-      },
-
-      originalStock: {
-          type: 'integer',
-          required: true,
+          enum: ['purchased', 'moved'],
       },
 
   },

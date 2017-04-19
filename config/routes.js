@@ -69,7 +69,5 @@ module.exports.routes = {
 
     'put /barrel/location': 'BarrelController.setLocation',
 
-    'post /barreltype/barrel': 'BarrelTypeController.createBarrel',
     'post /barreltype/barrel': 'BarrelTypeController.setBarrelNumber',
-
 };
