@@ -17,7 +17,7 @@ Sails.lift({port: 1338}, (error) => {
     sails.log.info('=========== Fixture generation ===========');
     sails.log.info('This command will generate fixtures in your database. ' +
         'It\'s recommended to clear the database before starting this command. ' +
-        'The server have to be stopped before this command starts.');
+        'The server has to be stopped before this command starts.');
     inquirer.prompt({
         type: 'confirm',
         message: 'Do you want to continue ?',
@@ -25,8 +25,6 @@ Sails.lift({port: 1338}, (error) => {
         name: 'continue',
     }).then(function (answers) {
         if(answers.continue) {
-
-
             if (error) {
                 return console.log('Error: Sails server failed to start: ', error);
             }
@@ -47,7 +45,6 @@ Sails.lift({port: 1338}, (error) => {
             });
             sails.log.info('Generated Model list:', models);
 
-
             async.eachSeries(models, (model, cb) => {
                 sails.log.info();
                 sails.log.info();
@@ -59,15 +56,13 @@ Sails.lift({port: 1338}, (error) => {
 
                 // Generate final fixture list for this model
                 let fixtures = require('../api/models/' + model).fixtures;
-                if(!fixtures) {
+                if (!fixtures) {
                     sails.log.warn('Model ' + model + ' doesn\'t have any fixtures.')
                     cb();
-                }
-                else if(typeof fixtures !== 'object') {
+                } else if(typeof fixtures !== 'object') {
                     sails.log.error('Model ' + model + ' as a `fixtures` attributes but is not an object.')
                     cb();
-                }
-                else {
+                } else {
                     async.eachOfSeries(fixtures, (item, key, cb) => {
                         if(typeof item === 'function') {
                             sails.log.debug('Execution of', key);
@@ -86,7 +81,6 @@ Sails.lift({port: 1338}, (error) => {
                             cb();
                         }
                     }, () => {
-
                         // Items creation
                         sails.log.info(Object.keys(fixtures).length, 'element(s) will be created');
                         async.eachOfSeries(fixtures, (item, key, cb) => {
@@ -119,8 +113,7 @@ Sails.lift({port: 1338}, (error) => {
                 }
                 sails.lower();
             });
-        }
-        else {
+        } else {
             sails.lower();
         }
     });

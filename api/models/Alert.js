@@ -7,6 +7,7 @@
  * @docs        :: http://sailsjs.org/documentation/concepts/models-and-orm/models
  *
  */
+const faker = require('faker');
 
 module.exports = {
 
@@ -66,7 +67,34 @@ module.exports = {
             dominant: true
         }
 
+    },
+
+    fixtures: {
+        alertsPerTeam: function(callback) {
+            Team.findOne({name: 'Flux admins'}).exec((err, admin) => {
+                if (err) {
+                    callback(error);
+                }
+                Team.find().exec((error, teams) => {
+                    if (error) {
+                        callback(error);
+                    }
+                    let result = {};
+                    let i = 1;
+                    for (team of teams) {
+                        result['alert ' + team.name] = {
+                            sender: team.id,
+                            receiver: admin.id,
+                            severity: "warning",
+                            title: 'Title: ' + faker.hacker.phrase(),
+                            category: "refill",
+                            message: 'Message: ' + faker.hacker.phrase()
+                        }
+                        i++;
+                    }
+                    return callback(null, result);
+                });
+            });
+        }
     }
-
 };
-

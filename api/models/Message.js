@@ -9,7 +9,6 @@ const faker = require('faker');
 module.exports = {
 
     attributes: {
-
         text : {
             type: 'mediumtext',
             required: true,
@@ -40,7 +39,7 @@ module.exports = {
     /**
      * Convert a string to channel name
      *
-     * @param  {String}  name Original name like team name or group name
+     * @param  {String} name Original name like team name or group name
      * @return {String} return channel name (without #)
      */
     toChannel: function (name) {
