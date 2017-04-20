@@ -38,19 +38,41 @@ module.exports = {
 
     },
 
-    pushToHistory(barrel, callback) {
 
-        BarrelHistory.create({
-            barrelId: barrel.id,
-            type: barrel.type,
-            reference: barrel.reference,
-            place: barrel.place,
-            state: barrel.state
-        }).exec((error, barrelHistory) => {
+    /**
+     * Will a barrel state to the history
+     *
+     * @param  {Barrel|Array} barrel   Can be a single object or an array of object for bulk operations
+     * @param  {type} callback description
+     * @return {type}          description
+     */
+    pushToHistory(barrel, callback) {
+        let data = [];
+        if(Array.isArray(barrel)) {
+            for (let item of barrel) {
+                data.push({
+                    barrelId: item.id,
+                    type: item.type,
+                    reference: item.reference,
+                    place: item.place,
+                    state: item.state
+                })
+            }
+        }
+        else {
+            data = {
+                barrelId: barrel.id,
+                type: barrel.type,
+                reference: barrel.reference,
+                place: barrel.place,
+                state: barrel.state
+            };
+        }
+
+        BarrelHistory.create(data).exec((error, barrelHistory) => {
             callback(error, barrelHistory);
         });
 
     }
 
 };
-

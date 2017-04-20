@@ -86,7 +86,6 @@ module.exports = {
         }
         // return error with missing parameters if there are missing parameters
         if (missingParameters.length) {
-            console.log(missingParameters.join(', '));
             return res.error(400, 'BadRequest', 'Unknown parameters : ' + missingParameters.join(', '));
         }
 
@@ -309,5 +308,3 @@ module.exports = {
     },
 
 };
-
-
