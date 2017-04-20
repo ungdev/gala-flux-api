@@ -20,7 +20,7 @@ module.exports = {
     find: (req, res) => {
 
         // Check permissions
-        if (!(Team.can(req, 'barrel/admin') || Team.can(req, 'barrel/restricted'))) {
+        if (!(Team.can(req, 'barrel/admin') || Team.can(req, 'barrel/restricted') || Team.can(req, 'barrel/read'))) {
             return res.error(403, 'forbidden', 'You are not authorized to read the barrel types.');
         }
 
@@ -82,7 +82,6 @@ module.exports = {
             }
 
             BarrelType.publishCreate(barrelType);
-            BarrelType.subscribe(req, [barrelType.id]);
 
             return res.ok(barrelType);
         });
@@ -137,7 +136,6 @@ module.exports = {
                     }
 
                     BarrelType.publishUpdate(barrelType.id, barrelType);
-                    BarrelType.subscribe(req, [barrelType.id]);
 
                     return res.ok(barrelType);
                 });

@@ -24,6 +24,11 @@
  *
  * - bottle/read : Can read all bottles
  * - bottle/admin : Can read/write on all bottles
+ *
+ * - barrelType/admin : Can read create update and delete barrel types
+ * - barrel/admin : Can update state on any barrel (but not create or delete barrel), read all barrel and read all barrelType
+ * - barrel/read : Can read all barrels and barreltype
+ * - barrel/restricted : Can update state of barrel located in its own team, read your own barrels and read all barrelType
  */
 
 
@@ -52,7 +57,8 @@ module.exports.roles = {
         'message/group',
         'message/private',
         'alert/read',
-        'alert/update'
+        'alert/update',
+        'team/admin',
     ],
     coord: [
         'message/admin',

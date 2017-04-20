@@ -96,7 +96,6 @@ module.exports.policies = {
     BarrelController: {
         find: ['jwtAuth'],
         update:  ['jwtAuth'],
-        destroy:  ['jwtAuth'],
         setLocation:  ['jwtAuth'],
     }
 

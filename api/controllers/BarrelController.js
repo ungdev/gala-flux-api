@@ -20,7 +20,7 @@ module.exports = {
     find: (req, res) => {
 
         // Check permissions
-        if (!(Team.can(req, 'barrel/admin') || Team.can(req, 'barrel/restricted'))) {
+        if (!(Team.can(req, 'barrel/admin') || Team.can(req, 'barrel/read') || Team.can(req, 'barrel/restricted'))) {
             return res.error(403, 'forbidden', 'You are not authorized to read barrels.');
         }
 
@@ -30,11 +30,22 @@ module.exports = {
             where = req.allParams().filters;
         }
         // if the requester is not admin, show only his team's barrels
-        if (!(Team.can(req, 'barrel/admin'))) {
-            where.place = req.team.id;
+        if (Team.can(req, 'barrel/restricted')) {
+            if(Object.keys(where).length >= 1) {
+                where = {
+                    place: req.team.id,
+                    or: where,
+                };
+            }
+            else {
+                where = {
+                    place: req.team.id,
+                };
+            }
         }
-    
-        
+
+        console.log(where);
+
         // Find barrels
         Barrel.find(where)
             .exec((error, barrels) => {
@@ -43,7 +54,14 @@ module.exports = {
                 }
 
                 Barrel.subscribe(req, _.pluck(barrels, 'id'));
-                Barrel.watch(req);
+
+                // Subscribe to new items according to your rights
+                if(Team.can(req, 'barrel/admin') || Team.can(req, 'barrel/read')) {
+                    Barrel.watch(req);
+                }
+                else {
+                    sails.sockets.join('Barrel/' + req.team.id);
+                }
 
                 return res.ok(barrels);
             });
@@ -142,46 +160,6 @@ module.exports = {
     },
 
     /**
-     * @api {delete} /barrel/:id
-     * @apiName destroy
-     * @apiGroup Barrel
-     * @apiDescription Delete the given Barrel
-     *
-     * @apiParam {string} id : Id of the barrel to delete
-     *
-     * @apiUse forbiddenError
-     * @apiUse notFoundError
-     */
-    destroy: function (req, res) {
-
-        // Check permissions
-        if(!Team.can(req, 'barrel/admin')) {
-            return res.error(403, 'forbidden', 'You are not authorized to delete a barrel.');
-        }
-
-        // Find the barrel
-        Barrel.findOne({id: req.param('id')})
-            .exec((error, barrel) => {
-                if (error) {
-                    return res.negotiate(error);
-                }
-                if(!barrel) {
-                    return res.error(404, 'notfound', 'The requested barrel cannot be found');
-                }
-
-                Barrel.destroy({id: barrel.id}).exec((error) => {
-                    if (error) {
-                        return res.negotiate(error);
-                    }
-
-                    Barrel.publishDestroy(barrel.id);
-
-                    return res.ok();
-                });
-            });
-    },
-
-    /**
      * @api {put} /barrel/location
      * @apiName updateLocation
      * @apiGroup Barrel
@@ -226,6 +204,11 @@ module.exports = {
                                         if (error) return reject(error);
 
                                         Barrel.publishUpdate(barrel.id, barrel);
+                                        sails.sockets.broadcast('Barrel/' + barrel.place, 'Barrel', {
+                                            verb: 'updated',
+                                            id: barrel.id,
+                                            data: barrel,
+                                        });
 
                                         checkTeamStocks(barrel);
 
@@ -353,7 +336,11 @@ function updateBarrel(barrel, req, res, checkState) {
             }
 
             Barrel.publishUpdate(barrel.id, barrel);
-            Barrel.subscribe(req, [barrel.id]);
+            sails.sockets.broadcast('Barrel/' + barrel.place, 'Barrel', {
+                verb: 'updated',
+                id: barrel.id,
+                data: barrel,
+            });
 
             if (checkState) {
                 checkTeamStocks(barrel);
