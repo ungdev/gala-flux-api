@@ -66,7 +66,7 @@ module.exports = {
     update: (req, res) => {
 
         // Check permissions
-        if (!(Team.can(req, 'alert/update'))) {
+        if (!(Team.can(req, 'alert/update') || (Team.can(req, 'alert/restricted')))) {
             return res.error(403, 'forbidden', 'You are not authorized to update alerts.');
         }
 
@@ -92,10 +92,11 @@ module.exports = {
                     return res.error(404, 'notFound', 'The requested alert cannot be found');
                 }
 
-                // Check if the requester is in the receiver team
-                if (req.team.id != alert.receiver) {
+                // if the request can only update from his team, check the sender
+                // else, check if the requester is in the receiver team
+                if ((Team.can(req, 'alert/restricted') && alert.sender !== req.team.id) || (!Team.can(req, 'alert/restricted') && req.team.id != alert.receiver)) {
                     return res.error(403, 'forbidden', 'You are not allowed to update this alert.');
-                }
+                } 
 
                 // Update if the severity is right
                 if (req.param('severity') == 'done' && (alert.severity == 'warning' || alert.severity == 'serious')
