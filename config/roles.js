@@ -29,6 +29,9 @@
  * - barrel/admin : Can update state on any barrel (but not create or delete barrel), read all barrel and read all barrelType
  * - barrel/read : Can read all barrels and barreltype
  * - barrel/restricted : Can update state of barrel located in its own team, read your own barrels and read all barrelType
+ * 
+ * - alert/restricted : Can only read the alerts his team sent
+ * - alert/read : Can only read the alert for his team
  */
 
 
@@ -40,7 +43,8 @@ module.exports.roles = {
         'bottleAction/create',
         'alertButton/read',
         'alertButton/create',
-        'barrel/restricted'
+        'barrel/restricted',
+        'alert/restricted'
     ],
     log: [
         'message/public',

@@ -21,14 +21,21 @@ module.exports = {
     find: (req, res) => {
 
         // Check permissions
-        if (!(Team.can(req, 'alert/read'))) {
+        if (!(Team.can(req, 'alert/read') || (Team.can(req, 'alert/restricted')))) {
             return res.error(403, 'forbidden', 'You are not authorized to read alerts.');
         }
 
+        let where = {};
+        if (Team.can(req, 'alert/restricted')) {
+            // alert sent by his team
+            where.sender = req.team.id;
+        } else {
+            // alert for his team
+            where.receiver = req.team.id;
+        }
+
         // Find alert where the receiver is the requester's team
-        Alert.find({
-            receiver: req.team.id
-        }).populate('users').exec((error, alerts) => {
+        Alert.find(where).populate('users').exec((error, alerts) => {
                 if (error) {
                     return res.negotiate(error);
                 }
