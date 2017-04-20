@@ -29,6 +29,7 @@ module.exports = {
         if (Team.can(req, 'alert/restricted')) {
             // alert sent by his team
             where.sender = req.team.id;
+            where.severity = {$ne: "done"};
         } else {
             // alert for his team
             where.receiver = req.team.id;
