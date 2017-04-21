@@ -53,7 +53,7 @@ module.exports = {
      * @api {put} /alert/:id
      * @apiName update
      * @apiGroup Alert
-     * @apiDescription Update the given alert. Only the severity can be updated.
+     * @apiDescription Update the given alert. Only the severity and the message can be updated (depending of the requester's role).
      *
      * @apiParam {string} id : The id of the alert to update(required)
      * @apiParam {string} severity : The alert severity (required)
@@ -72,15 +72,11 @@ module.exports = {
         }
 
         // Check parameters
-        let missingParameters = [];
         if (!req.param('id')) {
-            missingParameters.push('id');
+            return res.error(400, 'BadRequest', "Missing 'id' parameter.");
         }
-        if (!req.param('severity')) {
-            missingParameters.push('severity');
-        }
-        if (missingParameters.length) {
-            return res.error(400, 'BadRequest', 'Unknown parameters : ' + missingParameters.join(', '));
+        if (!req.param('severity') && !req.param('message')) {
+            return res.error(400, 'BadRequest', "Nothing to update.");
         }
 
         // get the Alert to update
@@ -99,13 +95,24 @@ module.exports = {
                     return res.error(403, 'forbidden', 'You are not allowed to update this alert.');
                 } 
 
-                // Update if the severity is right
-                if (req.param('severity') == 'done' && (alert.severity == 'warning' || alert.severity == 'serious')
-                    || req.param('severity') == 'serious' && alert.severity == 'warning') {
-                    alert.severity = req.param('severity');
-                } else {
-                    // can't set severity with this value
-                    return res.error(400, 'BadRequest', "Can't set severity to " + req.param('severity'));
+                if (req.param('severity')) {
+                    // Update if the severity is right
+                    if (req.param('severity') == 'done' && (alert.severity == 'warning' || alert.severity == 'serious')
+                        || req.param('severity') == 'serious' && alert.severity == 'warning') {
+                        alert.severity = req.param('severity');
+                    } else {
+                        // can't set severity with this value
+                        return res.error(400, 'BadRequest', "Can't set severity to " + req.param('severity'));
+                    }
+                }
+                
+                if (req.param('message')) {
+                    // only the sender can update the message of his alert
+                    if (Team.can(req, 'alert/restricted')) {
+                        alert.message = req.param('message');                        
+                    } else {
+                         return res.error(403, 'forbidden', 'You are not allowed to update the message of this alert.');
+                    }
                 }
 
                 alert.save((error) => {
