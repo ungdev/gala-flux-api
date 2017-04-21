@@ -174,20 +174,26 @@ module.exports = {
                 return res.error(404, 'notfound', 'The requested alert cannot be found');
             }
 
-            // assign a new user to this alert.
-            alert.users.add(req.param('user'));
+            User.findOne({id: req.param('user')}).exec((error, user) => {
+                
+                // assign a new user to this alert.
+                console.log(alert.users);
+                alert.users.add(user);
 
-            // Save the alert, creating the new association in the join table
-            alert.save((error) => {
-                if (error) {
-                    return res.negotiate(error);
-                }
+                // Save the alert, creating the new association in the join table
+                alert.save((error) => {
+                    if (error) {
+                        return res.negotiate(error);
+                    }
 
-                Alert.publishUpdate(alert.id, alert);
-                Alert.subscribe(req, [alert.id]);
+                    Alert.publishUpdate(alert.id, alert);
+                    Alert.subscribe(req, [alert.id]);
 
-                return res.ok(alert);
+                    return res.ok(alert);
+                });
+
             });
+
         });
 
     },
