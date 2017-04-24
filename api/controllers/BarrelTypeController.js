@@ -175,14 +175,9 @@ module.exports = {
                     .exec((error) => {
                         if (error) return res.negotiate(error);
 
-                        Barrel.update({type: barrelType.id}, {typeName: barrelType.name, type: null})
-                            .exec((error, updated) => {
-                                if (error) return res.negotiate(error);
+                        BarrelType.publishDestroy(barrelType.id);
 
-                                BarrelType.publishDestroy(barrelType.id);
-
-                                return res.ok();
-                            });
+                        return res.ok();
                     });
             });
     },

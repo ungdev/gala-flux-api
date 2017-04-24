@@ -60,6 +60,21 @@ module.exports = {
         }
     },
 
+    /**
+     * Before removing a User from the database, update the message he sent
+     *
+     * @param {object} criteria: contains the query with the user id
+     * @param {function} cb: the callback
+     */
+    beforeDestroy: function(criteria, cb) {
+        User.findOne({id: criteria.where.id})
+            .exec((error, user) => {
+                Message.update({senderUser: user.id}, {senderUser: null, senderUserName: user.name})
+                    .exec((error, updated) => {
+                        cb();
+                    });
+            });
+    },
 
     /**
      * Check validness of a login using the provided ip

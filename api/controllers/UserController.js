@@ -306,14 +306,9 @@ module.exports = {
                 .exec((error) => {
                     if (error) return res.negotiate(error);
 
-                    Message.update({senderUser: user.id}, {senderUser: null, senderUserName: user.name})
-                        .exec((error, updated) => {
-                            if (error) return res.negotiate(error);
+                    User.publishDestroy(user.id);
 
-                            User.publishDestroy(user.id);
-
-                            return res.ok();
-                        });
+                    return res.ok();
                 });
         });
     },

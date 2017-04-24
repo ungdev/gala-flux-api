@@ -298,14 +298,9 @@ module.exports = {
                     .exec((error) => {
                         if (error) return res.negotiate(error);
 
-                        Alert.update({button: alertButton.id}, {buttonTitle: alertButton.title, button: null})
-                            .exec((error, updated) => {
-                                if (error) return res.negotiate(error);
+                        AlertButton.publishDestroy(alertButton.id);
 
-                                AlertButton.publishDestroy(alertButton.id);
-
-                                return res.ok();
-                            });
+                        return res.ok();
                     });
             });
     },

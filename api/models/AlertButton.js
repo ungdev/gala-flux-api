@@ -42,6 +42,22 @@ module.exports = {
 
     },
 
+    /**
+     * Before removing an AlertButton from the database, update the alerts created by this button
+     *
+     * @param {object} criteria: contains the query with the button id
+     * @param {function} cb: the callback
+     */
+    beforeDestroy: function(criteria, cb) {
+        AlertButton.findOne({id: criteria.where.id})
+            .exec((error, alertButton) => {
+                Alert.update({button: alertButton.id}, {buttonTitle: alertButton.title, button: null})
+                    .exec((error, updated) => {
+                        cb();
+                    });
+            });
+    },
+
     fixtures: {
         generateLogAlertButtons: function(callback) {
             // get the teams
