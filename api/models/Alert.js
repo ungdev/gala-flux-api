@@ -54,6 +54,11 @@ module.exports = {
             model: "alertbutton"
         },
 
+        // If the button was deleted, his title will be saved in this attribute
+        buttonTitle: {
+            type: "string"
+        },
+
         // users on this alert
         users: {
             collection: "user",

@@ -34,6 +34,7 @@ module.exports = {
         },
 
         // if a message is required, a placeholder can be display to the user.
+        // if a message is required, a placeholder can be display to the user.
         // this placeholder can be a question, for example.
         messagePlaceholder: {
             type: "string"

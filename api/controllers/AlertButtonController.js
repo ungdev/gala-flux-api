@@ -288,22 +288,25 @@ module.exports = {
         // Find the alert button
         AlertButton.findOne({id: req.param('id')})
             .exec((error, alertButton) => {
-                if (error) {
-                    return res.negotiate(error);
-                }
+                if (error) return res.negotiate(error);
+
                 if(!alertButton) {
                     return res.error(404, 'notfound', 'The requested alert button cannot be found');
                 }
 
-                AlertButton.destroy({id: alertButton.id}).exec((error) => {
-                    if (error) {
-                        return res.negotiate(error);
-                    }
+                AlertButton.destroy({id: alertButton.id})
+                    .exec((error) => {
+                        if (error) return res.negotiate(error);
 
-                    AlertButton.publishDestroy(alertButton.id);
+                        Alert.update({button: alertButton.id}, {buttonTitle: alertButton.title, button: null})
+                            .exec((error, updated) => {
+                                if (error) return res.negotiate(error);
 
-                    return res.ok();
-                });
+                                AlertButton.publishDestroy(alertButton.id);
+
+                                return res.ok();
+                            });
+                    });
             });
     },
 
