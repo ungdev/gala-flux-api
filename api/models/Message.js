@@ -17,7 +17,10 @@ module.exports = {
 
         senderUser: {
             model: 'user',
-            required: true,
+        },
+
+        senderUserName: {
+            type: "string"
         },
 
         senderTeam: {

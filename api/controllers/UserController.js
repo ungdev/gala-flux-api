@@ -302,15 +302,19 @@ module.exports = {
                 return res.error(403, 'forbidden', 'You are not authorized to delete an user from this team.');
             }
 
-            User.destroy({id: user.id}).exec((error) => {
-                if (error) {
-                    return res.negotiate(error);
-                }
+            User.destroy({id: user.id})
+                .exec((error) => {
+                    if (error) return res.negotiate(error);
 
-                User.publishDestroy(user.id);
+                    Message.update({senderUser: user.id}, {senderUser: null, senderUserName: user.name})
+                        .exec((error, updated) => {
+                            if (error) return res.negotiate(error);
 
-                return res.ok();
-            });
+                            User.publishDestroy(user.id);
+
+                            return res.ok();
+                        });
+                });
         });
     },
 
