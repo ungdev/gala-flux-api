@@ -67,13 +67,12 @@ module.exports = {
      * @param {function} cb: the callback
      */
     beforeDestroy: function(criteria, cb) {
-        User.findOne({id: criteria.where.id})
-            .exec((error, user) => {
-                Message.update({senderUser: user.id}, {senderUser: null, senderUserName: user.name})
-                    .exec((error, updated) => {
-                        cb();
-                    });
-            });
+        User.find(criteria).exec((error, users) => {
+            for (let user of users) {
+                updateUserMessages(user);
+            }
+            cb();
+        });
     },
 
     /**
@@ -146,3 +145,17 @@ module.exports = {
         },
     },
 };
+
+/**
+ * Update the Messages sent by a given user
+ *
+ * @param {object} user
+ * @return {boolean|error}: true is success, the error is failure
+ */
+function updateUserMessages(user) {
+    Message.update({senderUser: user.id}, {senderUser: null, senderUserName: user.name})
+        .exec((error, updated) => {
+            if (error) return error;
+            return true;
+        });
+}

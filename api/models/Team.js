@@ -35,6 +35,24 @@ module.exports = {
         },
     },
 
+    /**
+     * Before removing a Team from the database, update the users and messages linked to this team
+     *
+     * @param {object} criteria: contains the query with the team id
+     * @param {function} cb: the callback
+     */
+    beforeDestroy: function(criteria, cb) {
+        Team.findOne({id: criteria.where.id})
+            .exec((error, team) => {
+                Message.update({senderTeam: team.id}, {senderTeam: null, senderTeamName: team.name})
+                    .exec((error, updated) => {
+                        User.destroy({team: team.id})
+                            .exec(error => {
+                                cb();
+                            });
+                    });
+            });
+    },
 
     /**
      * Check if team has the given permission

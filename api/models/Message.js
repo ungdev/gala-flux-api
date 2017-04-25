@@ -16,7 +16,7 @@ module.exports = {
         },
 
         senderUser: {
-            model: 'user',
+            model: 'user'
         },
 
         senderUserName: {
@@ -24,8 +24,11 @@ module.exports = {
         },
 
         senderTeam: {
-            model: 'team',
-            required: true,
+            model: 'team'
+        },
+
+        senderTeamName: {
+            type: "string"
         },
 
         channel: {
