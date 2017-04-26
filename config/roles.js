@@ -29,11 +29,15 @@
  * - barrel/admin : Can update state on any barrel (but not create or delete barrel), read all barrel and read all barrelType
  * - barrel/read : Can read all barrels and barreltype
  * - barrel/restricted : Can update state of barrel located in its own team, read your own barrels and read all barrelType
+ *
+ * - ui/admin : Can see admin panel. If not set, the user will be thrown on bar interface
  */
 
 
 module.exports.roles = {
     bar: [
+        'user/read',
+        'team/read',
         'message/oneChannel',
         'bottle/read',
         'bottleAction/read',
@@ -77,6 +81,7 @@ module.exports.roles = {
         'alert/read',
         'alert/update',
         'barrelType/admin',
-        'barrel/admin'
+        'barrel/admin',
+        'ui/admin',
     ],
 };
