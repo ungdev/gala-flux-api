@@ -1,23 +1,15 @@
 # flux2-server
 
-a [Sails](http://sailsjs.org) application
+Sever side of the communication system created for the Gala UTT
 
 ## Steps for dev installation
 
 * Clone the repo
 * `npm install`
 * Copy `/config/local.js.dist` to `/config/local.js` and configure it.
-* Try to run the server a first time : `npm start`
+* Try to run the server a first time : `npm run dev`
 
-## Create an admin account
-To create an admin account from command line, the server has to be stopped. Then run thoses two commands and follow the instructions.
-
-```
-node cli/createTeam.js # Not needed if you already fill the database with fixtures
-node cli/createUser.js
-```
-
-## Fill the database
+### Fill the database
 To fill the database with half-random fixtures, run the following command.
 
 ```
@@ -45,4 +37,14 @@ rm deploy_key deploy_key.pub
 
 # Add and commit encrypted deploy_key
 git add deploy_key.enc
+```
+
+
+## Create an admin account
+To start to use the application, you need at least one admin user.
+To create an admin account from command line, the server has to be stopped. Then run thoses two commands and follow the instructions.
+
+```
+node cli/createTeam.js # Not needed if you already fill the database with fixtures
+node cli/createUser.js
 ```
