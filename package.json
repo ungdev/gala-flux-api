@@ -2,7 +2,7 @@
   "name": "flux2-server",
   "private": true,
   "version": "0.0.0",
-  "description": "a Sails application",
+  "description": "Flux2 server",
   "keywords": [],
   "dependencies": {
     "apidoc": "^0.17.5",
@@ -30,11 +30,20 @@
     "sails": "~0.12.13",
     "sails-disk": "~0.10.9",
     "sails-mongo": "^0.12.2",
-    "simple-oauth2": "^1.1.0"
+    "simple-oauth2": "^1.1.0",
+    "faker": "^4.1.0"
+  },
+  "engines": {
+    "node": "7.6"
   },
   "scripts": {
+    "heroku-postbuild": "node_modules/.bin/grunt prod",
+    "heroku-prebuild": "printenv",
+    "build": "node_modules/.bin/grunt prod",
+    "start": "NODE_ENV=production node app",
+    "test": "NODE_ENV=production node cli/test",
     "debug": "node --inspect app.js",
-    "start": "node_modules/.bin/grunt dev"
+    "dev": "node_modules/.bin/grunt dev"
   },
   "main": "app.js",
   "repository": {
@@ -42,8 +51,5 @@
     "url": "git://github.com/alabate/flux2-server.git"
   },
   "author": "alabate",
-  "license": "",
-  "devDependencies": {
-    "faker": "^4.1.0"
-  }
+  "license": ""
 }

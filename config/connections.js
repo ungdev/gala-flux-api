@@ -28,9 +28,9 @@ module.exports.connections = {
     * Installed by default.                                                    *
     *                                                                          *
     ***************************************************************************/
-    localDiskDb: {
-        adapter: 'sails-disk'
-    },
+    // localDiskDb: {
+    //     adapter: 'sails-disk'
+    // },
 
     /***************************************************************************
     *                                                                          *
@@ -56,13 +56,18 @@ module.exports.connections = {
     * Run: npm install sails-mongo                                             *
     *                                                                          *
     ***************************************************************************/
-    fluxMongodbServer: {
+    mongoDev: {
         adapter: 'sails-mongo',
         host: 'localhost',
         port: 27017,
         // user: 'username', //optional
         // password: 'password', //optional
         database: 'flux'
+    },
+
+    mongoProd: {
+        adapter: 'sails-mongo',
+        url: process.env.MONGO_URL || 'mongodb://localhost:27017/flux',
     },
 
     /***************************************************************************

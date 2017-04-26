@@ -1,0 +1,33 @@
+language: node_js
+sudo: false
+node_js:
+    - 7
+services: mongodb
+
+env:
+    global:
+        - DOKKU_HOST=ung.utt.fr
+        - PROJECT_NAME=flux2-server
+
+cache:
+    yarn: true
+    directories:
+        - node_modules
+
+script:
+    # Try to build and start
+    - yarn run build
+    - yarn run test
+    # Set up ssh key
+    - openssl aes-256-cbc -K $encrypted_799a7c5f264a_key -iv $encrypted_799a7c5f264a_iv -in deploy_key.enc -out deploy_key -d
+    - chmod 600 deploy_key
+    - mv deploy_key ~/.ssh/id_rsa
+    - eval $(ssh-agent)
+    - ssh-add ~/.ssh/id_rsa
+    # SSH config
+    - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
+    # Add dokku to known hosts
+    - ssh-keyscan -H $DOKKU_HOST >> ~/.ssh/known_hosts
+    # Deploy
+    - git remote add dokku dokku@$DOKKU_HOST:$PROJECT_NAME
+    - git push dokku HEAD:master -f
