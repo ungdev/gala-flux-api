@@ -15,4 +15,4 @@ script:
     - yarn run test
 deploy:
     - provider: script
-        script: deploy.sh
+      script: deploy.sh
