@@ -60,6 +60,20 @@ module.exports = {
         }
     },
 
+    /**
+     * Before removing a User from the database, update the message he sent
+     *
+     * @param {object} criteria: contains the query with the user id
+     * @param {function} cb: the callback
+     */
+    beforeDestroy: function(criteria, cb) {
+        User.find(criteria).exec((error, users) => {
+            for (let user of users) {
+                updateUserMessages(user);
+            }
+            cb();
+        });
+    },
 
     /**
      * Check validness of a login using the provided ip
@@ -131,3 +145,17 @@ module.exports = {
         },
     },
 };
+
+/**
+ * Update the Messages sent by a given user
+ *
+ * @param {object} user
+ * @return {boolean|error}: true is success, the error is failure
+ */
+function updateUserMessages(user) {
+    Message.update({sender: user.id}, {sender: null, senderName: user.name})
+        .exec((error, updated) => {
+            if (error) return error;
+            return true;
+        });
+}

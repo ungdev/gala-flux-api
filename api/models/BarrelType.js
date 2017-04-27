@@ -43,6 +43,22 @@ module.exports = {
 
     },
 
+    /**
+     * Before removing a BarrelType from the database, update the barrels of this type
+     *
+     * @param {object} criteria: contains the query with the type id
+     * @param {function} cb: the callback
+     */
+    beforeDestroy: function(criteria, cb) {
+        BarrelType.findOne({id: criteria.where.id})
+            .exec((error, barrelType) => {
+                Barrel.update({type: barrelType.id}, {typeName: barrelType.name, type: null})
+                    .exec((error, updated) => {
+                        cb();
+                    });
+            });
+    },
+
     fixtures: {
         beer1: {
             name: "Maredsous",
