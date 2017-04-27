@@ -43,8 +43,7 @@ module.exports = {
      * @apiSuccess {Array} Array An array of message
      * @apiSuccess {Message} Array.mesage A message object
      * @apiSuccess {String} Array.mesage.text Message content
-     * @apiSuccess {id} Array.mesage.senderUser Sender User id
-     * @apiSuccess {id} Array.mesage.senderTeam Sender Team id
+     * @apiSuccess {id} Array.mesage.sender Sender User id
      * @apiSuccess {Team} Array.mesage.channel Target channel name without the #
      * * `public:[teamname]` : For subject concerning the team. [teamname] will be converted alphanumeric only
      * * `private:[teamname]` : For internal private messages inside the team
@@ -166,7 +165,7 @@ module.exports = {
             }
         }
         // No permission
-        else if(!Team.can(req, 'message/admin')) {
+        else if(!Team.can(req, 'message/admin') && !Team.can(req, 'message/public') && !Team.can(req, 'message/oneChannel')) {
             return res.error(403, 'forbidden', 'You are not authorized to send any messages');
         }
 
@@ -180,8 +179,7 @@ module.exports = {
 
         // Create message
         Message.create({
-            senderUser: req.user,
-            senderTeam: req.team,
+            sender: req.user,
             text: req.param('text'),
             channel: channel,
         }).exec((error, message) => {
@@ -197,10 +195,10 @@ module.exports = {
             };
 
             // Publish
-            sails.sockets.broadcast(channel, 'message', data);
+            sails.sockets.broadcast('message/' + channel, 'message', data);
 
             let prefix = channel.substr(0, channel.indexOf(':'));
-            sails.sockets.broadcast(prefix + ':*', 'message', data);
+            sails.sockets.broadcast('message/' + prefix + ':*', 'message', data);
 
             Message.publishCreate(message);
 
@@ -218,45 +216,50 @@ module.exports = {
      * @apiSuccess {Array} list An array of channel name (without #)
      */
     getChannels: function (req, res) {
-        let list = [];
+        let list = new Set();
 
         // Receive #group:[groupname] and #[teamname] but can send only in #[teamname]
         if(Team.can(req, 'message/oneChannel')) {
-            list.push('public:'+Message.toChannel(req.team.name));
-            list.push('group:'+Message.toChannel(req.team.group));
+            list.add('public:'+Message.toChannel(req.team.name));
+            list.add('group:'+Message.toChannel(req.team.group));
             return res.ok(list);
         }
         else if(Team.can(req, 'message/admin') || Team.can(req, 'message/public')) {
             Team.find().exec((error, teams) => {
                 // Public
-                for (team of teams) {
-                    list.push('public:'+Message.toChannel(team.name));
+                for (let team of teams) {
+                    list.add('public:'+Message.toChannel(team.name));
                 }
 
                 // Group
                 if(Team.can(req, 'message/group') || Team.can(req, 'message/admin')) {
-                    for (team of teams) {
-                        list.push('group:'+Message.toChannel(team.group));
+                    for (let team of teams) {
+                        list.add('group:'+Message.toChannel(team.group));
                     }
                 }
                 else {
-                    list.push('group:'+Message.toChannel(req.team.group));
+                    list.add('group:'+Message.toChannel(req.team.group));
                 }
 
                 // Private
                 if(Team.can(req, 'message/private')) {
-                    list.push('private:'+Message.toChannel(req.team.name));
+                    list.add('private:'+Message.toChannel(req.team.name));
                 }
                 else if(Team.can(req, 'message/admin')){
-                    for (team of teams) {
-                        list.push('private:'+Message.toChannel(team.name));
+                    for (let team of teams) {
+                        if(Team.can(team, 'message/private') || Team.can(team, 'message/admin')) {
+                            list.add('private:'+Message.toChannel(team.name));
+                        }
                     }
                 }
 
-                return res.ok(list);
+                let out = [...list];
+                out.sort();
+                return res.ok(out);
             })
         }
-
-        return res.error(403, 'forbidden', 'You are not authorized to read any channel');
+        else {
+            return res.error(403, 'forbidden', 'You are not authorized to read any channel');
+        }
     },
 };

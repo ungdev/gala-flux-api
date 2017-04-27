@@ -153,7 +153,7 @@ module.exports = {
  * @return {boolean|error}: true is success, the error is failure
  */
 function updateUserMessages(user) {
-    Message.update({senderUser: user.id}, {senderUser: null, senderUserName: user.name})
+    Message.update({sender: user.id}, {sender: null, senderName: user.name})
         .exec((error, updated) => {
             if (error) return error;
             return true;
