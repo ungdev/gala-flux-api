@@ -165,22 +165,20 @@ module.exports = {
         // Find the barrel type
         BarrelType.findOne({id: req.param('id')})
             .exec((error, barrelType) => {
-                if (error) {
-                    return res.negotiate(error);
-                }
+                if (error) return res.negotiate(error);
+
                 if(!barrelType) {
                     return res.error(404, 'notfound', 'The requested barrel type cannot be found');
                 }
 
-                BarrelType.destroy({id: barrelType.id}).exec((error) => {
-                    if (error) {
-                        return res.negotiate(error);
-                    }
+                BarrelType.destroy({id: barrelType.id})
+                    .exec((error) => {
+                        if (error) return res.negotiate(error);
 
-                    BarrelType.publishDestroy(barrelType.id);
+                        BarrelType.publishDestroy(barrelType.id);
 
-                    return res.ok();
-                });
+                        return res.ok();
+                    });
             });
     },
 

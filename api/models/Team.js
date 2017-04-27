@@ -35,6 +35,39 @@ module.exports = {
         },
     },
 
+    /**
+     * Before removing a Team from the database
+     *
+     * @param {object} criteria: contains the query with the team id
+     * @param {function} cb: the callback
+     */
+    beforeDestroy: function(criteria, cb) {
+        // find the team
+        Team.findOne({id: criteria.where.id}).exec((error, team) => {
+            // update the messages of this team
+            Message.update({senderTeam: team.id}, {senderTeam: null, senderTeamName: team.name}).exec((error, updated) => {
+                // destroy the users of this team
+                User.destroy({team: team.id}).exec(error => {
+                    // update the alerts in the history where the sender is this team
+                    AlertHistory.update({sender: team.id}, {sender: null, senderName: team.name}).exec((error, updated) => {
+                        // update the alerts in the history where the receiver is this team
+                        AlertHistory.update({receiver: team.id}, {receiver: null, receiverName: team.name}).exec((error, updated) => {
+                            // destroy the alerts where the sender is this team
+                            Alert.destroy({sender: team.id}).exec(error => {
+                                // destroy the alerts where the sender is this team
+                                Alert.destroy({receiver: team.id}).exec(error => {
+                                    // destroy the alert buttons where the receiver is this team
+                                    AlertButton.destroy({receiver: team.id}).exec(error => {
+                                        cb();
+                                    });
+                                });
+                            });
+                        });
+                    });
+                });
+            });
+        });
+    },
 
     /**
      * Check if team has the given permission

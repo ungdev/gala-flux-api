@@ -17,13 +17,19 @@ module.exports = {
         },
 
         sender: {
-            model: "team",
-            required: true
+            model: "team"
+        },
+
+        senderName: {
+            type: "string"
         },
 
         receiver: {
-            model: "team",
-            required: true
+            model: "team"
+        },
+
+        receiverName: {
+            type: "string"
         },
 
         severity: {
