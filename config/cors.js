@@ -47,7 +47,7 @@ module.exports.cors = {
     *                                                                          *
     ***************************************************************************/
 
-    origin: 'http://localhost:8080,https://flux.uttnetgroup.net,https://bar.utt.fr',
+    origin: 'http://localhost:8080,https://flux.uttnetgroup.fr,https://flux-dev.uttnetgroup.fr,https://bar.utt.fr',
 
     /***************************************************************************
     *                                                                          *

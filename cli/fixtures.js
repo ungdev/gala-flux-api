@@ -10,7 +10,7 @@ const Sails = require('sails');
 const fs = require('fs');
 const inquirer = require('inquirer');
 
-Sails.lift({}, (error) => {
+Sails.lift({port: 1338}, (error) => {
 
     sails.log.info();
     sails.log.info();
