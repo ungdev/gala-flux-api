@@ -56,7 +56,10 @@ module.exports = {
                             Alert.destroy({sender: team.id}).exec(error => {
                                 // destroy the alerts where the sender is this team
                                 Alert.destroy({receiver: team.id}).exec(error => {
-                                    cb();
+                                    // destroy the alert buttons where the receiver is this team
+                                    AlertButton.destroy({receiver: team.id}).exec(error => {
+                                        cb();
+                                    });
                                 });
                             });
                         });
