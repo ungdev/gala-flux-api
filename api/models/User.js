@@ -68,7 +68,6 @@ module.exports = {
      * @param  {Function} cb
      */
     attemptIpAuth: function (ip, cb) {
-        console.log('Try to authenticate ip', ip);
         User.findOne({
             ip: ip,
         })
