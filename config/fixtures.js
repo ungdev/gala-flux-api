@@ -15,7 +15,8 @@ module.exports.fixtures = {
         'BarrelType',
         'Barrel',
         'AlertButton',
-        'Alert'
+        'Alert',
+        'BottleType'
     ],
 
 };
