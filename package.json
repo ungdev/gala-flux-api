@@ -37,8 +37,6 @@
     "node": "7.6"
   },
   "scripts": {
-    "heroku-postbuild": "node_modules/.bin/grunt prod",
-    "heroku-prebuild": "printenv",
     "build": "node_modules/.bin/grunt prod",
     "start": "NODE_ENV=production node app",
     "test": "NODE_ENV=production node cli/test",
