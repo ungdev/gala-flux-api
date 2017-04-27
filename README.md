@@ -39,6 +39,12 @@ rm deploy_key deploy_key.pub
 git add deploy_key.enc
 ```
 
+On the dokku app, you can configure EtuUTT api configuration and the JWT secret
+
+```
+dokku config:set flux2-server ETUUTT_ID= ETUUTT_SECRET= JWT_SECRET=
+dokku config:set flux2-server-dev ETUUTT_ID= ETUUTT_SECRET= JWT_SECRET=
+```
 
 ## Create an admin account
 To start to use the application, you need at least one admin user.

@@ -6,7 +6,7 @@
 
 const Sails = require('sails');
 
-Sails.lift({}, (error) => {
+Sails.lift({port: 1338}, (error) => {
     if(error) {
         process.exit(1);
     }
