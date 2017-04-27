@@ -13,8 +13,12 @@ module.exports = {
 
         // the barrel's type
         type: {
-            model: "barreltype",
-            required: true
+            model: "barreltype"
+        },
+
+        // If the barrel type is deleted, his name will be saved in this attribute
+        typeName: {
+            type: "string"
         },
 
         // unique reference : type's shortName + (number of barrels of this type + 1)
