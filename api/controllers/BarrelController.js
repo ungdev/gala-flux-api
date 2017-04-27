@@ -44,8 +44,6 @@ module.exports = {
             }
         }
 
-        console.log(where);
-
         // Find barrels
         Barrel.find(where)
             .exec((error, barrels) => {
