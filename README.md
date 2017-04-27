@@ -4,10 +4,11 @@ Sever side of the communication system created for the Gala UTT
 
 ## Steps for dev installation
 
+* Install [Yarn](https://yarnpkg.com/lang/en/docs/install/) and NodeJS 7
 * Clone the repo
-* `npm install`
+* `yarn install`
 * Copy `/config/local.js.dist` to `/config/local.js` and configure it.
-* Try to run the server a first time : `npm run dev`
+* Try to run the server a first time : `yarn dev`
 
 ### Fill the database
 To fill the database with half-random fixtures, run the following command.
