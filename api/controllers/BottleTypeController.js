@@ -27,7 +27,7 @@ module.exports = {
 
     find: function (req, res) {
         // Check permissions
-        if(Team.can(req, 'bottletype/read') || Team.can(req, 'bottletype/admin')) {
+        if(Team.can(req, 'bottleType/read') || Team.can(req, 'bottleType/admin')) {
             BottleType.find()
                 .exec((error, bottletype) => {
                     if (error) {
@@ -66,7 +66,7 @@ module.exports = {
      */
     findOne: function (req, res) {
         // Check permissions
-        if(Team.can(req, 'bottletype/read') || Team.can(req, 'bottletype/admin')) {
+        if(Team.can(req, 'bottleType/read') || Team.can(req, 'bottleType/admin')) {
 
             // Find bottletype
             BottleType.findOne({id: req.param('id')})
@@ -108,7 +108,7 @@ module.exports = {
      */
     create: function (req, res) {
         // Check permissions
-        if(!Team.can(req, 'bottletype/admin')) {
+        if(!Team.can(req, 'bottleType/admin')) {
             return res.error(403, 'forbidden', 'You are not authorized to create a bottletype.');
         }
 
@@ -153,7 +153,7 @@ module.exports = {
      */
     destroy: function (req, res) {
         // Check permissions
-        if(!Team.can(req, 'bottletype/admin')) {
+        if(!Team.can(req, 'bottleType/admin')) {
             return res.error(403, 'forbidden', 'You are not authorized to delete a bottletype.');
         }
 
@@ -200,7 +200,7 @@ module.exports = {
      */
     update: function (req, res) {
         // Check permissions
-        if(!Team.can(req, 'bottletype/admin')) {
+        if(!Team.can(req, 'bottleType/admin')) {
             return res.error(403, 'forbidden', 'You are not authorized to update a bottletype.');
         }
 

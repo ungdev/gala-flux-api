@@ -42,5 +42,32 @@ module.exports = {
 
     },
 
+    fixtures: {
+        bottleType1: {
+            name: "La cuvée du patron",
+            shortName: "CP",
+            quantityPerBox: 4,
+            supplierPrice: 6.00,
+            sellPrice: 40.00,
+            originalStock: 80
+        },
+        bottleType2: {
+            name: "Cire de beauprès",
+            shortName: "CB",
+            quantityPerBox: 6,
+            supplierPrice: 8.00,
+            sellPrice: 70.00,
+            originalStock: 120
+        },
+        bottleType3: {
+            name: "Le pas du templier",
+            shortName: "PT",
+            quantityPerBox: 12,
+            supplierPrice: 20.00,
+            sellPrice: 100.00,
+            originalStock: 30
+        },
+    }
+
 };
 
