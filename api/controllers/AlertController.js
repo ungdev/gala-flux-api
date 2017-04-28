@@ -32,7 +32,12 @@ module.exports = {
             where.severity = {$ne: "done"};
         } else {
             // alert for his team
-            where.receiver = req.team.id;
+            where = {
+                or: [
+                    { receiver: req.team.id },
+                    { receiver: null }
+                ]
+            };
         }
 
         // Find alert where the receiver is the requester's team
