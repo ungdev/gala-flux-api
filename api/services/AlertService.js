@@ -54,7 +54,6 @@ module.exports = {
                                         if (error) return false;
 
                                         Alert.publishCreate(alert);
-                                        Alert.subscribe(req, [alert.id]);
                                     });
 
                                 });

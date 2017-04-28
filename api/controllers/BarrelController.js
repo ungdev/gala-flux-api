@@ -300,7 +300,6 @@ function checkTeamStocks(barrel) {
                                             if (error) return;
 
                                             Alert.publishCreate(alert);
-                                            Alert.subscribe(req, [alert.id]);
                                         });
 
                                     });
