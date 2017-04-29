@@ -73,7 +73,7 @@ module.exports.policies = {
     AlertController: {
         find: ['jwtAuth'],
         update:  ['jwtAuth'],
-        updateAssignerUsers:  ['jwtAuth'],
+        updateAssignedUsers:  ['jwtAuth'],
     },
 
     AlertButtonController: {
