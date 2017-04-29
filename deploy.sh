@@ -1,7 +1,7 @@
 #!/bin/bash
 DOKKU_HOST=ung.utt.fr
-DOKKU_PROD=flux2-server
-DOKKU_DEV=flux2-server-dev
+DOKKU_PROD=api.flux.uttnetgroup.fr
+DOKKU_DEV=api.flux-dev.uttnetgroup.fr
 
 if [[ -n $encrypted_799a7c5f264a_key ]] ; then
     # Set up ssh key
@@ -22,4 +22,3 @@ if [[ -n $encrypted_799a7c5f264a_key ]] ; then
     fi
     git push dokku HEAD:refs/heads/master -f
 fi
-
