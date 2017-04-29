@@ -71,6 +71,7 @@ module.exports = {
      */
     update: (req, res) => {
 
+
         // Check permissions
         if (!(Team.can(req, 'alert/update') || (Team.can(req, 'alert/restricted')))) {
             return res.error(403, 'forbidden', 'You are not authorized to update alerts.');
@@ -96,18 +97,17 @@ module.exports = {
 
                 // if the request can only update from his team, check the sender
                 // else, check if the requester is in the receiver team
-                if ((Team.can(req, 'alert/restricted') && alert.sender !== req.team.id) || (!Team.can(req, 'alert/restricted') && req.team.id != alert.receiver)) {
+                if ((Team.can(req, 'alert/restricted') && alert.sender !== req.team.id) || (!Team.can(req, 'alert/restricted') && (alert.receiver !== null && req.team.id != alert.receiver))) {
                     return res.error(403, 'forbidden', 'You are not allowed to update this alert.');
-                } 
+                }
 
                 if (req.param('severity')) {
                     // Update if the severity is right
-                    if (req.param('severity') == 'done' && (alert.severity == 'warning' || alert.severity == 'serious')
-                        || req.param('severity') == 'serious' && alert.severity == 'warning') {
-                        alert.severity = req.param('severity');
-                    } else {
-                        // can't set severity with this value
+                    if (req.param('severity') === 'done' && alert.severity !== 'done') {
+                        // can't set severity withhis value
                         return res.error(400, 'BadRequest', "Can't set severity to " + req.param('severity'));
+                    } else {
+                        alert.severity = req.param('severity');
                     }
                 }
                 
@@ -138,6 +138,57 @@ module.exports = {
                     });
                 });
             });
+
+    },
+
+    /**
+     * @api {put} /alert/:id/users
+     * @apiName updateAssignedUsers
+     * @apiGroup Alert
+     * @apiDescription Update the list of users assigned to this alert
+     *
+     * @apiParam {string} id : The id of the alert to update (required)
+     * @apiParam {string} users : The new users list (required)
+     *
+     * @apiSuccess {Alert} The alert that you've just updated
+     *
+     * @apiUse badRequestError
+     * @apiUse forbiddenError
+     * @apiUse notFoundError
+     */
+    updateAssignedUsers: (req, res) => {
+        console.log("okok");
+        // Check permissions
+        if (!(Team.can(req, 'alert/update'))) {
+            return res.error(403, 'forbidden', 'You are not authorized to update alerts.');
+        }
+
+        // Check parameters
+        let missingParameters = [];
+        if (!req.param('id')) missingParameters.push('id');
+        if (!req.param('users')) missingParameters.push('users');
+        if (missingParameters.length) {
+            return res.error(400, 'BadRequest', 'Unknown parameters : ' + missingParameters.join(', '));
+        }
+
+        // find the requested Alert
+        Alert.findOne({id: req.param('id')}).exec((error, alert) => {
+            if (error) {
+                return res.negotiate(error);
+            }
+            if (!alert) {
+                return res.error(404, 'notfound', 'The requested alert cannot be found');
+            }
+
+
+            console.log("assigned : ", alert.users);
+            // users to add
+            //let added = req.param('users').filter(user )
+            // users to remove
+
+            return res.ok("ok");
+
+        });
 
     },
 
