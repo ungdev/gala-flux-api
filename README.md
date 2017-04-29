@@ -43,8 +43,8 @@ git add deploy_key.enc
 On the dokku app, you can configure EtuUTT api configuration and the JWT secret
 
 ```
-dokku config:set api.flux.uttnetgroup.fr ETUUTT_ID= ETUUTT_SECRET= JWT_SECRET=
-dokku config:set api.flux-dev.uttnetgroup.fr ETUUTT_ID= ETUUTT_SECRET= JWT_SECRET=
+dokku config:set api.flux.uttnetgroup.fr DOKKU_APP_NAME=api.flux.uttnetgroup.fr ETUUTT_ID= ETUUTT_SECRET= JWT_SECRET=
+dokku config:set api.flux-dev.uttnetgroup.fr DOKKU_APP_NAME=api.flux-dev.uttnetgroup.fr ETUUTT_ID= ETUUTT_SECRET= JWT_SECRET=
 ```
 
 ## Create an admin account
