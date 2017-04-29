@@ -42,6 +42,27 @@ module.exports = {
 
     },
 
+    /**
+     * Before removing a bottle from the database
+     *
+     * @param {object} criteria: contains the query with the bottle id
+     * @param {function} cb: the callback
+     */
+    beforeDestroy: function(criteria, cb) {
+        BottleType.find(criteria).exec((error, bottleTypes) => {
+            if(error) return cb(error);
+            // Execute set of rules for each deleted user
+            async.each(bottleTypes, (bottleType, cb) => {
+                async.parallel([
+
+                    // update the bottleAction where the bottleId is this bottleType
+                    cb => BottleAction.update({bottleId: bottleType.id}, {team: null}).exec(cb),
+
+                ], cb);
+            }, cb);
+        });
+    },
+
     fixtures: {
         bottleType1: {
             name: "La cuvée du patron",
@@ -70,4 +91,3 @@ module.exports = {
     }
 
 };
-

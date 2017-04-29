@@ -55,11 +55,6 @@ module.exports = {
             model: "alertbutton"
         },
 
-        // If the button is deleted, his title will be saved in this attribute
-        buttonTitle: {
-            type: "string"
-        },
-
         // users on this alert
         users: {
             collection: "user",
@@ -68,6 +63,29 @@ module.exports = {
         }
 
     },
+
+
+    /**
+     * Before removing a Alert from the database
+     *
+     * @param {object} criteria: contains the query with the alert id
+     * @param {function} cb: the callback
+     */
+    beforeDestroy: function(criteria, cb) {
+        Barrel.find(criteria).exec((error, alerts) => {
+            if(error) return cb(error);
+            // Execute set of rules for each deleted user
+            async.each(alerts, (alert, cb) => {
+                async.parallel([
+
+                    // update the alert in the history where the alert is this one
+                    cb => AlertHistory.update({alertId: alert.id}, {alertId: null}).exec(cb),
+
+                ], cb);
+            }, cb);
+        });
+    },
+
 
     fixtures: {
         alertsPerTeam: function(callback) {

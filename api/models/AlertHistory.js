@@ -11,25 +11,26 @@ module.exports = {
 
     attributes: {
 
+        /**
+         * Can be null if alerte deleted
+         */
         alertId: {
             model: "alert",
             required: true
         },
 
+        /**
+         * Can be null if team deleted
+         */
         sender: {
             model: "team"
         },
 
-        senderName: {
-            type: "string"
-        },
-
+        /**
+         * Can be null if team deleted
+         */
         receiver: {
             model: "team"
-        },
-
-        receiverName: {
-            type: "string"
         },
 
         severity: {
@@ -75,4 +76,3 @@ module.exports = {
     }
 
 };
-

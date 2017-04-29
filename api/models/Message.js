@@ -14,20 +14,11 @@ module.exports = {
             required: true,
         },
 
+        /**
+         * Can be null if user deleted
+         */
         sender: {
             model: 'user'
-        },
-
-        senderName: {
-            type: "string"
-        },
-
-        senderTeam: {
-            model: 'team'
-        },
-
-        senderTeamName: {
-            type: "string"
         },
 
         channel: {

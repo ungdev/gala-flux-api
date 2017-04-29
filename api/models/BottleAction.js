@@ -9,14 +9,26 @@ module.exports = {
 
   attributes: {
 
+      /**
+       * Can be null if team deleted
+       */
       team : {
           model: 'team',
-          required: true,
       },
 
+      /**
+       * Can be null if team deleted
+       */
+      fromTeam : {
+          model: 'team',
+      },
+
+
+      /**
+       * Can be null if BottleType deleted
+       */
       bottleId : {
-          type: 'string',
-          required: true,
+          model: "BottleType",
       },
 
       quantity : {
@@ -33,4 +45,3 @@ module.exports = {
   },
 
 };
-

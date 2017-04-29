@@ -33,7 +33,7 @@ module.exports = {
             required: true
         },
 
-        // null if not allocated to a bar (a team). Else, the team.
+        // null if not allocated to a bar (a team) or team deleted. Else, the team.
         place: {
             model: "team",
             defaultsTo: null
@@ -51,6 +51,29 @@ module.exports = {
         }
 
     },
+
+    /**
+     * Before removing a Barrel from the database
+     *
+     * @param {object} criteria: contains the query with the barrel id
+     * @param {function} cb: the callback
+     */
+    beforeDestroy: function(criteria, cb) {
+        Barrel.find(criteria).exec((error, barrels) => {
+            if(error) return cb(error);
+            // Execute set of rules for each deleted user
+            async.each(barrels, (barrel, cb) => {
+                async.parallel([
+
+                    // update the barrel in the history where the receiver is this team
+                    cb => BarrelHistory.update({barrelId: barrel.id}, {barrelId: null}).exec(cb),
+
+                ], cb);
+            }, cb);
+        });
+    },
+
+
 
     fixtures: {
         generateBarrels: function(callback) {

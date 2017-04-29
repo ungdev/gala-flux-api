@@ -42,30 +42,39 @@ module.exports = {
      * @param {function} cb: the callback
      */
     beforeDestroy: function(criteria, cb) {
-        // find the team
-        Team.findOne({id: criteria.where.id}).exec((error, team) => {
-            // update the messages of this team
-            Message.update({senderTeam: team.id}, {senderTeam: null, senderTeamName: team.name}).exec((error, updated) => {
-                // destroy the users of this team
-                User.destroy({team: team.id}).exec(error => {
+        Team.find(criteria).exec((error, teams) => {
+            if(error) return cb(error);
+            // Execute set of rules for each deleted user
+            async.each(teams, (team, cb) => {
+                async.parallel([
+
+                    // destroy the users of this team
+                    cb => User.destroy({team: team.id}).exec(cb),
+
+                    // update the bottleAction where the team is this team
+                    cb => BottleAction.update({team: team.id}, {team: null}).exec(cb),
+                    // update the bottleAction where fromTeam is this team
+                    cb => BottleAction.update({fromTeam: team.id}, {fromTeam: null}).exec(cb),
+
+                    // update the alerts in the barrelHistory where the receiver is this team
+                    cb => BarrelHistory.update({place: team.id}, {place: null}).exec(cb),
+                    // update the alerts in the barrel where the receiver is this team
+                    cb => BarrelHistory.update({place: team.id}, {place: null}).exec(cb),
+
                     // update the alerts in the history where the sender is this team
-                    AlertHistory.update({sender: team.id}, {sender: null, senderName: team.name}).exec((error, updated) => {
-                        // update the alerts in the history where the receiver is this team
-                        AlertHistory.update({receiver: team.id}, {receiver: null, receiverName: team.name}).exec((error, updated) => {
-                            // destroy the alerts where the sender is this team
-                            Alert.destroy({sender: team.id}).exec(error => {
-                                // destroy the alerts where the sender is this team
-                                Alert.destroy({receiver: team.id}).exec(error => {
-                                    // destroy the alert buttons where the receiver is this team
-                                    AlertButton.destroy({receiver: team.id}).exec(error => {
-                                        cb();
-                                    });
-                                });
-                            });
-                        });
-                    });
-                });
-            });
+                    cb => AlertHistory.update({sender: team.id}, {sender: null}).exec(cb),
+                    // update the alerts in the history where the receiver is this team
+                    cb => AlertHistory.update({receiver: team.id}, {receiver: null}).exec(cb),
+
+                    // destroy the alert buttons where the receiver is this team
+                    cb => AlertButton.destroy({receiver: team.id}).exec(cb),
+
+                    // destroy the alerts where the sender is this team
+                    cb => Alert.destroy({sender: team.id}).exec(cb),
+                    // destroy the alerts where the sender is this team
+                    cb => Alert.destroy({receiver: team.id}).exec(cb),
+                ], cb);
+            }, cb);
         });
     },
 

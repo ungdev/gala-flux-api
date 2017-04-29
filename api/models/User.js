@@ -68,10 +68,16 @@ module.exports = {
      */
     beforeDestroy: function(criteria, cb) {
         User.find(criteria).exec((error, users) => {
-            for (let user of users) {
-                updateUserMessages(user);
-            }
-            cb();
+            if(error) return cb(error);
+            // Execute set of rules for each deleted user
+            async.each(users, (user, cb) => {
+                async.parallel([
+
+                    // Set message without sender
+                    cb => Message.update({sender: user.id}, {sender: null}).exec(cb),
+
+                ], cb);
+            }, cb);
         });
     },
 

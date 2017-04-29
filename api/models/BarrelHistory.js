@@ -10,14 +10,18 @@ module.exports = {
 
     attributes: {
 
+        /**
+         * Can be null if barrel deleted
+         */
         barrelId: {
             model: "barrel",
-            required: true
         },
 
+        /**
+         * Can be null if barreltype deleted
+         */
         type: {
             model: "barreltype",
-            required: true
         },
 
         reference: {
@@ -25,6 +29,9 @@ module.exports = {
             required: true,
         },
 
+        /**
+         * null if not allocated to a bar (a team) or team deleted. Else, the team.
+         */
         place: {
             model: "team",
             defaultsTo: null

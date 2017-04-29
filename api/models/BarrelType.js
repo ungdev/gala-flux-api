@@ -50,13 +50,21 @@ module.exports = {
      * @param {function} cb: the callback
      */
     beforeDestroy: function(criteria, cb) {
-        BarrelType.findOne({id: criteria.where.id})
-            .exec((error, barrelType) => {
-                Barrel.update({type: barrelType.id}, {typeName: barrelType.name, type: null})
-                    .exec((error, updated) => {
-                        cb();
-                    });
-            });
+        BarrelType.find(criteria).exec((error, barrelTypes) => {
+            if(error) return cb(error);
+            // Execute set of rules for each deleted user
+            async.each(barrelTypes, (barrelType, cb) => {
+                async.parallel([
+
+                    // update the barrel in the history where the receiver is this team
+                    cb => BarrelHistory.update({type: barrelType.id}, {type: null}).exec(cb),
+
+                    // destroy the barrels buttons where the type is this type
+                    cb => Barrel.destroy({type: barrelType.id}).exec(cb),
+
+                ], cb);
+            }, cb);
+        });
     },
 
     fixtures: {
@@ -98,4 +106,3 @@ module.exports = {
     }
 
 };
-
