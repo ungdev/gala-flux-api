@@ -14,13 +14,24 @@ if [[ -n $encrypted_799a7c5f264a_key ]] ; then
     echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
     # Add dokku to known hosts
     ssh-keyscan -H $DOKKU_HOST >> ~/.ssh/known_hosts
+    # Add commit with git original repo informations
+    echo "
+    module.exports.git = {
+        repoSlug: '$TRAVIS_REPO_SLUG',
+        branch: '$TRAVIS_BRANCH',
+        commit: '$TRAVIS_COMMIT',
+    };
+    " > config/git.js
+    git add config/git.js
+    git config user.name "Travis"
+    git config user.email "ung@utt.fr"
+    git commit -m "Add git original repo informations"
+
     # Deploy
     if [[ $TRAVIS_BRANCH == 'master' ]] ; then
-        DOKKU_PROJECT="$DOKKU_PROD"
+        git remote add dokku dokku@$DOKKU_HOST:$DOKKU_PROD
     else
-        DOKKU_PROJECT="$DOKKU_DEV"
+        git remote add dokku dokku@$DOKKU_HOST:$DOKKU_DEV
     fi
-    git remote add dokku dokku@$DOKKU_HOST:$DOKKU_PROJECT
-    git push dokku HEAD:refs/heads/master -f
-    ssh -t dokku@$DOKKU_HOST config:set --no-restart $DOKKU_PROJECT TRAVIS_REPO_SLUG="$TRAVIS_REPO_SLUG" TRAVIS_BRANCH="$TRAVIS_BRANCH" TRAVIS_COMMIT="$TRAVIS_COMMIT"
+    git push dokku master -f
 fi
