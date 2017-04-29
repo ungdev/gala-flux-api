@@ -22,5 +22,5 @@ if [[ -n $encrypted_799a7c5f264a_key ]] ; then
     fi
     git remote add dokku dokku@$DOKKU_HOST:$DOKKU_PROJECT
     git push dokku HEAD:refs/heads/master -f
-    ssh -t dokku@dokku.me config:set --no-restart $DOKKU_PROJECT TRAVIS_REPO_SLUG="$TRAVIS_REPO_SLUG" TRAVIS_BRANCH="$TRAVIS_BRANCH" TRAVIS_COMMIT="$TRAVIS_COMMIT"
+    ssh -t dokku@$DOKKU_HOST config:set --no-restart $DOKKU_PROJECT TRAVIS_REPO_SLUG="$TRAVIS_REPO_SLUG" TRAVIS_BRANCH="$TRAVIS_BRANCH" TRAVIS_COMMIT="$TRAVIS_COMMIT"
 fi
