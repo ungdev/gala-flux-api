@@ -16,9 +16,11 @@ if [[ -n $encrypted_799a7c5f264a_key ]] ; then
     ssh-keyscan -H $DOKKU_HOST >> ~/.ssh/known_hosts
     # Deploy
     if [[ $TRAVIS_BRANCH == 'master' ]] ; then
-        git remote add dokku dokku@$DOKKU_HOST:$DOKKU_PROD
+        DOKKU_PROJECT="$DOKKU_PROD"
     else
-        git remote add dokku dokku@$DOKKU_HOST:$DOKKU_DEV
+        DOKKU_PROJECT="$DOKKU_DEV"
     fi
+    git remote add dokku dokku@$DOKKU_HOST:$DOKKU_PROJECT
     git push dokku HEAD:refs/heads/master -f
+    ssh -t dokku@dokku.me config:set --no-restart $DOKKU_PROJECT TRAVIS_REPO_SLUG="$TRAVIS_REPO_SLUG" TRAVIS_BRANCH="$TRAVIS_BRANCH" TRAVIS_COMMIT="$TRAVIS_COMMIT"
 fi
