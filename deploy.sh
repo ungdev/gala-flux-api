@@ -33,5 +33,5 @@ if [[ -n $encrypted_799a7c5f264a_key ]] ; then
     else
         git remote add dokku dokku@$DOKKU_HOST:$DOKKU_DEV
     fi
-    git push dokku master -f
+    git push dokku HEAD:refs/heads/master -f
 fi
