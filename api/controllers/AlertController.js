@@ -75,7 +75,7 @@ module.exports = {
         if (!req.param('id')) {
             return res.error(400, 'BadRequest', "Missing 'id' parameter.");
         }
-        if (!req.param('severity') && !req.param('message')) {
+        if (!req.param('severity') && req.param('message') === undefined) {
             return res.error(400, 'BadRequest', "Nothing to update.");
         }
 
@@ -93,7 +93,7 @@ module.exports = {
                 // else, check if the requester is in the receiver team
                 if ((Team.can(req, 'alert/restricted') && alert.sender !== req.team.id) || (!Team.can(req, 'alert/restricted') && req.team.id != alert.receiver)) {
                     return res.error(403, 'forbidden', 'You are not allowed to update this alert.');
-                } 
+                }
 
                 if (req.param('severity')) {
                     // Update if the severity is right
@@ -105,11 +105,11 @@ module.exports = {
                         return res.error(400, 'BadRequest', "Can't set severity to " + req.param('severity'));
                     }
                 }
-                
-                if (req.param('message')) {
+
+                if (req.param('message') !== undefined) {
                     // only the sender can update the message of his alert
                     if (Team.can(req, 'alert/restricted')) {
-                        alert.message = req.param('message');                        
+                        alert.message = req.param('message');
                     } else {
                          return res.error(403, 'forbidden', 'You are not allowed to update the message of this alert.');
                     }
@@ -175,7 +175,7 @@ module.exports = {
             }
 
             User.findOne({id: req.param('user')}).exec((error, user) => {
-                
+
                 // assign a new user to this alert.
                 console.log(alert.users);
                 alert.users.add(user);
