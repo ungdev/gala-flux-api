@@ -68,6 +68,8 @@ module.exports = {
      */
     beforeDestroy: function(criteria, cb) {
         User.find(criteria).exec((error, users) => {
+
+            // Update foreign entities
             if(error) return cb(error);
             // Execute set of rules for each deleted user
             async.each(users, (user, cb) => {

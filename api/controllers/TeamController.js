@@ -51,6 +51,43 @@
 module.exports = {
 
     /**
+     * @api {post} /team/subscribe Subscribe to new items
+     * @apiName subscribe
+     * @apiGroup Team
+     * @apiDescription Subscribe to all new items.
+     */
+    subscribe: function(req, res) {
+        if(Team.can(req, 'team/read') || Team.can(req, 'team/admin')) {
+            Team.watch(req);
+            Team.find().exec((error, items) => {
+                if(error) return res.negotiate(error);
+                Team.subscribe(req, _.pluck(items, 'id'));
+                return res.ok();
+            });
+        }
+        else {
+            Team.subscribe(req, [req.team.id]);
+            return res.ok();
+        }
+    },
+
+
+    /**
+     * @api {post} /team/unsubscribe Unsubscribe from new items
+     * @apiName subscribe
+     * @apiGroup Team
+     * @apiDescription Unsubscribe from new items
+     */
+    unsubscribe: function(req, res) {
+        Team.unwatch(req);
+        Team.find().exec((error, items) => {
+            if(error) return res.negotiate(error);
+            Team.unsubscribe(req, _.pluck(items, 'id'));
+            return res.ok();
+        });
+    },
+
+    /**
      * @api {get} /team/find Find all teams and subscribe to them
      * @apiName find
      * @apiGroup Team
@@ -84,9 +121,6 @@ module.exports = {
                 if (error) {
                     return res.negotiate(error);
                 }
-
-                Team.watch(req);
-                Team.subscribe(req, _.pluck(team, 'id'));
 
                 return res.ok(team);
             });
@@ -125,8 +159,6 @@ module.exports = {
                 if(!team) {
                     return res.error(404, 'notfound', 'The requested team cannot be found');
                 }
-
-                Team.subscribe(req, [req.param('id')]);
 
                 return res.ok(team);
             });
@@ -176,7 +208,6 @@ module.exports = {
             }
 
             Team.publishCreate(team);
-            Team.subscribe(req, [team.id]);
 
             return res.ok(team);
         });
@@ -233,7 +264,6 @@ module.exports = {
                 }
 
                 Team.publishUpdate(team.id, team);
-                Team.subscribe(req, [team.id]);
 
                 return res.ok(team);
             });

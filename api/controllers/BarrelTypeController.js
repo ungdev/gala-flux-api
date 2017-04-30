@@ -8,6 +8,41 @@
 module.exports = {
 
     /**
+     * @api {post} /barreltype/subscribe Subscribe to new items
+     * @apiName subscribe
+     * @apiGroup BarrelType
+     * @apiDescription Subscribe to all new items.
+     */
+    subscribe: function(req, res) {
+        if(Team.can(req, 'barrelType/read') || Team.can(req, 'barrelType/admin')) {
+            BarrelType.watch(req);
+            BarrelType.find().exec((error, items) => {
+                if(error) return res.negotiate(error);
+                BarrelType.subscribe(req, _.pluck(items, 'id'));
+                return res.ok();
+            });
+        }
+        else {
+            return res.ok();
+        }
+    },
+
+    /**
+     * @api {post} /barreltype/unsubscribe Unsubscribe from new items
+     * @apiName subscribe
+     * @apiGroup BarrelType
+     * @apiDescription Unsubscribe from new items
+     */
+    unsubscribe: function(req, res) {
+        BarrelType.unwatch(req);
+        BarrelType.find().exec((error, items) => {
+            if(error) return res.negotiate(error);
+            BarrelType.unsubscribe(req, _.pluck(items, 'id'));
+            return res.ok();
+        });
+    },
+
+    /**
      * @api {get} /barreltype
      * @apiName find
      * @apiGroup BarrelType
@@ -20,7 +55,7 @@ module.exports = {
     find: (req, res) => {
 
         // Check permissions
-        if (!(Team.can(req, 'barrel/admin') || Team.can(req, 'barrel/restricted') || Team.can(req, 'barrel/read'))) {
+        if (!Team.can(req, 'barrelType/admin') && !Team.can(req, 'barrelType/read')) {
             return res.error(403, 'forbidden', 'You are not authorized to read the barrel types.');
         }
 
@@ -36,9 +71,6 @@ module.exports = {
                 if (error) {
                     return res.negotiate(error);
                 }
-
-                BarrelType.subscribe(req, _.pluck(barrelTypes, 'id'));
-                BarrelType.watch(req);
 
                 return res.ok(barrelTypes);
             });

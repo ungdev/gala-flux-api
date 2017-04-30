@@ -56,6 +56,44 @@ const gm = require('gm');
 module.exports = {
 
     /**
+     * @api {post} /user/subscribe Subscribe to new items
+     * @apiName subscribe
+     * @apiGroup User
+     * @apiDescription Subscribe to all new items.
+     */
+    subscribe: function(req, res) {
+        if(Team.can(req, 'user/read') || Team.can(req, 'user/admin')) {
+            User.watch(req);
+            User.find().exec((error, items) => {
+                if(error) return res.negotiate(error);
+                User.subscribe(req, _.pluck(items, 'id'));
+                return res.ok();
+            });
+        }
+        else {
+            User.subscribe(req, [req.user.id]);
+            return res.ok();
+        }
+    },
+
+
+    /**
+     * @api {post} /user/unsubscribe Unsubscribe from new items
+     * @apiName subscribe
+     * @apiGroup User
+     * @apiDescription Unsubscribe from new items
+     */
+    unsubscribe: function(req, res) {
+        User.unwatch(req);
+        User.find().exec((error, items) => {
+            if(error) return res.negotiate(error);
+            User.unsubscribe(req, _.pluck(items, 'id'));
+            return res.ok();
+        });
+    },
+
+
+    /**
      * @api {get} /user/find Find all users and subscribe to them
      * @apiName find
      * @apiGroup User
@@ -88,10 +126,6 @@ module.exports = {
             if (error) {
                 return res.negotiate(error);
             }
-
-            User.subscribe(req, _.pluck(user, 'id'));
-            User.watch(req);
-
             return res.ok(user);
         });
 
@@ -128,8 +162,6 @@ module.exports = {
                 if(!user) {
                     return res.error(404, 'notfound', 'The requested user cannot be found');
                 }
-
-                User.subscribe(req, [req.param('id')]);
 
                 return res.ok(user);
             });
@@ -187,7 +219,6 @@ module.exports = {
                 }
 
                 User.publishCreate(user);
-                User.subscribe(req, [user.id]);
 
                 return res.ok(user);
             });
@@ -260,7 +291,6 @@ module.exports = {
                     }
 
                     User.publishUpdate(user.id, user);
-                    User.subscribe(req, [user.id]);
 
                     return res.ok(user);
                 });
@@ -305,9 +335,6 @@ module.exports = {
             User.destroy({id: user.id})
                 .exec((error) => {
                     if (error) return res.negotiate(error);
-
-                    User.publishDestroy(user.id);
-
                     return res.ok();
                 });
         });
@@ -406,7 +433,7 @@ module.exports = {
                         login: user.login,
                         name: user.fullName,
                         avatar: imageLink,
-                    })
+                    });
                 }
                 return res.ok(out);
             }
@@ -415,7 +442,7 @@ module.exports = {
         })
         .catch((error) => {
             return res.error(500, 'EtuUTTError', 'An error occurs during communications with the api of EtuUTT: ' + error);
-        })
+        });
     },
 
     /**
@@ -475,7 +502,7 @@ module.exports = {
                 .write(sails.config.appPath + '/assets/uploads/user/avatar/' + user.id, (err) => {
                     if(error) {
                         // Delete file on error
-                        fs.unlink(sails.config.appPath + '/assets/uploads/user/avatar/' + user.id)
+                        fs.unlink(sails.config.appPath + '/assets/uploads/user/avatar/' + user.id);
                         return res.negotiate(err);
                     }
                     return res.ok();

@@ -8,6 +8,47 @@
 module.exports = {
 
     /**
+     * @api {post} /barrel/subscribe Subscribe to new items
+     * @apiName subscribe
+     * @apiGroup Barrel
+     * @apiDescription Subscribe to all new items.
+     */
+    subscribe: function(req, res) {
+        if(Team.can(req, 'barrel/read') || Team.can(req, 'barrel/admin')) {
+            Barrel.watch(req);
+            Barrel.find().exec((error, items) => {
+                if(error) return res.negotiate(error);
+                Barrel.subscribe(req, _.pluck(items, 'id'));
+                return res.ok();
+            });
+        }
+        else if(Team.can(req, 'barrel/restricted')) {
+            // Join only for update of it own bottles
+            sails.sockets.join('Barrel/' + req.team.id);
+            return res.ok();
+        }
+        else {
+            return res.ok();
+        }
+    },
+
+    /**
+     * @api {post} /barrel/unsubscribe Unsubscribe from new items
+     * @apiName subscribe
+     * @apiGroup Barrel
+     * @apiDescription Unsubscribe from new items
+     */
+    unsubscribe: function(req, res) {
+        sails.sockets.leave('Barrel/' + req.team.id);
+        Barrel.unwatch(req);
+        Barrel.find().exec((error, items) => {
+            if(error) return res.negotiate(error);
+            Barrel.unsubscribe(req, _.pluck(items, 'id'));
+            return res.ok();
+        });
+    },
+
+    /**
      * @api {get} /barrel
      * @apiName find
      * @apiGroup Barrel
@@ -31,38 +72,21 @@ module.exports = {
         }
         // if the requester is not admin, show only his team's barrels
         if (Team.can(req, 'barrel/restricted')) {
-            if(Object.keys(where).length >= 1) {
-                where = {
-                    place: req.team.id,
-                    or: where,
-                };
-            }
-            else {
-                where = {
-                    place: req.team.id,
-                };
-            }
+            where = {
+                place: req.team.id,
+                where,
+            };
         }
 
         // Find barrels
         Barrel.find(where)
-            .exec((error, barrels) => {
-                if (error) {
-                    return res.negotiate(error);
-                }
+        .exec((error, barrels) => {
+            if (error) {
+                return res.negotiate(error);
+            }
 
-                Barrel.subscribe(req, _.pluck(barrels, 'id'));
-
-                // Subscribe to new items according to your rights
-                if(Team.can(req, 'barrel/admin') || Team.can(req, 'barrel/read')) {
-                    Barrel.watch(req);
-                }
-                else {
-                    sails.sockets.join('Barrel/' + req.team.id);
-                }
-
-                return res.ok(barrels);
-            });
+            return res.ok(barrels);
+        });
 
     },
 
@@ -178,60 +202,56 @@ module.exports = {
 
         // check team
         Team.findOne({id: req.param('location')})
-            .exec((error, team) => {
-                if (error) return res.negotiate(error);
+        .exec((error, team) => {
+            if (error) return res.negotiate(error);
 
-                // if the location is not the log (null) and the asked team can't be found, return error
-                if (req.param('location') !== null && req.param('location') !== "null" && !team) {
-                    return res.error(403, 'forbidden', "The location is not valid.");
-                }
+            // if the location is not the log (null) and the asked team can't be found, return error
+            if (req.param('location') !== null && req.param('location') !== "null" && !team) {
+                return res.error(403, 'forbidden', "The location is not valid.");
+            }
 
-                // prepare each update
-                let promises = [];
-                for (let i in req.param('barrels')) {
-                    promises.push(new Promise((resolve, reject) => {
-                        Barrel.findOne({id: req.param('barrels')[i].id})
-                            .then(barrel => {
-                                // update his location and save it
-                                barrel.place = req.param('location');
-                                barrel.save(error => {
+            // prepare each update
+            let promises = [];
+            for (let i in req.param('barrels')) {
+                promises.push(new Promise((resolve, reject) => {
+                    Barrel.findOne({id: req.param('barrels')[i].id})
+                        .then(barrel => {
+                            // update his location and save it
+                            barrel.place = req.param('location');
+                            barrel.save(error => {
+                                if (error) return reject(error);
+
+                                // log the barrel state
+                                BarrelHistory.pushToHistory(barrel, (error, barrelHistory) => {
                                     if (error) return reject(error);
 
-                                    // log the barrel state
-                                    BarrelHistory.pushToHistory(barrel, (error, barrelHistory) => {
-                                        if (error) return reject(error);
-
-                                        Barrel.publishUpdate(barrel.id, barrel);
-                                        sails.sockets.broadcast('Barrel/' + barrel.place, 'Barrel', {
-                                            verb: 'updated',
-                                            id: barrel.id,
-                                            data: barrel,
-                                        });
-
-                                        checkTeamStocks(barrel);
-
-                                        return resolve(barrel.id);
-
+                                    Barrel.publishUpdate(barrel.id, barrel);
+                                    sails.sockets.broadcast('Barrel/' + barrel.place, 'Barrel', {
+                                        verb: 'updated',
+                                        id: barrel.id,
+                                        data: barrel,
                                     });
-                                })
-                            })
-                            .catch(error => reject(error));
-                    }));
-                }
 
-                // run all promises
-                Promise.all(promises)
-                    .then(ids => {
+                                    checkTeamStocks(barrel);
 
-                        Barrel.subscribe(req, ids);
+                                    return resolve(barrel.id);
 
-                        return res.ok();
-                    })
-                    .catch(error => res.negotiate(error));
-            });
+                                });
+                            });
+                        })
+                        .catch(error => reject(error));
+                }));
+            }
 
+            // run all promises
+            Promise.all(promises)
+            .then(ids => {
+
+                return res.ok();
+            })
+            .catch(error => res.negotiate(error));
+        });
     }
-
 };
 
 /**

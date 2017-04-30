@@ -9,6 +9,43 @@
 module.exports = {
 
     /**
+     * @api {post} /alertbutton/subscribe Subscribe to new items
+     * @apiName subscribe
+     * @apiGroup AlertButton
+     * @apiDescription Subscribe to all new items.
+     */
+    subscribe: function(req, res) {
+        if(Team.can(req, 'alertButton/read') || Team.can(req, 'alertButton/admin')) {
+            AlertButton.watch(req);
+            AlertButton.find().exec((error, items) => {
+                if(error) return res.negotiate(error);
+                AlertButton.subscribe(req, _.pluck(items, 'id'));
+                return res.ok();
+            });
+        }
+        else {
+            return res.ok();
+        }
+    },
+
+
+    /**
+     * @api {post} /alertbutton/unsubscribe Unsubscribe from new items
+     * @apiName subscribe
+     * @apiGroup AlertButton
+     * @apiDescription Unsubscribe from new items
+     */
+    unsubscribe: function(req, res) {
+        AlertButton.unwatch(req);
+        AlertButton.find().exec((error, items) => {
+            if(error) return res.negotiate(error);
+            AlertButton.unsubscribe(req, _.pluck(items, 'id'));
+            return res.ok();
+        });
+    },
+
+
+    /**
      * @api {get} /alertbutton
      * @apiName find
      * @apiGroup AlertButton
@@ -191,7 +228,7 @@ module.exports = {
     createAlert: (req, res) => {
 
         // check permission
-        if (!(Team.can(req, 'alertButton/admin') || Team.can(req, 'alertButton/create'))) {
+        if (!(Team.can(req, 'alertButton/admin') || Team.can(req, 'alertButton/createAlert'))) {
             return res.error(403, 'forbidden', 'You are not authorized to update an Alert button.');
         }
 

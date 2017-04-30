@@ -37,18 +37,24 @@ module.exports.policies = {
         create: ['jwtAuth'],
         update: ['jwtAuth'],
         destroy: ['jwtAuth'],
+        unsubscribe:  ['jwtAuth'],
+        subscribe:  ['jwtAuth'],
     },
 
     BottleActionController: {
         find: ['jwtAuth'],
         findOne: ['jwtAuth'],
         create: ['jwtAuth'],
+        unsubscribe:  ['jwtAuth'],
+        subscribe:  ['jwtAuth'],
     },
 
     MessageController: {
         find: ['jwtAuth'],
         create:  ['jwtAuth'],
         getChannels:  ['jwtAuth'],
+        unsubscribe:  ['jwtAuth'],
+        subscribe:  ['jwtAuth'],
     },
 
     UserController: {
@@ -60,6 +66,8 @@ module.exports.policies = {
         etuuttFind:  ['jwtAuth'],
         uploadAvatar:  ['jwtAuth'],
         getAvatar:  true,
+        unsubscribe:  ['jwtAuth'],
+        subscribe:  ['jwtAuth'],
     },
 
     TeamController: {
@@ -68,6 +76,8 @@ module.exports.policies = {
         create:  ['jwtAuth'],
         update:  ['jwtAuth'],
         destroy:  ['jwtAuth'],
+        unsubscribe:  ['jwtAuth'],
+        subscribe:  ['jwtAuth'],
     },
 
     AlertController: {
@@ -82,7 +92,9 @@ module.exports.policies = {
         create:  ['jwtAuth'],
         update:  ['jwtAuth'],
         createAlert:  ['jwtAuth'],
-        destroy: ['jwtAuth']
+        destroy: ['jwtAuth'],
+        unsubscribe:  ['jwtAuth'],
+        subscribe:  ['jwtAuth'],
     },
 
     BarrelTypeController: {
@@ -91,12 +103,16 @@ module.exports.policies = {
         update:  ['jwtAuth'],
         destroy:  ['jwtAuth'],
         setBarrelNumber:  ['jwtAuth'],
+        unsubscribe:  ['jwtAuth'],
+        subscribe:  ['jwtAuth'],
     },
 
     BarrelController: {
         find: ['jwtAuth'],
         update:  ['jwtAuth'],
         setLocation:  ['jwtAuth'],
+        unsubscribe:  ['jwtAuth'],
+        subscribe:  ['jwtAuth'],
     }
 
 };
