@@ -218,7 +218,7 @@ module.exports = {
                     return res.negotiate(error);
                 }
 
-                User.publishCreate(user);
+
 
                 return res.ok(user);
             });
@@ -290,8 +290,6 @@ module.exports = {
                         return res.negotiate(error);
                     }
 
-                    User.publishUpdate(user.id, user);
-
                     return res.ok(user);
                 });
             });
@@ -333,10 +331,10 @@ module.exports = {
             }
 
             User.destroy({id: user.id})
-                .exec((error) => {
-                    if (error) return res.negotiate(error);
-                    return res.ok();
-                });
+            .exec((error) => {
+                if (error) return res.negotiate(error);
+                return res.ok();
+            });
         });
     },
 

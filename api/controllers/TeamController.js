@@ -206,9 +206,6 @@ module.exports = {
             if (error) {
                 return res.negotiate(error);
             }
-
-            Team.publishCreate(team);
-
             return res.ok(team);
         });
     },
@@ -262,9 +259,6 @@ module.exports = {
                 if (error) {
                     return res.negotiate(error);
                 }
-
-                Team.publishUpdate(team.id, team);
-
                 return res.ok(team);
             });
         });
@@ -304,8 +298,6 @@ module.exports = {
                 if (error) {
                     return res.negotiate(error);
                 }
-
-                Team.publishDestroy(team.id);
 
                 return res.ok();
             });

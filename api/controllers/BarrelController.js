@@ -225,12 +225,6 @@ module.exports = {
                                 BarrelHistory.pushToHistory(barrel, (error, barrelHistory) => {
                                     if (error) return reject(error);
 
-                                    Barrel.publishUpdate(barrel.id, barrel);
-                                    sails.sockets.broadcast('Barrel/' + barrel.place, 'Barrel', {
-                                        verb: 'updated',
-                                        id: barrel.id,
-                                        data: barrel,
-                                    });
 
                                     checkTeamStocks(barrel);
 
@@ -298,8 +292,6 @@ function checkTeamStocks(barrel) {
 
                                         Alert.destroy({id: alert.id}).exec((error) => {
                                             if (error) return;
-
-                                            Alert.publishDestroy(alert.id);
                                         });
                                     });
                             }
@@ -318,8 +310,6 @@ function checkTeamStocks(barrel) {
                                         // push this modification in the alert history
                                         AlertHistory.pushToHistory(alert, (error, result) => {
                                             if (error) return;
-
-                                            Alert.publishCreate(alert);
                                         });
 
                                     });
@@ -351,13 +341,6 @@ function updateBarrel(barrel, req, res, checkState) {
             if (error) {
                 return res.negotiate(error);
             }
-
-            Barrel.publishUpdate(barrel.id, barrel);
-            sails.sockets.broadcast('Barrel/' + barrel.place, 'Barrel', {
-                verb: 'updated',
-                id: barrel.id,
-                data: barrel,
-            });
 
             if (checkState) {
                 checkTeamStocks(barrel);

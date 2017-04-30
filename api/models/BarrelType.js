@@ -1,13 +1,8 @@
-/**
- * BarrelType.js
- *
- * @description :: Represents a type of Barrel.
- * @docs        :: http://sailsjs.org/documentation/concepts/models-and-orm/models
- */
+const Base = require('./Base');
 
-module.exports = {
+function Model () {
 
-    attributes: {
+    this.attributes = {
 
         // full name of the barrel's content (example: Chouffe)
         name: {
@@ -41,7 +36,13 @@ module.exports = {
             required: true
         }
 
-    },
+    };
+
+    // Attribute hidden on when sending to client
+    this.hiddenAttr = [];
+
+    // Update will be emitted to client only if another attribute has been updated
+    this.ignoredAttrUpdate = [];
 
     /**
      * Before removing a BarrelType from the database, update the barrels of this type
@@ -49,7 +50,7 @@ module.exports = {
      * @param {object} criteria: contains the query with the type id
      * @param {function} cb: the callback
      */
-    beforeDestroy: function(criteria, cb) {
+    this.beforeDestroy = function(criteria, cb) {
         BarrelType.find(criteria).exec((error, barrelTypes) => {
             if(error) return cb(error);
             // Execute set of rules for each deleted user
@@ -57,17 +58,24 @@ module.exports = {
                 async.parallel([
 
                     // update the barrel in the history where the receiver is this team
-                    cb => BarrelHistory.update({type: barrelType.id}, {type: null}).exec(cb),
+                    cb => BarrelHistory.update2({type: barrelType.id}, {type: null}).exec(cb),
 
                     // destroy the barrels buttons where the type is this type
                     cb => Barrel.destroy({type: barrelType.id}).exec(cb),
 
-                ], cb);
+                ], (error) => {
+                    if(error) return cb(error);
+
+                    // Publish destroy event
+                    BarrelType._publishDestroy(barrelType.id);
+
+                    return cb();
+                });
             }, cb);
         });
-    },
+    };
 
-    fixtures: {
+    this.fixtures = {
         beer1: {
             name: "Maredsous",
             shortName: "MA",
@@ -103,6 +111,12 @@ module.exports = {
             supplierPrice: 141.90,
             sellPrice: 152.00
         }
-    }
+    };
 
-};
+}
+
+// Inherit Base Model
+Model.prototype = new Base('BarrelType');
+
+// Construct and export
+module.exports = new Model();

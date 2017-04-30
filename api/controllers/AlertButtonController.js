@@ -144,9 +144,6 @@ module.exports = {
                     return res.negotiate(error);
                 }
 
-                AlertButton.publishCreate(alertButton);
-                AlertButton.subscribe(req, [alertButton.id]);
-
                 return res.ok(alertButton);
             });
 
@@ -199,9 +196,6 @@ module.exports = {
                     if (error) {
                         return res.negotiate(error);
                     }
-
-                    AlertButton.publishUpdate(alertButton.id, alertButton);
-                    AlertButton.subscribe(req, [alertButton.id]);
 
                     return res.ok(alertButton);
                 });
@@ -285,9 +279,6 @@ module.exports = {
                                 return res.negotiate(error);
                             }
 
-                            Alert.publishCreate(alert);
-                            Alert.subscribe(req, [alert.id]);
-
                             return res.ok(alert);
                         });
 
@@ -334,8 +325,6 @@ module.exports = {
                 AlertButton.destroy({id: alertButton.id})
                     .exec((error) => {
                         if (error) return res.negotiate(error);
-
-                        AlertButton.publishDestroy(alertButton.id);
 
                         return res.ok();
                     });

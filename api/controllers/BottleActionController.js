@@ -134,18 +134,9 @@ module.exports = {
                         return res.negotiate(error);
                     }
 
-                    let data = {
-                        verb: 'created',
-                        id: bottleAction.id,
-                        data: bottleAction,
-                    };
-
-                    sails.sockets.broadcast('BottleAction/' + bottleAction.id, 'BottleAction', data);
-                    BottleAction.publishCreate(bottleAction);
-
                     return res.ok(bottleAction);
                 });
-            })
+            });
         }
     },
 };

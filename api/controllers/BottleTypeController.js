@@ -162,8 +162,6 @@ module.exports = {
                     return res.negotiate(error);
                 }
 
-                BottleType.publishCreate(bottletype);
-
                 return res.ok(bottletype);
             });
         })
@@ -200,8 +198,6 @@ module.exports = {
                     if (error) {
                         return res.negotiate(error);
                     }
-
-                    BottleType.publishDestroy(bottletype.id);
 
                     return res.ok();
                 });
@@ -256,7 +252,6 @@ module.exports = {
                     if (error) {
                         return res.negotiate(error);
                     }
-                    BottleType.publishUpdate(bottletype.id, bottletype);
 
                     return res.ok(bottletype);
                 });

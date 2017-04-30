@@ -1,15 +1,9 @@
-/**
- * User.js
- *
- * @description :: TODO: You might write a short summary of how this model works and what it represents here.
- * @docs        :: http://sailsjs.org/documentation/concepts/models-and-orm/models
- */
 const faker = require('faker');
+const Base = require('./Base');
 
-module.exports = {
+function Model () {
 
-    attributes: {
-
+    this.attributes = {
         login : {
             type: 'string',
             unique: true,
@@ -31,18 +25,18 @@ module.exports = {
             required: true,
         },
 
+        // alerts assigned to this user
+        alerts: {
+            collection: "alert",
+            via: "users"
+        },
+
         accessToken : {
             type: 'string',
         },
 
         renewToken : {
             type: 'string',
-        },
-
-        // alerts assigned to this user
-        alerts: {
-            collection: "alert",
-            via: "users"
         },
 
         // timestamp
@@ -58,58 +52,15 @@ module.exports = {
             defaultsTo: Date.now(),
             required: true
         }
-    },
+    };
 
-    /**
-     * Before removing a User from the database, update the message he sent
-     *
-     * @param {object} criteria: contains the query with the user id
-     * @param {function} cb: the callback
-     */
-    beforeDestroy: function(criteria, cb) {
-        User.find(criteria).exec((error, users) => {
+    // Attribute hidden on when sending to client
+    this.hiddenAttr = ['accessToken', 'refreshToken', 'tokenExpiration', 'alerts'];
 
-            // Update foreign entities
-            if(error) return cb(error);
-            // Execute set of rules for each deleted user
-            async.each(users, (user, cb) => {
-                async.parallel([
+    // Update will be emitted to client only if another attribute has been updated
+    this.ignoredAttrUpdate = ['lastConnection', 'lastDisconnection', 'updatedAt', 'accessToken', 'renewToken', 'alerts'];
 
-                    // Set message without sender
-                    cb => Message.update({sender: user.id}, {sender: null}).exec(cb),
-
-                ], cb);
-            }, cb);
-        });
-    },
-
-    /**
-     * Check validness of a login using the provided ip
-     *
-     * @param  {String}   ip
-     * @param  {Function} cb
-     */
-    attemptIpAuth: function (ip, cb) {
-        User.findOne({
-            ip: ip,
-        })
-        .exec(cb);
-    },
-
-    /**
-     * Check validness of an auth using the provided login
-     *
-     * @param  {String}   login
-     * @param  {Function} cb
-     */
-    attemptLoginAuth: function (login, cb) {
-        User.findOne({
-            login: login,
-        })
-        .exec(cb);
-    },
-
-    fixtures: {
+    this.fixtures = {
         ipUserPerTeam: function(callback) {
             Team.find().exec((error, teams) => {
                 if(error) {
@@ -118,7 +69,7 @@ module.exports = {
 
                 let result = {};
                 let i = 1;
-                for (team of teams) {
+                for (let team of teams) {
                     result['PC ' + team.name] = {
                         ip: '192.168.0.' + i,
                         name: 'PC',
@@ -144,26 +95,74 @@ module.exports = {
                             login: faker.helpers.slugify(name).substr(0, 8),
                             name: name,
                             team: team.id,
-                        }
+                        };
                     });
                 });
 
                 return callback(null, result);
             });
         },
-    },
-};
+    };
 
-/**
- * Update the Messages sent by a given user
- *
- * @param {object} user
- * @return {boolean|error}: true is success, the error is failure
- */
-function updateUserMessages(user) {
-    Message.update({sender: user.id}, {sender: null, senderName: user.name})
-        .exec((error, updated) => {
-            if (error) return error;
-            return true;
+    /**
+     * Before removing a User from the database, update the message he sent
+     *
+     * @param {object} criteria: contains the query with the user id
+     * @param {function} cb: the callback
+     */
+    this.beforeDestroy = function(criteria, cb) {
+        User.find(criteria).exec((error, users) => {
+
+            // Update foreign entities
+            if(error) return cb(error);
+            // Execute set of rules for each deleted user
+            async.each(users, (user, cb) => {
+                async.parallel([
+
+                    // Set message without sender
+                    cb => Message.update2({sender: user.id}, {sender: null}).exec(cb),
+
+                ], (error) => {
+                    if(error) return cb(error);
+
+                    // Publish destroy event
+                    this._publishDestroy(user.id);
+
+                    return cb();
+                });
+            }, cb);
         });
+    };
+
+    /**
+     * Check validness of a login using the provided ip
+     *
+     * @param  {String}   ip
+     * @param  {Function} cb
+     */
+    this.attemptIpAuth = function(ip, cb) {
+        User.findOne({
+            ip: ip,
+        })
+        .exec(cb);
+    };
+
+    /**
+     * Check validness of an auth using the provided login
+     *
+     * @param  {String}   login
+     * @param  {Function} cb
+     */
+    this.attemptLoginAuth = function(login, cb) {
+        User.findOne({
+            login: login,
+        })
+        .exec(cb);
+    };
 }
+
+// Inherit Base Model
+Model.prototype = new Base('User');
+
+// Construct and export
+module.exports = new Model();

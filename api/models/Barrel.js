@@ -1,15 +1,9 @@
-/**
- * Barrel.js
- *
- * @description :: Represents a physical barrel (The Chouffe barrel number 2 for example).
- * A barrel is linked to a BarrelType.
- * @docs        :: http://sailsjs.org/documentation/concepts/models-and-orm/models
- */
+const Base = require('./Base');
 const faker = require('faker');
 
-module.exports = {
+function Model () {
 
-    attributes: {
+    this.attributes = {
 
         // the barrel's type
         type: {
@@ -50,7 +44,51 @@ module.exports = {
             defaultsTo: "new"
         }
 
-    },
+    };
+
+    // Attribute hidden on when sending to client
+    this.hiddenAttr = [];
+
+    // Update will be emitted to client only if another attribute has been updated
+    this.ignoredAttrUpdate = [];
+
+
+    /**
+     * Publish create to client.
+     *
+     * @param {object} newlyInsertedRecord New item
+     */
+    this._publishCreate = function(newlyInsertedRecord) {
+        // Publish
+        let data = {
+            verb: 'created',
+            id: newlyInsertedRecord.id,
+            data: newlyInsertedRecord,
+        };
+        sails.sockets.broadcast('Barrel/' + newlyInsertedRecord.place, 'Barrel', data);
+        Barrel.publishCreate(newlyInsertedRecord);
+    };
+
+
+
+    /**
+     * Publish update to client.
+     *
+     * @param {id} id Id to update
+     * @param {object} valuesToUpdate Values to update
+     * @param {object} currentRecord Current value
+     */
+    this._publishUpdate = function(id, valuesToUpdate, currentRecord) {
+        let data = {
+            verb: 'updated',
+            id: valuesToUpdate.id,
+            data: valuesToUpdate,
+        };
+        sails.sockets.broadcast('Barrel/' + currentRecord.place, 'Barrel', data);
+        sails.sockets.broadcast('Barrel/' + valuesToUpdate.place, 'Barrel', data);
+        Barrel.publishUpdate(valuesToUpdate.id, valuesToUpdate);
+    };
+
 
     /**
      * Before removing a Barrel from the database
@@ -58,7 +96,7 @@ module.exports = {
      * @param {object} criteria: contains the query with the barrel id
      * @param {function} cb: the callback
      */
-    beforeDestroy: function(criteria, cb) {
+    this.beforeDestroy = function(criteria, cb) {
         Barrel.find(criteria).exec((error, barrels) => {
             if(error) return cb(error);
             // Execute set of rules for each deleted user
@@ -66,16 +104,24 @@ module.exports = {
                 async.parallel([
 
                     // update the barrel in the history where the receiver is this team
-                    cb => BarrelHistory.update({barrelId: barrel.id}, {barrelId: null}).exec(cb),
+                    cb => BarrelHistory.update2({barrelId: barrel.id}, {barrelId: null}).exec(cb),
 
-                ], cb);
+
+                ], (error) => {
+                    if(error) return cb(error);
+
+                    // Publish destroy event
+                    Barrel._publishDestroy(barrel.id);
+
+                    return cb();
+                });
             }, cb);
         });
-    },
+    };
 
 
 
-    fixtures: {
+    this.fixtures = {
         generateBarrels: function(callback) {
             // get the teams
             Team.find().exec((error, teams) => {
@@ -121,9 +167,15 @@ module.exports = {
                 });
             });
         }
-    }
+    };
 
-};
+}
+
+// Inherit Base Model
+Model.prototype = new Base('Barrel');
+
+// Construct and export
+module.exports = new Model();
 
 /**
  * Generate a random integer between min and max
@@ -133,5 +185,5 @@ module.exports = {
  * @returns {number}
  */
 function generateRandomInteger(min, max) {
-    return Math.floor(max - Math.random()*(max-min))
+    return Math.floor(max - Math.random()*(max-min));
 }

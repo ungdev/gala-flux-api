@@ -170,8 +170,6 @@ module.exports = {
                             return res.negotiate(error);
                         }
 
-                        Alert.publishUpdate(alert.id, alert);
-
                         return res.ok(alert);
                     });
                 });
@@ -220,7 +218,6 @@ module.exports = {
             User.findOne({id: req.param('user')}).exec((error, user) => {
 
                 // assign a new user to this alert.
-                console.log(alert.users);
                 alert.users.add(user);
 
                 // Save the alert, creating the new association in the join table
@@ -228,8 +225,6 @@ module.exports = {
                     if (error) {
                         return res.negotiate(error);
                     }
-
-                    Alert.publishUpdate(alert.id, alert);
 
                     return res.ok(alert);
                 });
@@ -286,8 +281,6 @@ module.exports = {
                 if (error) {
                     return res.negotiate(error);
                 }
-
-                Alert.publishUpdate(alert.id, alert);
 
                 return res.ok(alert);
             });

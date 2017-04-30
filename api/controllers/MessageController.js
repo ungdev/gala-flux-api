@@ -262,21 +262,6 @@ module.exports = {
                 return res.negotiate(error);
             }
 
-            // Let's publish to clients
-            let data = {
-                verb: 'created',
-                id: message.id,
-                data: message,
-            };
-
-            // Publish
-            sails.sockets.broadcast('message/' + channel, 'message', data);
-
-            let prefix = channel.substr(0, channel.indexOf(':'));
-            sails.sockets.broadcast('message/' + prefix + ':*', 'message', data);
-
-            Message.publishCreate(message);
-
             return res.ok(message);
         });
 
