@@ -164,14 +164,14 @@ module.exports = {
 
         // Check parameters
         let missingParameters = [];
-        //if (!req.params.id) missingParameters.push('id');
-        //if (!req.param('users')) missingParameters.push('users');
+        if (!req.param('id')) missingParameters.push('id');
+        if (!req.param('users')) missingParameters.push('users');
         if (missingParameters.length) {
             return res.error(400, 'BadRequest', 'Unknown parameters : ' + missingParameters.join(', '));
         }
 
         // find the requested Alert
-        Alert.findOne({id: req.params.id}).exec((error, alert) => {
+        Alert.findOne({id: req.param('id')}).populate('users').exec((error, alert) => {
 
             if (error) {
                 return res.negotiate(error);
@@ -180,67 +180,94 @@ module.exports = {
                 return res.error(404, 'notfound', 'The requested alert cannot be found');
             }
 
-            console.log("assigned : ", alert);
+            // users added
+            let added = req.param('users').filter(user => !findById(alert.users, user.id));
+            // users removed
+            let removed = alert.users.filter(user => !findById(req.param('users'), user.id));
 
-            // users to add
-            let added = req.param('users').filter(user => alert.user.indexOf(user.id) === -1);
             for (let user of added) {
-                this.addUser(alert, user.id);
+                addUser(alert, user.id);
             }
-            // users to remove
-            let removed = alert.users.filter(uid => req.param('users').indexOf(uid) === -1);
-            for (let id of removed) {
-                this.removeUser(alert, id);
+            for (let user of removed) {
+                removeUser(alert, user.id);
             }
 
             return res.ok(alert);
 
         });
 
-    },
-
-    addUser: (alert, id) => {
-
-        User.findOne({id}).exec((error, user) => {
-
-            // assign a new user to this alert.
-            alert.users.add(user);
-
-            // Save the alert, creating the new association in the join table
-            alert.save((error) => {
-                if (error) {
-                    return false;
-                }
-
-                Alert.publishUpdate(alert.id, alert);
-
-                return true;
-            });
-
-        });
-
-    },
-
-    removeUse: (alert, id) => {
-
-        User.findOne({id}).exec((error, user) => {
-
-            // assign a new user to this alert.
-            alert.users.remove(user);
-
-            // Save the alert, creating the new association in the join table
-            alert.save((error) => {
-                if (error) {
-                    return false;
-                }
-
-                Alert.publishUpdate(alert.id, alert);
-
-                return true;
-            });
-
-        });
-
     }
 
 };
+
+/**
+ * Find a object by id in an array
+ * @param {array} arr: array of object
+ * @param {string} id: id of the element to find
+ * @returns {object|null}: the object found or null
+ */
+function findById(arr, id) {
+    for (let el of arr) {
+        if (el.id === id) {
+            return el;
+        }
+    }
+    return null;
+}
+
+
+/**
+ * Add a user to an alert
+ * @param {object} alert: the alert to update
+ * @param {string} id: the id of the user to add
+ * @return {boolean}: success
+ */
+function addUser(alert, id) {
+
+    User.findOne({id}).exec((error, user) => {
+
+        // assign a new user to this alert.
+        alert.users.add(user);
+
+        // Save the alert, creating the new association in the join table
+        alert.save((error) => {
+            if (error) {
+                return false;
+            }
+
+            Alert.publishUpdate(alert.id, alert);
+
+            return true;
+        });
+
+    });
+
+}
+
+/**
+ * Remove a user of an alert
+ * @param {object} alert: the alert to update
+ * @param {string} id: the id of the user to remove
+ * @return {boolean}: success
+ */
+function removeUser(alert, id) {
+
+    User.findOne({id}).exec((error, user) => {
+
+        // assign a new user to this alert.
+        alert.users.remove(user.id);
+
+        // Save the alert, creating the new association in the join table
+        alert.save((error) => {
+            if (error) {
+                return false;
+            }
+
+            Alert.publishUpdate(alert.id, alert);
+
+            return true;
+        });
+
+    });
+
+}
