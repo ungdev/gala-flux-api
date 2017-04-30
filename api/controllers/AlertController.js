@@ -101,13 +101,7 @@ module.exports = {
                 }
 
                 if (req.param('severity')) {
-                    // Update if the severity is right
-                    if (req.param('severity') === 'done' && alert.severity !== 'done') {
-                        // can't set severity withhis value
-                        return res.error(400, 'BadRequest', "Can't set severity to " + req.param('severity'));
-                    } else {
-                        alert.severity = req.param('severity');
-                    }
+                    alert.severity = req.param('severity');
                 }
                 
                 if (req.param('message')) {
@@ -192,6 +186,8 @@ module.exports = {
                 removeUser(alert, user.id);
             }
 
+            Alert.publishUpdate(alert.id, alert);
+
             return res.ok(alert);
 
         });
@@ -235,8 +231,6 @@ function addUser(alert, id) {
                 return false;
             }
 
-            Alert.publishUpdate(alert.id, alert);
-
             return true;
         });
 
@@ -262,8 +256,6 @@ function removeUser(alert, id) {
             if (error) {
                 return false;
             }
-
-            Alert.publishUpdate(alert.id, alert);
 
             return true;
         });
