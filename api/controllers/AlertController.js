@@ -80,7 +80,7 @@ module.exports = {
         if (!req.param('id')) {
             return res.error(400, 'BadRequest', "Missing 'id' parameter.");
         }
-        if (!req.param('severity') && !req.param('message')) {
+        if (!req.param('severity') && req.param('message') === undefined) {
             return res.error(400, 'BadRequest', "Nothing to update.");
         }
 
@@ -103,11 +103,11 @@ module.exports = {
                 if (req.param('severity')) {
                     alert.severity = req.param('severity');
                 }
-                
-                if (req.param('message')) {
+
+                if (req.param('message') !== undefined) {
                     // only the sender can update the message of his alert
                     if (Team.can(req, 'alert/restricted')) {
-                        alert.message = req.param('message');                        
+                        alert.message = req.param('message');
                     } else {
                          return res.error(403, 'forbidden', 'You are not allowed to update the message of this alert.');
                     }
@@ -173,6 +173,7 @@ module.exports = {
             if (!alert) {
                 return res.error(404, 'notfound', 'The requested alert cannot be found');
             }
+
 
             // users added
             let added = req.param('users').filter(user => !findById(alert.users, user.id));
