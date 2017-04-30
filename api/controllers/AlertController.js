@@ -15,6 +15,7 @@ module.exports = {
      * @apiDescription Subscribe to all new items.
      */
     subscribe: function(req, res) {
+        console.log('subscribe alert')
         if(Team.can(req, 'alert/read') || Team.can(req, 'alert/admin')) {
             Alert.watch(req);
             Alert.find().exec((error, items) => {
@@ -40,6 +41,7 @@ module.exports = {
      * @apiDescription Unsubscribe from new items
      */
     unsubscribe: function(req, res) {
+        console.log('unsusbrabe alert')
         sails.sockets.leave('Alert/' + req.team.id);
         Alert.unwatch(req);
         Alert.find().exec((error, items) => {
@@ -60,6 +62,7 @@ module.exports = {
      * @apiUse forbiddenError
      */
     find: (req, res) => {
+        console.log('find alert')
 
         // Check permissions
         if (!(Team.can(req, 'alert/admin') || Team.can(req, 'alert/read') || Team.can(req, 'alert/restrictedSender') || Team.can(req, 'alert/restrictedReceiver'))) {
@@ -145,14 +148,7 @@ module.exports = {
                 }
 
                 if (req.param('severity')) {
-                    // Update if the severity is right
-                    if (req.param('severity') == 'done' && (alert.severity == 'warning' || alert.severity == 'serious')
-                        || req.param('severity') == 'serious' && alert.severity == 'warning') {
-                        alert.severity = req.param('severity');
-                    } else {
-                        // can't set severity with this value
-                        return res.error(400, 'BadRequest', "Can't set severity to " + req.param('severity'));
-                    }
+                    alert.severity = req.param('severity');
                 }
 
                 if (req.param('message') !== undefined) {
@@ -178,13 +174,13 @@ module.exports = {
     },
 
     /**
-     * @api {post} /alert/user/add
-     * @apiName addUser
+     * @api {put} /alert/:id/users
+     * @apiName updateAssignedUsers
      * @apiGroup Alert
-     * @apiDescription Create a new record in the join table between the Alert and User models.
+     * @apiDescription Update the list of users assigned to this alert
      *
-     * @apiParam {string} alert : The id of the alert to update(required)
-     * @apiParam {string} user : The id of the user to add (required)
+     * @apiParam {string} id : The id of the alert to update (required)
+     * @apiParam {string} users : The new users list (required)
      *
      * @apiSuccess {Alert} The alert that you've just updated
      *
@@ -192,7 +188,7 @@ module.exports = {
      * @apiUse forbiddenError
      * @apiUse notFoundError
      */
-    addUser: (req, res) => {
+    updateAssignedUsers: (req, res) => {
 
         // Check permissions
         if (!(Team.can(req, 'alert/admin') || Team.can(req, 'alert/restrictedReceiver'))) {
@@ -201,13 +197,15 @@ module.exports = {
 
         // Check parameters
         let missingParameters = [];
-        if (!req.param('alert')) missingParameters.push('alert');
-        if (!req.param('user')) missingParameters.push('user');
+        if (!req.param('id')) missingParameters.push('id');
+        if (!req.param('users')) missingParameters.push('users');
         if (missingParameters.length) {
             return res.error(400, 'BadRequest', 'Unknown parameters : ' + missingParameters.join(', '));
         }
 
-        Alert.findOne({id: req.param('alert')}).exec((error, alert) => {
+        // find the requested Alert
+        Alert.findOne({id: req.param('id')}).populate('users').exec((error, alert) => {
+
             if (error) {
                 return res.negotiate(error);
             }
@@ -215,78 +213,92 @@ module.exports = {
                 return res.error(404, 'notfound', 'The requested alert cannot be found');
             }
 
-            User.findOne({id: req.param('user')}).exec((error, user) => {
+            // users added
+            let added = req.param('users').filter(user => !findById(alert.users, user.id));
+            // users removed
+            let removed = alert.users.filter(user => !findById(req.param('users'), user.id));
 
-                // assign a new user to this alert.
-                alert.users.add(user);
-
-                // Save the alert, creating the new association in the join table
-                alert.save((error) => {
-                    if (error) {
-                        return res.negotiate(error);
-                    }
-
-                    return res.ok(alert);
-                });
-
-            });
-
-        });
-
-    },
-
-    /**
-     * @api {post} /alert/user/remove
-     * @apiName removeUser
-     * @apiGroup Alert
-     * @apiDescription Remove a record in the join table between the Alert and User models.
-     *
-     * @apiParam {string} alert : The id of the alert to update(required)
-     * @apiParam {string} user : The id of the user to remove (required)
-     *
-     * @apiSuccess {Alert} The alert that you've just updated
-     *
-     * @apiUse badRequestError
-     * @apiUse forbiddenError
-     * @apiUse notFoundError
-     */
-    removeUser: (req, res) => {
-
-        // Check permissions
-        if (!(Team.can(req, 'alert/admin') || Team.can(req, 'alert/restrictedReceiver'))) {
-            return res.error(403, 'forbidden', 'You are not authorized to update alerts.');
-        }
-
-        // Check parameters
-        let missingParameters = [];
-        if (!req.param('alert')) missingParameters.push('alert');
-        if (!req.param('user')) missingParameters.push('user');
-        if (missingParameters.length) {
-            return res.error(400, 'BadRequest', 'Unknown parameters : ' + missingParameters.join(', '));
-        }
-
-        Alert.findOne({id: req.param('alert')}).exec((error, alert) => {
-            if (error) {
-                return res.negotiate(error);
+            for (let user of added) {
+                addUser(alert, user.id);
             }
-            if (!alert) {
-                return res.error(404, 'notfound', 'The requested alert cannot be found');
+            for (let user of removed) {
+                removeUser(alert, user.id);
             }
 
-            // remove a user to this alert.
-            alert.users.remove(req.param('user'));
+            Alert.publishUpdate(alert.id, alert);
 
-            // Save the alert, removing the association in the join table
-            alert.save((error) => {
-                if (error) {
-                    return res.negotiate(error);
-                }
+            return res.ok(alert);
 
-                return res.ok(alert);
-            });
         });
 
     }
 
-
 };
+
+/**
+ * Find a object by id in an array
+ * @param {array} arr: array of object
+ * @param {string} id: id of the element to find
+ * @returns {object|null}: the object found or null
+ */
+function findById(arr, id) {
+    for (let el of arr) {
+        if (el.id === id) {
+            return el;
+        }
+    }
+    return null;
+}
+
+
+/**
+ * Add a user to an alert
+ * @param {object} alert: the alert to update
+ * @param {string} id: the id of the user to add
+ * @return {boolean}: success
+ */
+function addUser(alert, id) {
+
+    User.findOne({id}).exec((error, user) => {
+
+        // assign a new user to this alert.
+        alert.users.add(user);
+
+        // Save the alert, creating the new association in the join table
+        alert.save((error) => {
+            if (error) {
+                return false;
+            }
+
+            return true;
+        });
+
+    });
+
+}
+
+/**
+ * Remove a user of an alert
+ * @param {object} alert: the alert to update
+ * @param {string} id: the id of the user to remove
+ * @return {boolean}: success
+ */
+function removeUser(alert, id) {
+
+    User.findOne({id}).exec((error, user) => {
+
+        // assign a new user to this alert.
+        alert.users.remove(user.id);
+
+        // Save the alert, creating the new association in the join table
+        alert.save((error) => {
+            if (error) {
+                return false;
+            }
+
+            return true;
+        });
+
+    });
+
+}

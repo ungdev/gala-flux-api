@@ -55,8 +55,7 @@ module.exports.routes = {
     ***************************************************************************/
 
 
-    'post /alert/user/add': 'AlertController.addUser',
-    'post /alert/user/remove': 'AlertController.removeUser',
+    'put /alert/:id/users': 'AlertController.updateAssignedUsers',
     'post /alert/subscribe': 'AlertController.subscribe',
     'post /alert/unsubscribe': 'AlertController.unsubscribe',
 
