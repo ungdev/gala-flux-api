@@ -25,8 +25,10 @@ module.exports = {
         }
         else if(Team.can(req, 'alert/restrictedSender') || Team.can(req, 'alert/restrictedReceiver')) {
             // Join only for update of it own bottles
-            sails.sockets.join('Alert/' + req.team.id);
-            return res.ok();
+            sails.sockets.join(req, 'alert/' + req.team.id, (error) => {
+                if (error) return res.negotiate(error);
+                return res.ok();
+            });
         }
         else {
             return res.ok();
@@ -40,12 +42,13 @@ module.exports = {
      * @apiDescription Unsubscribe from new items
      */
     unsubscribe: function(req, res) {
-        sails.sockets.leave('Alert/' + req.team.id);
-        Alert.unwatch(req);
-        Alert.find().exec((error, items) => {
-            if(error) return res.negotiate(error);
-            Alert.unsubscribe(req, _.pluck(items, 'id'));
-            return res.ok();
+        sails.sockets.leave(req, 'alert/' + req.team.id, () => {
+            Alert.unwatch(req);
+            Alert.find().exec((error, items) => {
+                if(error) return res.negotiate(error);
+                Alert.unsubscribe(req, _.pluck(items, 'id'));
+                return res.ok();
+            });
         });
     },
 
@@ -138,8 +141,8 @@ module.exports = {
 
                 // if the request can only update from his team, check the sender
                 // else, check if the requester is in the receiver team
-                if ((Team.can(req, 'alert/restrictedSender') && (alert.sender !== req.team.id || alert.severity != 'done')) ||
-                (!Team.can(req, 'alert/restrictedReceiver') && alert.receiver != req.team.id)) {
+                if ((Team.can(req, 'alert/restrictedSender') && (alert.sender !== req.team.id || alert.severity == 'done')) ||
+                (Team.can(req, 'alert/restrictedReceiver') && alert.receiver != req.team.id)) {
                     return res.error(403, 'forbidden', 'You are not allowed to update this alert.');
                 }
 

@@ -24,8 +24,10 @@ module.exports = {
         }
         else if(Team.can(req, 'barrel/restricted')) {
             // Join only for update of it own bottles
-            sails.sockets.join('Barrel/' + req.team.id);
-            return res.ok();
+            sails.sockets.join(req, 'barrel/' + req.team.id, (error) => {
+                if (error) return res.negotiate(error);
+                return res.ok();
+            });
         }
         else {
             return res.ok();
@@ -39,12 +41,13 @@ module.exports = {
      * @apiDescription Unsubscribe from new items
      */
     unsubscribe: function(req, res) {
-        sails.sockets.leave('Barrel/' + req.team.id);
-        Barrel.unwatch(req);
-        Barrel.find().exec((error, items) => {
-            if(error) return res.negotiate(error);
-            Barrel.unsubscribe(req, _.pluck(items, 'id'));
-            return res.ok();
+        sails.sockets.leave(req, 'barrel/' + req.team.id, () => {
+            Barrel.unwatch(req);
+            Barrel.find().exec((error, items) => {
+                if(error) return res.negotiate(error);
+                Barrel.unsubscribe(req, _.pluck(items, 'id'));
+                return res.ok();
+            });
         });
     },
 

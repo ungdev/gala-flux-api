@@ -75,12 +75,55 @@ function Model () {
                     if(error) return cb(error);
 
                     // Publish destroy event
-                    Alert._publishDestroy(alert.id);
+                    let data = {
+                        verb: 'destroyed',
+                        id: alert.id,
+                    };
+                    sails.sockets.broadcast('alert/' + alert.sender, 'alert', data);
+                    sails.sockets.broadcast('alert/' + alert.receiver, 'alert', data);
+                    Alert.publishDestroy(alert.id);
 
                     return cb();
                 });
             }, cb);
         });
+    };
+
+    /**
+     * Publish create to client.
+     *
+     * @param {object} newlyInsertedRecord New item
+     */
+    this._publishCreate = function(newlyInsertedRecord) {
+        // Publish
+        let data = {
+            verb: 'created',
+            id: newlyInsertedRecord.id,
+            data: newlyInsertedRecord,
+        };
+        sails.sockets.broadcast('alert/' + newlyInsertedRecord.sender, 'alert', data);
+        sails.sockets.broadcast('alert/' + newlyInsertedRecord.receiver, 'alert', data);
+        Alert.publishCreate(newlyInsertedRecord);
+    };
+
+
+
+    /**
+     * Publish update to client.
+     *
+     * @param {id} id Id to update
+     * @param {object} valuesToUpdate Values to update
+     * @param {object} currentRecord Current value
+     */
+    this._publishUpdate = function(id, valuesToUpdate, currentRecord) {
+        let data = {
+            verb: 'updated',
+            id: valuesToUpdate.id,
+            data: valuesToUpdate,
+        };
+        sails.sockets.broadcast('alert/' + valuesToUpdate.sender, 'alert', data);
+        sails.sockets.broadcast('alert/' + valuesToUpdate.receiver, 'alert', data);
+        Alert.publishUpdate(valuesToUpdate.id, valuesToUpdate);
     };
 
 
