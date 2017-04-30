@@ -15,7 +15,6 @@ module.exports = {
      * @apiDescription Subscribe to all new items.
      */
     subscribe: function(req, res) {
-        console.log('subscribe alert')
         if(Team.can(req, 'alert/read') || Team.can(req, 'alert/admin')) {
             Alert.watch(req);
             Alert.find().exec((error, items) => {
@@ -41,7 +40,6 @@ module.exports = {
      * @apiDescription Unsubscribe from new items
      */
     unsubscribe: function(req, res) {
-        console.log('unsusbrabe alert')
         sails.sockets.leave('Alert/' + req.team.id);
         Alert.unwatch(req);
         Alert.find().exec((error, items) => {
@@ -62,8 +60,6 @@ module.exports = {
      * @apiUse forbiddenError
      */
     find: (req, res) => {
-        console.log('find alert')
-
         // Check permissions
         if (!(Team.can(req, 'alert/admin') || Team.can(req, 'alert/read') || Team.can(req, 'alert/restrictedSender') || Team.can(req, 'alert/restrictedReceiver'))) {
             return res.error(403, 'forbidden', 'You are not authorized to read alerts.');

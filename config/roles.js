@@ -58,10 +58,11 @@ module.exports.roles = {
         'bottleType/read',
         'bottleAction/read',
         'bottleAction/create',
+        'barrelType/read',
+        'barrel/restricted',
         'alertButton/read',
         'alertButton/createAlert',
-        'barrel/restricted',
-        'alert/restricted'
+        'alert/restrictedSender'
     ],
     log: [
         'message/public',
