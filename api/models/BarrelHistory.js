@@ -1,23 +1,21 @@
-/**
- * BarrelHistory.js
- *
- * @description :: A BarrelHistory is created each time a Barrel is created or updated. This is a copy of the main
- * attributes of this Barrel. The goal is to log all about barrels.
- * @docs        :: http://sailsjs.org/documentation/concepts/models-and-orm/models
- */
+const Base = require('./Base');
 
-module.exports = {
+function Model () {
 
-    attributes: {
+    this.attributes = {
 
+        /**
+         * Can be null if barrel deleted
+         */
         barrelId: {
             model: "barrel",
-            required: true
         },
 
+        /**
+         * Can be null if barreltype deleted
+         */
         type: {
             model: "barreltype",
-            required: true
         },
 
         reference: {
@@ -25,6 +23,9 @@ module.exports = {
             required: true,
         },
 
+        /**
+         * null if not allocated to a bar (a team) or team deleted. Else, the team.
+         */
         place: {
             model: "team",
             defaultsTo: null
@@ -36,7 +37,13 @@ module.exports = {
             required: true
         }
 
-    },
+    };
+
+    // Attribute hidden on when sending to client
+    this.hiddenAttr = [];
+
+    // Update will be emitted to client only if another attribute has been updated
+    this.ignoredAttrUpdate = [];
 
 
     /**
@@ -46,7 +53,7 @@ module.exports = {
      * @param  {type} callback description
      * @return {type}          description
      */
-    pushToHistory(barrel, callback) {
+    this.pushToHistory = function(barrel, callback) {
         let data = [];
         if(Array.isArray(barrel)) {
             for (let item of barrel) {
@@ -56,7 +63,7 @@ module.exports = {
                     reference: item.reference,
                     place: item.place,
                     state: item.state
-                })
+                });
             }
         }
         else {
@@ -73,6 +80,24 @@ module.exports = {
             callback(error, barrelHistory);
         });
 
-    }
+    };
 
-};
+    /**
+     * Before removing an item from the database
+     *
+     * @param {object} criteria contains the query with the user id
+     * @param {function} cb the callback
+     */
+    this.beforeDestroy = function(criteria, cb) {
+        let error = new Error("It's forbidden to destroy an item of this model.");
+        sails.log.error(error);
+        return cb(error);
+    };
+
+}
+
+// Inherit Base Model
+Model.prototype = new Base('BarrelHistory');
+
+// Construct and export
+module.exports = new Model();

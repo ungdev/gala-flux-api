@@ -1,13 +1,8 @@
-/**
- * User.js
- *
- * @description :: TODO: You might write a short summary of how this model works and what it represents here.
- * @docs        :: http://sailsjs.org/documentation/concepts/models-and-orm/models
- */
+const Base = require('./Base');
 
-module.exports = {
+function Model () {
 
-    attributes: {
+    this.attributes = {
 
         name : {
             type: 'string',
@@ -33,7 +28,13 @@ module.exports = {
             type: 'string',
             required: true,
         },
-    },
+    };
+
+    // Attribute hidden on when sending to client
+    this.hiddenAttr = [];
+
+    // Update will be emitted to client only if another attribute has been updated
+    this.ignoredAttrUpdate = [];
 
     /**
      * Before removing a Team from the database
@@ -41,33 +42,50 @@ module.exports = {
      * @param {object} criteria: contains the query with the team id
      * @param {function} cb: the callback
      */
-    beforeDestroy: function(criteria, cb) {
-        // find the team
-        Team.findOne({id: criteria.where.id}).exec((error, team) => {
-            // update the messages of this team
-            Message.update({senderTeam: team.id}, {senderTeam: null, senderTeamName: team.name}).exec((error, updated) => {
-                // destroy the users of this team
-                User.destroy({team: team.id}).exec(error => {
+    this.beforeDestroy = function(criteria, cb) {
+        Team.find(criteria).exec((error, teams) => {
+            if(error) return cb(error);
+
+            // Execute set of rules for each deleted user
+            async.each(teams, (team, cb) => {
+                async.parallel([
+
+                    // destroy the users of this team
+                    cb => User.destroy({team: team.id}).exec(cb),
+
+                    // update the bottleAction where the team is this team
+                    cb => BottleAction.update2({team: team.id}, {team: null}).exec(cb),
+                    // update the bottleAction where fromTeam is this team
+                    cb => BottleAction.update2({fromTeam: team.id}, {fromTeam: null}).exec(cb),
+
+                    // update the alerts in the barrelHistory where the receiver is this team
+                    cb => BarrelHistory.update2({place: team.id}, {place: null}).exec(cb),
+                    // update the alerts in the barrel where the receiver is this team
+                    cb => BarrelHistory.update2({place: team.id}, {place: null}).exec(cb),
+
                     // update the alerts in the history where the sender is this team
-                    AlertHistory.update({sender: team.id}, {sender: null, senderName: team.name}).exec((error, updated) => {
-                        // update the alerts in the history where the receiver is this team
-                        AlertHistory.update({receiver: team.id}, {receiver: null, receiverName: team.name}).exec((error, updated) => {
-                            // destroy the alerts where the sender is this team
-                            Alert.destroy({sender: team.id}).exec(error => {
-                                // destroy the alerts where the sender is this team
-                                Alert.destroy({receiver: team.id}).exec(error => {
-                                    // destroy the alert buttons where the receiver is this team
-                                    AlertButton.destroy({receiver: team.id}).exec(error => {
-                                        cb();
-                                    });
-                                });
-                            });
-                        });
-                    });
+                    cb => AlertHistory.update2({sender: team.id}, {sender: null}).exec(cb),
+                    // update the alerts in the history where the receiver is this team
+                    cb => AlertHistory.update2({receiver: team.id}, {receiver: null}).exec(cb),
+
+                    // destroy the alert buttons where the receiver is this team
+                    cb => AlertButton.destroy({receiver: team.id}).exec(cb),
+
+                    // destroy the alerts where the sender is this team
+                    cb => Alert.destroy({sender: team.id}).exec(cb),
+                    // destroy the alerts where the sender is this team
+                    cb => Alert.destroy({receiver: team.id}).exec(cb),
+                ], (error) => {
+                    if(error) return cb(error);
+
+                    // Publish destroy event
+                    Team._publishDestroy(team.id);
+
+                    cb();
                 });
-            });
+            }, cb);
         });
-    },
+    };
 
     /**
      * Check if team has the given permission
@@ -76,13 +94,13 @@ module.exports = {
      * @param  {String}   permission Permission name
      * @return {boolean} return true if user has the permission
      */
-    can: function (obj, permission) {
+    this.can = function (obj, permission) {
         let team = obj.team ? obj.team : obj;
         return (Array.isArray(sails.config.roles[team.role]) && sails.config.roles[team.role].indexOf(permission) !== -1);
-    },
+    };
 
 
-    fixtures: {
+    this.fixtures = {
         bar1: {
             name: 'Bar AS',
             group: 'bar',
@@ -137,5 +155,11 @@ module.exports = {
             location: 'Salle asso',
             role: 'admin',
         },
-    },
-};
+    };
+}
+
+// Inherit Base Model
+Model.prototype = new Base('Team');
+
+// Construct and export
+module.exports = new Model();

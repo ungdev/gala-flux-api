@@ -9,6 +9,47 @@
 module.exports = {
 
     /**
+     * @api {post} /alert/subscribe Subscribe to new items
+     * @apiName subscribe
+     * @apiGroup Alert
+     * @apiDescription Subscribe to all new items.
+     */
+    subscribe: function(req, res) {
+        if(Team.can(req, 'alert/read') || Team.can(req, 'alert/admin')) {
+            Alert.watch(req);
+            Alert.find().exec((error, items) => {
+                if(error) return res.negotiate(error);
+                Alert.subscribe(req, _.pluck(items, 'id'));
+                return res.ok();
+            });
+        }
+        else if(Team.can(req, 'alert/restrictedSender') || Team.can(req, 'alert/restrictedReceiver')) {
+            // Join only for update of it own bottles
+            sails.sockets.join('Alert/' + req.team.id);
+            return res.ok();
+        }
+        else {
+            return res.ok();
+        }
+    },
+
+    /**
+     * @api {post} /alert/unsubscribe Unsubscribe from new items
+     * @apiName subscribe
+     * @apiGroup Alert
+     * @apiDescription Unsubscribe from new items
+     */
+    unsubscribe: function(req, res) {
+        sails.sockets.leave('Alert/' + req.team.id);
+        Alert.unwatch(req);
+        Alert.find().exec((error, items) => {
+            if(error) return res.negotiate(error);
+            Alert.unsubscribe(req, _.pluck(items, 'id'));
+            return res.ok();
+        });
+    },
+
+    /**
      * @api {get} /alert
      * @apiName find
      * @apiGroup Alert
@@ -19,39 +60,40 @@ module.exports = {
      * @apiUse forbiddenError
      */
     find: (req, res) => {
-
         // Check permissions
-        if (!(Team.can(req, 'alert/read') || (Team.can(req, 'alert/restricted')))) {
+        if (!(Team.can(req, 'alert/admin') || Team.can(req, 'alert/read') || Team.can(req, 'alert/restrictedSender') || Team.can(req, 'alert/restrictedReceiver'))) {
             return res.error(403, 'forbidden', 'You are not authorized to read alerts.');
         }
 
+        // read filters
         let where = {};
-        if (Team.can(req, 'alert/restricted')) {
-            // alert sent by his team
-            where.sender = req.team.id;
-            where.severity = {$ne: "done"};
-        } else {
-            // alert for his team
+        if (req.allParams().filters) {
+            where = req.allParams().filters;
+        }
+        // if the requester is not admin, show only his team's alert
+        if (Team.can(req, 'alert/restrictedSender')) {
             where = {
-                or: [
-                    { receiver: req.team.id },
-                    { receiver: null }
-                ]
+                severity: {'!': 'done'},
+                sender: req.team.id,
+                where,
+            };
+        }
+        else if (Team.can(req, 'alert/restrictedReceiver')) {
+            where = {
+                receiver: req.team.id,
+                where,
             };
         }
 
-        // Find alert where the receiver is the requester's team
-        Alert.find(where).populate('users').exec((error, alerts) => {
-                if (error) {
-                    return res.negotiate(error);
-                }
+        // Find alerts
+        Alert.find(where)
+        .exec((error, alerts) => {
+            if (error) {
+                return res.negotiate(error);
+            }
 
-                Alert.subscribe(req, _.pluck(alerts, 'id'));
-                Alert.watch(req);
-
-                return res.ok(alerts);
-            });
-
+            return res.ok(alerts);
+        });
     },
 
     /**
@@ -72,7 +114,7 @@ module.exports = {
     update: (req, res) => {
 
         // Check permissions
-        if (!(Team.can(req, 'alert/update') || (Team.can(req, 'alert/restricted')))) {
+        if (!(Team.can(req, 'alert/admin') || Team.can(req, 'alert/restrictedSender') || Team.can(req, 'alert/restrictedReceiver'))) {
             return res.error(403, 'forbidden', 'You are not authorized to update alerts.');
         }
 
@@ -96,7 +138,8 @@ module.exports = {
 
                 // if the request can only update from his team, check the sender
                 // else, check if the requester is in the receiver team
-                if ((Team.can(req, 'alert/restricted') && alert.sender !== req.team.id) || (!Team.can(req, 'alert/restricted') && (alert.receiver !== null && req.team.id != alert.receiver))) {
+                if ((Team.can(req, 'alert/restrictedSender') && (alert.sender !== req.team.id || alert.severity != 'done')) ||
+                (!Team.can(req, 'alert/restrictedReceiver') && alert.receiver != req.team.id)) {
                     return res.error(403, 'forbidden', 'You are not allowed to update this alert.');
                 }
 
@@ -105,12 +148,7 @@ module.exports = {
                 }
 
                 if (req.param('message') !== undefined) {
-                    // only the sender can update the message of his alert
-                    if (Team.can(req, 'alert/restricted')) {
-                        alert.message = req.param('message');
-                    } else {
-                         return res.error(403, 'forbidden', 'You are not allowed to update the message of this alert.');
-                    }
+                    alert.message = req.param('message');
                 }
 
                 alert.save((error) => {
@@ -123,9 +161,6 @@ module.exports = {
                         if (error) {
                             return res.negotiate(error);
                         }
-
-                        Alert.publishUpdate(alert.id, alert);
-                        Alert.subscribe(req, [alert.id]);
 
                         return res.ok(alert);
                     });
@@ -152,7 +187,7 @@ module.exports = {
     updateAssignedUsers: (req, res) => {
 
         // Check permissions
-        if (!(Team.can(req, 'alert/update'))) {
+        if (!(Team.can(req, 'alert/admin') || Team.can(req, 'alert/restrictedReceiver'))) {
             return res.error(403, 'forbidden', 'You are not authorized to update alerts.');
         }
 
@@ -173,7 +208,6 @@ module.exports = {
             if (!alert) {
                 return res.error(404, 'notfound', 'The requested alert cannot be found');
             }
-
 
             // users added
             let added = req.param('users').filter(user => !findById(alert.users, user.id));

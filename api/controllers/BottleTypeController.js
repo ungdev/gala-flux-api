@@ -8,7 +8,43 @@
 module.exports = {
 
     /**
-     * @api {get} /bottletype/find Find all bottletypes and subscribe to them
+     * @api {post} /bottletype/subscribe Subscribe to new items
+     * @apiName subscribe
+     * @apiGroup BottleType
+     * @apiDescription Subscribe to all new items.
+     */
+    subscribe: function(req, res) {
+        if(Team.can(req, 'bottleType/read') || Team.can(req, 'bottleType/admin')) {
+            BottleType.watch(req);
+            BottleType.find().exec((error, items) => {
+                if(error) return res.negotiate(error);
+                BottleType.subscribe(req, _.pluck(items, 'id'));
+                return res.ok();
+            });
+        }
+        else {
+            return res.ok();
+        }
+    },
+
+
+    /**
+     * @api {post} /bottletype/unsubscribe Unsubscribe from new items
+     * @apiName subscribe
+     * @apiGroup BottleType
+     * @apiDescription Unsubscribe from new items
+     */
+    unsubscribe: function(req, res) {
+        BottleType.unwatch(req);
+        BottleType.find().exec((error, items) => {
+            if(error) return res.negotiate(error);
+            BottleType.unsubscribe(req, _.pluck(items, 'id'));
+            return res.ok();
+        });
+    },
+
+    /**
+     * @api {get} /bottletype/find Find all bottletypes
      * @apiName find
      * @apiGroup BottleType
      * @apiDescription Get the list of all bottletypes
@@ -33,9 +69,6 @@ module.exports = {
                     if (error) {
                         return res.negotiate(error);
                     }
-
-                    BottleType.subscribe(req, _.pluck(bottletype, 'id'));
-                    BottleType.watch(req);
 
                     return res.ok(bottletype);
                 });
@@ -77,8 +110,6 @@ module.exports = {
                     if(!bottletype) {
                         return res.error(400, 'BadRequest', 'The requested bottletype cannot be found');
                     }
-
-                    BottleType.subscribe(req, [req.param('id')]);
 
                     return res.ok(bottletype);
                 });
@@ -131,9 +162,6 @@ module.exports = {
                     return res.negotiate(error);
                 }
 
-                BottleType.publishCreate(bottletype);
-                BottleType.subscribe(req, [bottletype.id]);
-
                 return res.ok(bottletype);
             });
         })
@@ -170,8 +198,6 @@ module.exports = {
                     if (error) {
                         return res.negotiate(error);
                     }
-
-                    BottleType.publishDestroy(bottletype.id);
 
                     return res.ok();
                 });
@@ -226,12 +252,9 @@ module.exports = {
                     if (error) {
                         return res.negotiate(error);
                     }
-                    BottleType.publishUpdate(bottletype.id, bottletype);
-                    BottleType.subscribe(req, [bottletype.id]);
 
                     return res.ok(bottletype);
                 });
             });
     },
 };
-

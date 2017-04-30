@@ -8,7 +8,48 @@
 module.exports = {
 
     /**
-     * @api {get} /bottleAction/find Find all bottles actions related to the bar and subscribe to them
+     * @api {post} /bottleAction/subscribe Subscribe to new items
+     * @apiName subscribe
+     * @apiGroup BottleAction
+     * @apiDescription Subscribe to all new items.
+     */
+    subscribe: function(req, res) {
+        if(Team.can(req, 'bottleAction/read') || Team.can(req, 'bottleAction/admin')) {
+            BottleAction.watch(req);
+            BottleAction.find().exec((error, items) => {
+                if(error) return res.negotiate(error);
+                BottleAction.subscribe(req, _.pluck(items, 'id'));
+                return res.ok();
+            });
+        }
+        else if(Team.can(req, 'bottleAction/restricted')) {
+            // Join only for update of it own bottles
+            sails.sockets.join('BottleAction/' + req.team.id);
+        }
+        else {
+            return res.ok();
+        }
+    },
+
+    /**
+     * @api {post} /bottleAction/unsubscribe Unsubscribe from new items
+     * @apiName subscribe
+     * @apiGroup BottleAction
+     * @apiDescription Unsubscribe from new items
+     */
+    unsubscribe: function(req, res) {
+        sails.sockets.leave('BottleAction/' + req.team.id);
+        BottleAction.unwatch(req);
+        BottleAction.find().exec((error, items) => {
+            if(error) return res.negotiate(error);
+            BottleAction.unsubscribe(req, _.pluck(items, 'id'));
+            return res.ok();
+        });
+    },
+
+
+    /**
+     * @api {get} /bottleAction/find Find all bottles actions related to the bar
      * @apiName find
      * @apiGroup BottleAction
      * @apiDescription Get the list of all bottle actions
@@ -24,72 +65,34 @@ module.exports = {
      */
 
     find: function(req, res) {
-	    // Check permissions
-        if((Team.can(req, 'bottleAction/read') && Team.param('id') == req.team('id')) ||
-            Team.can(req, 'bottleAction/admin')) {
-            BottleAction.find()
-                .exec((error, bottleAction) => {
-                    if (error) {
-                        return res.negotiate(error);
-                    }
-
-                    if(!(Team.can(req, 'bottleAction/admin'))) {
-                        let channel = 'BottleAction/' + req.team.id;
-                        sails.sockets.join(channel);
-                        return res.ok(botleAction);
-                    }
-                    else {
-                        BottleAction.watch(req);
-                        return res.ok(bottleAction);
-                    }
-                })
-        }
-        else {
+        // Check permissions
+        if (!(Team.can(req, 'bottleAction/admin') || Team.can(req, 'bottleAction/read') || Team.can(req, 'bottleAction/restricted'))) {
             return res.error(403, 'forbidden', 'You are not authorized to view the bottle actions list.');
         }
-    },
 
-
-    /**
-     * @api {get} /bottleaction/find/:id Find one bottle action
-     * @apiName findOne
-     * @apiGroup BottleAction
-     * @apiDescription Find one bottle action based on its id
-     *
-     * @apiUse forbiddenError
-     * @apiUse notFoundError
-     *
-     * @apiParam {id} id Id of the bottle action you are looking for
-     *
-     * @apiSuccess {BottleAction} Array.bottleAction A bottle action object
-     * @apiSuccess {string} Array.bottle.team Team which produced a bottle action
-     * @apiSuccess {string} Array.bottle.bottleId Id of the concerned bottle
-     * @apiSuccess {integer} Array.bottle.quantity Number of bottles sold or moved (can be negative)
-     * @apiSuccess {string} Array.bottle.operation Operation performed on the bottle (sold or moved)
-     */
-
-    findOne: function (req, res) {
-        // Check permissions
-        if(Team.can(req, 'bottleAction/read') || Team.can(req, 'bottleAction/admin')) {
-
-            // Find bottleAction
-            BottleAction.findOne({id: req.param('id')})
-                .exec((error, bottleAction) => {
-                    if (error) {
-                        return res.negotiate(error);
-                    }
-                    if(!bottleAction) {
-                        return res.error(400, 'BadRequest', 'The requested bottle action cannot be found');
-                    }
-
-                    BottleAtion.subscribe(req, [req.param('id')]);
-
-                    return res.ok(bottleAction);
-                });
+        // read filters
+        let where = {};
+        if (req.allParams().filters) {
+            where = req.allParams().filters;
         }
-        else {
-            return res.error(403, 'forbidden', 'You are not authorized to read bottle action data');
+        // if the requester is not admin, show only his team's bottleActions
+        if (Team.can(req, 'bottleAction/restricted')) {
+            where = {
+                or: [{ team: req.team.id }, { fromTeam: req.team.id }],
+                where,
+            };
         }
+
+        // Find bottleActions
+        BottleAction.find(where)
+            .exec((error, bottleActions) => {
+                if (error) {
+                    return res.negotiate(error);
+                }
+
+                return res.ok(bottleActions);
+            });
+
     },
 
     /**
@@ -131,19 +134,9 @@ module.exports = {
                         return res.negotiate(error);
                     }
 
-                    let data = {
-                        verb: 'created',
-                        id: bottleAction.id,
-                        data: bottleAction,
-                    };
-                    
-                    sails.sockets.broadcast('BottleAction/' + bottleAction.id, 'BottleAction', data);
-                    BottleAction.publishCreate(bottleAction);
-
                     return res.ok(bottleAction);
                 });
-            })
+            });
         }
     },
 };
-

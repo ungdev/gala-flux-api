@@ -35,6 +35,92 @@
 
 module.exports = {
 
+
+    /**
+     * @api {post} /message/subscribe Subscribe to new messages
+     * @apiName subscribe
+     * @apiGroup Message
+     * @apiDescription Subscribe to all new messages.
+     */
+    subscribe: function(req, res) {
+        // Receive #group:[groupname] and #[teamname] but can send only in #[teamname]
+        if(Team.can(req, 'message/oneChannel')) {
+            sails.sockets.join(req, 'message/' + ('public:'+Message.toChannel(req.team.name)), () => {
+                sails.sockets.join(req, 'message/' + ('group:'+Message.toChannel(req.team.group)), () => {
+                    return res.ok();
+                });
+            });
+        }
+        // Send/read message to/from everywhere also private channels
+        else if(Team.can(req, 'message/admin')) {
+            Message.watch(req);
+            return res.ok();
+        }
+        // Not compatible with `oneChannel`. Can send and receive in any
+        // public #[teamname] channel, can also receive and send in
+        // its own #group:[groupname] channel
+        else if(Team.can(req, 'message/public')) {
+            let join = [];
+            join.push('message/' + 'public:*');
+
+            // Can send and receive in any #group:[groupname] channel
+            if(Team.can(req, 'message/group')) {
+                join.push('message/' + 'group:*');
+            }
+            // Can only send/receive in your own group
+            else {
+                join.push('message/' + ('group:'+Message.toChannel(req.team.group)));
+            }
+
+            // Can send and receive in its own #private:[teamname] channel
+            if(Team.can(req, 'message/private')) {
+                join.push('message/' + ('private:'+Message.toChannel(req.team.name)));
+            }
+
+            // Process joins
+            async.each(join, (join, cb) => {
+                sails.sockets.join(req, join, cb);
+            }, (error) => {
+                if (error) {
+                    return res.negotiate(error);
+                }
+                return res.ok();
+            });
+        }
+
+    },
+
+    /**
+     * @api {post} /message/unsubscribe Unsubscribe from new messages
+     * @apiName subscribe
+     * @apiGroup Message
+     * @apiDescription Unsubscribe from new messages
+     */
+    unsubscribe: function(req, res) {
+        Message.unwatch(req);
+        sails.sockets.leave(req, 'message/' + 'public:*', () => {
+            sails.sockets.leave(req, 'message/' + 'group:*', () => {
+                Team.find().exec((error, teams) => {
+                    if (error) {
+                        return res.negotiate(error);
+                    }
+                    async.each(teams, (team, cb) => {
+                        async.series([
+                            cb => sails.sockets.leave(req, 'message/' + ('group:'+Message.toChannel(team.group)), cb),
+                            cb => sails.sockets.leave(req, 'message/' + ('private:'+Message.toChannel(team.name)), cb),
+                            cb => sails.sockets.leave(req, 'message/' + ('public:'+Message.toChannel(team.name)), cb),
+                        ], cb);
+                    }, (error) => {
+                        if (error) {
+                            return res.negotiate(error);
+                        }
+                        return res.ok();
+                    });
+                });
+            });
+        });
+    },
+
     /**
      * @api {get} /message/find Get all messages
      * @apiName find
@@ -60,14 +146,11 @@ module.exports = {
                     {'channel': 'group:'+Message.toChannel(req.team.group)},
                 ]
             };
-            sails.sockets.join(req, 'message/' + ('public:'+Message.toChannel(req.team.name)));
-            sails.sockets.join(req, 'message/' + ('group:'+Message.toChannel(req.team.group)));
         }
 
         // Send/read message to/from everywhere also private channels
         else if(Team.can(req, 'message/admin')) {
             where = {};
-            Message.watch(req);
         }
 
         // Not compatible with `oneChannel`. Can send and receive in any
@@ -80,23 +163,15 @@ module.exports = {
                     {'channel': 'group:'+Message.toChannel(req.team.group)},
                 ]
             };
-            sails.sockets.join(req, 'message/' + 'public:*');
-            sails.sockets.join(req, 'message/' + ('group:'+Message.toChannel(req.team.group)));
 
             // Can send and receive in any #group:[groupname] channel
             if(Team.can(req, 'message/group')) {
-                where.or.push({'channel': {'like': 'group:%'}})
-
-                // Leave single group room, to avoid duplicate messages
-                sails.sockets.leave(req, 'message/' + ('group:'+Message.toChannel(req.team.group)));
-                sails.sockets.join(req, 'message/' + 'group:*');
+                where.or.push({'channel': {'like': 'group:%'}});
             }
 
             // Can send and receive in its own #private:[teamname] channel
             if(Team.can(req, 'message/private')) {
-                where.or.push({'channel': 'private:'+Message.toChannel(req.team.name)})
-
-                sails.sockets.leave(req, 'message/' + ('private:'+Message.toChannel(req.team.name)));
+                where.or.push({'channel': 'private:'+Message.toChannel(req.team.name)});
             }
         }
 
@@ -108,7 +183,7 @@ module.exports = {
 
             // Return message list
             return res.ok(messages);
-        })
+        });
     },
 
 
@@ -151,15 +226,15 @@ module.exports = {
             ];
 
             if(Team.can(req, 'message/group')) {
-                authorized.push('/^group\:.+$/g')
+                authorized.push('/^group\:.+$/g');
             }
             if(Team.can(req, 'message/private')) {
-                authorized.push('/^private\:' + Message.toChannel(req.team.name) + '$/g')
+                authorized.push('/^private\:' + Message.toChannel(req.team.name) + '$/g');
             }
 
             var match = _.some(authorized, (regex) => {
                 return (new RegExp(regex)).test(channel);
-            })
+            });
             if(!match) {
                 return res.error(403, 'forbidden', 'You are not authorized to send in this channel');
             }
@@ -186,21 +261,6 @@ module.exports = {
             if (error) {
                 return res.negotiate(error);
             }
-
-            // Let's publish to clients
-            let data = {
-                verb: 'created',
-                id: message.id,
-                data: message,
-            };
-
-            // Publish
-            sails.sockets.broadcast('message/' + channel, 'message', data);
-
-            let prefix = channel.substr(0, channel.indexOf(':'));
-            sails.sockets.broadcast('message/' + prefix + ':*', 'message', data);
-
-            Message.publishCreate(message);
 
             return res.ok(message);
         });

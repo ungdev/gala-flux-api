@@ -8,6 +8,41 @@
 module.exports = {
 
     /**
+     * @api {post} /barreltype/subscribe Subscribe to new items
+     * @apiName subscribe
+     * @apiGroup BarrelType
+     * @apiDescription Subscribe to all new items.
+     */
+    subscribe: function(req, res) {
+        if(Team.can(req, 'barrelType/read') || Team.can(req, 'barrelType/admin')) {
+            BarrelType.watch(req);
+            BarrelType.find().exec((error, items) => {
+                if(error) return res.negotiate(error);
+                BarrelType.subscribe(req, _.pluck(items, 'id'));
+                return res.ok();
+            });
+        }
+        else {
+            return res.ok();
+        }
+    },
+
+    /**
+     * @api {post} /barreltype/unsubscribe Unsubscribe from new items
+     * @apiName subscribe
+     * @apiGroup BarrelType
+     * @apiDescription Unsubscribe from new items
+     */
+    unsubscribe: function(req, res) {
+        BarrelType.unwatch(req);
+        BarrelType.find().exec((error, items) => {
+            if(error) return res.negotiate(error);
+            BarrelType.unsubscribe(req, _.pluck(items, 'id'));
+            return res.ok();
+        });
+    },
+
+    /**
      * @api {get} /barreltype
      * @apiName find
      * @apiGroup BarrelType
@@ -20,7 +55,7 @@ module.exports = {
     find: (req, res) => {
 
         // Check permissions
-        if (!(Team.can(req, 'barrel/admin') || Team.can(req, 'barrel/restricted') || Team.can(req, 'barrel/read'))) {
+        if (!Team.can(req, 'barrelType/admin') && !Team.can(req, 'barrelType/read')) {
             return res.error(403, 'forbidden', 'You are not authorized to read the barrel types.');
         }
 
@@ -36,9 +71,6 @@ module.exports = {
                 if (error) {
                     return res.negotiate(error);
                 }
-
-                BarrelType.subscribe(req, _.pluck(barrelTypes, 'id'));
-                BarrelType.watch(req);
 
                 return res.ok(barrelTypes);
             });
@@ -80,9 +112,6 @@ module.exports = {
             if (error) {
                 return res.negotiate(error);
             }
-
-            BarrelType.publishCreate(barrelType);
-
             return res.ok(barrelType);
         });
 
@@ -135,8 +164,6 @@ module.exports = {
                         return res.negotiate(error);
                     }
 
-                    BarrelType.publishUpdate(barrelType.id, barrelType);
-
                     return res.ok(barrelType);
                 });
 
@@ -174,8 +201,6 @@ module.exports = {
                 BarrelType.destroy({id: barrelType.id})
                     .exec((error) => {
                         if (error) return res.negotiate(error);
-
-                        BarrelType.publishDestroy(barrelType.id);
 
                         return res.ok();
                     });
@@ -270,9 +295,6 @@ module.exports = {
                         return res.negotiate(error);
                     }
 
-                    // Publish information to client
-                    Barrel.publishCreate(barrels);
-
                     // log the list of new barrels
                     BarrelHistory.pushToHistory(barrels, (error, barrelHistory) => {
                         // if an error happened, call the callback with the error
@@ -284,11 +306,6 @@ module.exports = {
                         Barrel.destroy({id: toDelete}).exec((error) => {
                             if (error) {
                                 return res.negotiate(error);
-                            }
-
-                            // Publish information to client
-                            for (let id of toDelete) {
-                                Barrel.publishDestroy(id);
                             }
 
                             return res.ok();

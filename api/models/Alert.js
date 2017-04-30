@@ -1,17 +1,8 @@
-/**
- * Alert.js
- *
- * @description :: An alert is a problem to solve. An alert can be created from an AlertButton
- * by a user, or automatically.
- *
- * @docs        :: http://sailsjs.org/documentation/concepts/models-and-orm/models
- *
- */
-const faker = require('faker');
+const Base = require('./Base');
 
-module.exports = {
+function Model () {
 
-    attributes: {
+    this.attributes = {
 
         // the team which sent the alert
         sender: {
@@ -55,11 +46,6 @@ module.exports = {
             model: "alertbutton"
         },
 
-        // If the button is deleted, his title will be saved in this attribute
-        buttonTitle: {
-            type: "string"
-        },
-
         // users on this alert
         users: {
             collection: "user",
@@ -67,9 +53,38 @@ module.exports = {
             dominant: true
         }
 
-    },
+    };
 
-    fixtures: {
+    /**
+     * Before removing a Alert from the database
+     *
+     * @param {object} criteria: contains the query with the alert id
+     * @param {function} cb: the callback
+     */
+    this.beforeDestroy = function(criteria, cb) {
+        Alert.find(criteria).exec((error, alerts) => {
+            if(error) return cb(error);
+            // Execute set of rules for each deleted user
+            async.each(alerts, (alert, cb) => {
+                async.parallel([
+
+                    // update the alert in the history where the alert is this one
+                    cb => AlertHistory.update2({alertId: alert.id}, {alertId: null}).exec(cb),
+
+                ], (error) => {
+                    if(error) return cb(error);
+
+                    // Publish destroy event
+                    Alert._publishDestroy(alert.id);
+
+                    return cb();
+                });
+            }, cb);
+        });
+    };
+
+
+    this.fixtures = {
         alertsPerTeam: function(callback) {
             Team.findOne({name: 'Flux admins'}).exec((err, admin) => {
                 if (err) {
@@ -97,4 +112,11 @@ module.exports = {
             });
         }
     }
-};
+
+}
+
+// Inherit Base Model
+Model.prototype = new Base('Alert');
+
+// Construct and export
+module.exports = new Model();

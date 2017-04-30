@@ -1,35 +1,29 @@
-/**
- * AlertHistory.js
- *
- * @description :: An AlertHistory is created each time an Alert is created or updated. This is a copy of this alert.
- * The goal of this model is to log all about the alerts.
- *
- * @docs        :: http://sailsjs.org/documentation/concepts/models-and-orm/models
- */
+const Base = require('./Base');
 
-module.exports = {
+function Model () {
 
-    attributes: {
+    this.attributes = {
 
+        /**
+         * Can be null if alerte deleted
+         */
         alertId: {
             model: "alert",
             required: true
         },
 
+        /**
+         * Can be null if team deleted
+         */
         sender: {
             model: "team"
         },
 
-        senderName: {
-            type: "string"
-        },
-
+        /**
+         * Can be null if team deleted
+         */
         receiver: {
             model: "team"
-        },
-
-        receiverName: {
-            type: "string"
         },
 
         severity: {
@@ -55,9 +49,9 @@ module.exports = {
             model: "alertbutton"
         }
 
-    },
+    };
 
-    pushToHistory(alert, callback) {
+    this.pushToHistory = function(alert, callback) {
 
         AlertHistory.create({
             alertId: alert.id,
@@ -72,7 +66,23 @@ module.exports = {
             callback(error, alertHistory);
         });
 
-    }
+    };
 
-};
+    /**
+     * Before removing an item from the database
+     *
+     * @param {object} criteria contains the query with the user id
+     * @param {function} cb the callback
+     */
+    this.beforeDestroy = function(criteria, cb) {
+        let error = new Error("It's forbidden to destroy an item of this model.");
+        sails.log.error(error);
+        return cb(error);
+    };
+}
 
+// Inherit Base Model
+Model.prototype = new Base('AlertHistory');
+
+// Construct and export
+module.exports = new Model();

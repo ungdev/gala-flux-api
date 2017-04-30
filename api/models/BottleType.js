@@ -1,13 +1,8 @@
-/**
- * BottleType.js
- *
- * @description :: TODO: You might write a short summary of how this model works and what it represents here.
- * @docs        :: http://sailsjs.org/documentation/concepts/models-and-orm/models
- */
+const Base = require('./Base');
 
-module.exports = {
+function Model () {
 
-    attributes: {
+    this.attributes = {
 
         name : {
             type: 'string',
@@ -40,9 +35,45 @@ module.exports = {
             required: true,
         },
 
-    },
+    };
 
-    fixtures: {
+    // Attribute hidden on when sending to client
+    this.hiddenAttr = [];
+
+    // Update will be emitted to client only if another attribute has been updated
+    this.ignoredAttrUpdate = [];
+
+    /**
+     * Before removing a bottle from the database
+     *
+     * @param {object} criteria: contains the query with the bottle id
+     * @param {function} cb: the callback
+     */
+    this.beforeDestroy = function(criteria, cb) {
+        BottleType.find(criteria).exec((error, bottleTypes) => {
+            if(error) return cb(error);
+            // Execute set of rules for each deleted user
+            async.each(bottleTypes, (bottleType, cb) => {
+                async.parallel([
+
+                    // update the bottleAction where the bottleId is this bottleType
+                    cb => BottleAction.update2({bottleId: bottleType.id}, {team: null}).exec(cb),
+
+                    ], (error) => {
+                        if(error) return cb(error);
+
+                        // Publish destroy event
+                        BottleType._publishDestroy(bottleType.id);
+
+                        return cb();
+                    }
+                );
+            }, cb);
+        });
+    };
+
+
+    this.fixtures = {
         bottleType1: {
             name: "La cuvée du patron",
             shortName: "CP",
@@ -69,5 +100,10 @@ module.exports = {
         },
     }
 
-};
+}
 
+// Inherit Base Model
+Model.prototype = new Base('BottleType');
+
+// Construct and export
+module.exports = new Model();
