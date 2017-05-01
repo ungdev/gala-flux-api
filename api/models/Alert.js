@@ -1,4 +1,5 @@
 const Base = require('./Base');
+const faker = require('faker');
 
 function Model () {
 
@@ -48,9 +49,8 @@ function Model () {
 
         // users on this alert
         users: {
-            collection: "user",
-            via: "alerts",
-            dominant: true
+            type: "array",
+            defaultsTo: [],
         }
 
     };

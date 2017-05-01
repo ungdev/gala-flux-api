@@ -25,12 +25,6 @@ function Model () {
             required: true,
         },
 
-        // alerts assigned to this user
-        alerts: {
-            collection: "alert",
-            via: "users"
-        },
-
         accessToken : {
             type: 'string',
         },

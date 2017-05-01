@@ -266,61 +266,51 @@ function checkTeamStocks(barrel) {
         BarrelType.findOne({
             id: barrel.type
         })
-            .exec((error, type) => {
+        .exec((error, type) => {
+            if (error) return;
+
+            // count how many new barrel of this type this the team still have
+            Barrel.count({
+                place: barrel.place,
+                type: type.id,
+                state: "new"
+            })
+            .exec((error, count) => {
                 if (error) return;
 
-                // count how many new barrel of this type this the team still have
-                Barrel.count({
-                    place: barrel.place,
-                    type: type.id,
-                    state: "new"
+                // Before emitting a new alert remove old one about this barrel
+                Alert.destroy({
+                    title: 'Stock : ' + type.name + ' (' + type.shortName + ')',
+                    severity: ['warning', 'serious'],
+                    category: 'Manque auto',
+                    sender: barrel.place,
                 })
-                    .exec((error, count) => {
-                        if (error) return;
+                .exec((error) => {
+                    if (error) return;
 
-                        // if state is new, check if there is an alert to remove (if a missClick triggered an alert)
-                        if (barrel.state === "new") {
-                            // count how many barrels are news
-                            // if 2 or 1, an alert was created
-                            if (count < 3) {
-                                // Find the alert sent
-                                Alert.findOne({
-                                    severity: count === 2 ? "warning" : "serious",
-                                    category: "Manque auto",
-                                    sender: barrel.place
-                                })
-                                    .limit(1).sort({$natural:-1})
-                                    .exec((error, alert) => {
-                                        if (error || !alert) return;
+                    // if 1 or 0 remaining, create alert
+                    if (count < 2) {
+                        Alert.create({
+                            sender: barrel.place,
+                            severity: count === 1 ? 'warning' : 'serious',
+                            title: 'Stock : ' + type.name + ' (' + type.shortName + ')',
+                            message: ((count === 1) ? 'Avant-dernier fût entammé' : 'Dernier fût entammé'),
+                            category: 'Manque auto',
+                        })
+                        .exec((error, alert) => {
+                            if (error) return;
 
-                                        Alert.destroy({id: alert.id}).exec((error) => {
-                                            if (error) return;
-                                        });
-                                    });
-                            }
-                        } else {
-                            // if 1 or 0 remaining, create alert
-                            if (count < 2) {
-                                Alert.create({
-                                    sender: barrel.place,
-                                    severity: count === 1 ? "warning" : "serious",
-                                    title: "Stock : " + type.name,
-                                    category: "Manque auto"
-                                })
-                                    .exec((error, alert) => {
-                                        if (error) return;
+                            // push this modification in the alert history
+                            AlertHistory.pushToHistory(alert, (error, result) => {
+                                if (error) return;
+                            });
 
-                                        // push this modification in the alert history
-                                        AlertHistory.pushToHistory(alert, (error, result) => {
-                                            if (error) return;
-                                        });
-
-                                    });
-                            }
-                        }
-                    })
-
+                        });
+                    }
+                });
             });
+
+        });
     }
 }
 
