@@ -24,7 +24,7 @@ module.exports = {
         }
         else if(Team.can(req, 'bottleAction/restricted')) {
             // Join only for update of it own bottles
-            sails.sockets.join('BottleAction/' + req.team.id);
+            sails.sockets.join('bottleAction/' + req.team.id);
         }
         else {
             return res.ok();

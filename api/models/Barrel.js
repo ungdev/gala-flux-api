@@ -65,7 +65,7 @@ function Model () {
             id: newlyInsertedRecord.id,
             data: newlyInsertedRecord,
         };
-        sails.sockets.broadcast('Barrel/' + newlyInsertedRecord.place, 'Barrel', data);
+        sails.sockets.broadcast('barrel/' + newlyInsertedRecord.place, 'barrel', data);
         Barrel.publishCreate(newlyInsertedRecord);
     };
 
@@ -84,11 +84,12 @@ function Model () {
             id: valuesToUpdate.id,
             data: valuesToUpdate,
         };
-        sails.sockets.broadcast('Barrel/' + currentRecord.place, 'Barrel', data);
-        sails.sockets.broadcast('Barrel/' + valuesToUpdate.place, 'Barrel', data);
+        sails.sockets.broadcast('barrel/' + currentRecord.place, 'barrel', data);
+        if(currentRecord.place != valuesToUpdate.place) {
+            sails.sockets.broadcast('barrel/' + valuesToUpdate.place, 'barrel', data);
+        }
         Barrel.publishUpdate(valuesToUpdate.id, valuesToUpdate);
     };
-
 
     /**
      * Before removing a Barrel from the database
@@ -111,7 +112,12 @@ function Model () {
                     if(error) return cb(error);
 
                     // Publish destroy event
-                    Barrel._publishDestroy(barrel.id);
+                    let data = {
+                        verb: 'destroyed',
+                        id: barrel.id,
+                    };
+                    sails.sockets.broadcast('barrel/' + barrel.place, 'barrel', data);
+                    Barrel.publishDestroy(barrel.id);
 
                     return cb();
                 });

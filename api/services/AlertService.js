@@ -30,8 +30,6 @@ module.exports = {
 
                                 Alert.destroy({id: alert.id}).exec((error) => {
                                     if (error) return;
-
-                                    Alert.publishDestroy(alert.id);
                                 });
                             });
                         return true;
@@ -52,8 +50,6 @@ module.exports = {
                                     // push this modification in the alert history
                                     AlertHistory.pushToHistory(alert, (error, result) => {
                                         if (error) return false;
-
-                                        Alert.publishCreate(alert);
                                     });
 
                                 });

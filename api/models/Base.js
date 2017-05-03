@@ -92,11 +92,12 @@ function BaseModel (model) {
 
             // Publish if necessary
             if(publish) {
+                let publishValue = Object.assign({}, currentRecord, valuesToUpdate);
                 // Remove hidden attrs from element
                 for (let attr of User.hiddenAttr) {
-                    delete valuesToUpdate[attr];
+                    delete publishValue[attr];
                 }
-                global[this._modelName]._publishUpdate(valuesToUpdate.id, valuesToUpdate, currentRecord);
+                global[this._modelName]._publishUpdate(publishValue.id, publishValue, currentRecord);
             }
 
             return cb();

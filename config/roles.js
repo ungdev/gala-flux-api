@@ -43,6 +43,8 @@
  * - team/admin : Can read/write on all teams
  *
  * - ui/admin : Can see admin panel. If not set, the user will be thrown on bar interface
+ * - ui/receiveAlerts : Can be selected as a receiver for alerts
+ * - ui/receiveDefaultAlerts : Will see automatic alert with null receiver
  *
  * - user/read : Can read all users
  * - user/team : Require `user/read`. Can create, update or delete user to/from it own team
@@ -72,7 +74,9 @@ module.exports.roles = {
         'alert/read',
         'alert/update',
         'barrelType/admin',
-        'barrel/admin'
+        'barrel/admin',
+        'ui/receiveAlerts',
+        'ui/receiveDefaultAlerts',
     ],
     secutt: [
         'message/public',
@@ -81,6 +85,7 @@ module.exports.roles = {
         'alert/read',
         'alert/update',
         'team/admin',
+        'ui/receiveAlerts',
     ],
     coord: [
         'message/admin',
@@ -101,5 +106,6 @@ module.exports.roles = {
         'barrel/admin',
         'barrelType/admin',
         'ui/admin',
+        'alert/admin',
     ],
 };
