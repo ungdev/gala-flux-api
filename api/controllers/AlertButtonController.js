@@ -101,54 +101,32 @@ module.exports = {
      * @apiUse forbiddenError
      */
     create: (req, res) => {
-
         // Check permissions
         if (!Team.can(req, 'alertButton/admin')) {
             return res.error(403, 'forbidden', 'You are not authorized to create an Alert button.');
         }
 
-        // Check parameters
-        let missingParameters = [];
-        if (!req.param('receiver')) {
-            missingParameters.push('receiver');
-        }
-        if (!req.param('title')) {
-            missingParameters.push('title');
-        }
-        if (req.param('message') === undefined) {
-            missingParameters.push('message');
-        }
-        if (!req.param('category')) {
-            missingParameters.push('category');
-        }
-        // return error with missing parameters if there are missing parameters
-        if (missingParameters.length) {
-            return res.error(400, 'BadRequest', 'Unknown parameters : ' + missingParameters.join(', '));
-        }
-
         // find the receiver team
-        Team.findOne({id: req.param('receiver')}).exec((error, team) => {
-            if (error) {
-                return res.negotiate(error);
-            }
-
+        AlertButton.validateForeignKey('receiver', req.param('receiver'))
+        .then(team => {
             // Create the AlertButton
             AlertButton.create({
-                receiver: team,
                 title: req.param('title'),
-                message: req.param('message'),
                 category: req.param('category'),
-                messagePlaceholder: req.param('messagePlaceholder') ? req.param('messagePlaceholder') : null
+                senderGroup: req.param('senderGroup'),
+                receiver: req.param('receiver'),
+                messageRequired: req.param('messageRequired'),
+                messagePrompt: req.param('messagePrompt'),
             }).exec((error, alertButton) => {
                 if (error) {
                     return res.negotiate(error);
                 }
-
                 return res.ok(alertButton);
             });
-
+        })
+        .catch(error => {
+            return res.badRequest(error);
         });
-
     },
 
     /**
@@ -177,31 +155,37 @@ module.exports = {
 
         // Find AlertButton
         AlertButton.findOne({id: req.param('id')})
-            .exec((error, alertButton) => {
-                if (error) {
-                    return res.negotiate(error);
-                }
-                if(!alertButton) {
-                    return res.error(404, 'notfound', 'The requested alert button cannot be found');
-                }
+        .exec((error, alertButton) => {
+            if (error) {
+                return res.negotiate(error);
+            }
+            if(!alertButton) {
+                return res.error(404, 'notfound', 'The requested alert button cannot be found');
+            }
 
-                // Update
-                alertButton.receiver = req.param('receiver', alertButton.receiver);
-                alertButton.title = req.param('title', alertButton.title);
-                alertButton.message = req.param('message', alertButton.message);
-                alertButton.category = req.param('category', alertButton.category);
-                alertButton.messagePlaceholder = req.param('messagePlaceholder', alertButton.messagePlaceholder);
+            // Set new values
+            alertButton.title = req.param('title', alertButton.title);
+            alertButton.category = req.param('category', alertButton.category);
+            alertButton.senderGroup = req.param('senderGroup', alertButton.senderGroup);
+            alertButton.receiver = req.param('receiver', alertButton.receiver);
+            alertButton.messageRequired = req.param('messageRequired', alertButton.messageRequired);
+            alertButton.messagePrompt = req.param('messagePrompt', alertButton.messagePrompt);
 
+            // find the receiver team
+            AlertButton.validateForeignKey('receiver', alertButton)
+            .then(team => {
+                // Save into db
                 alertButton.save((error) => {
                     if (error) {
                         return res.negotiate(error);
                     }
-
                     return res.ok(alertButton);
                 });
-
+            })
+            .catch(error => {
+                return res.badRequest(error);
             });
-
+        });
     },
 
     /**
@@ -315,20 +299,20 @@ module.exports = {
 
         // Find the alert button
         AlertButton.findOne({id: req.param('id')})
-            .exec((error, alertButton) => {
+        .exec((error, alertButton) => {
+            if (error) return res.negotiate(error);
+
+            if(!alertButton) {
+                return res.error(404, 'notfound', 'The requested alert button cannot be found');
+            }
+
+            AlertButton.destroy({id: alertButton.id})
+            .exec((error) => {
                 if (error) return res.negotiate(error);
 
-                if(!alertButton) {
-                    return res.error(404, 'notfound', 'The requested alert button cannot be found');
-                }
-
-                AlertButton.destroy({id: alertButton.id})
-                    .exec((error) => {
-                        if (error) return res.negotiate(error);
-
-                        return res.ok();
-                    });
+                return res.ok();
             });
+        });
     },
 
 };

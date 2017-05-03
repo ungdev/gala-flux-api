@@ -99,61 +99,66 @@ function Model () {
         return (Array.isArray(sails.config.roles[team.role]) && sails.config.roles[team.role].indexOf(permission) !== -1);
     };
 
-
     this.fixtures = {
         bar1: {
             name: 'Bar AS',
             group: 'bar',
             location: 'Chapiteau',
-            role: 'bar',
+            role: 'Point de vente',
         },
         bar2: {
             name: 'Bar UNG',
             group: 'bar',
             location: 'Hall N',
-            role: 'bar',
+            role: 'Point de vente',
         },
         bar3: {
             name: 'Bar ISM',
             group: 'bar',
             location: 'Amphi ext',
-            role: 'bar',
+            role: 'Point de vente',
         },
         jeton1: {
-            name: 'Jeton Etu',
-            group: 'jeton',
+            name: 'Rechargement Etu',
+            group: 'rechargement',
             location: 'Hall Etu',
-            role: 'jeton',
+            role: 'Point de vente',
         },
         jeton2: {
-            name: 'Jeton Entree',
-            group: 'jeton',
-            location: 'Hall Entree',
-            role: 'jeton',
+            name: 'Rechargement Entree',
+            group: 'rechargement',
+            location: 'Entree',
+            role: 'Point de vente',
         },
         log: {
-            name: 'Log',
+            name: 'Logistique',
             group: 'orga',
             location: 'Foyer',
-            role: 'log',
+            role: 'Logistique',
+        },
+        sl: {
+            name: 'S&L',
+            group: 'orga',
+            location: '',
+            role: 'Orga',
         },
         secutt: {
-            name: 'Secutt',
+            name: 'SecUTT',
             group: 'orga',
             location: 'Poste de secours',
-            role: 'secutt',
+            role: 'SecUTT',
         },
         coord: {
             name: 'Coord',
             group: 'orga',
             location: 'QG',
-            role: 'coord',
+            role: 'Coord',
         },
         admin: {
-            name: 'Flux admins',
+            name: 'Flux',
             group: 'orga',
             location: 'Salle asso',
-            role: 'admin',
+            role: 'Admin',
         },
     };
 }

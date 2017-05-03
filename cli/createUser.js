@@ -55,7 +55,7 @@ Sails.lift({port: 1338}, (error) => {
             message: 'Team',
             name: 'team',
             choices: Object.keys(teamMap),
-            default: 'Flux admins'
+            default: 'Flux'
         }]).then((answers) => {
             answers1 = answers;
             if(answers.type === 'EtuUTT') {

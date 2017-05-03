@@ -144,6 +144,47 @@ function BaseModel (model) {
             }
         };
     };
+
+    /**
+     * Waterline doen't check foreign key
+     * this function will check foreign key and will return null or sails.js error format
+     *  with an E_VALIDATION flag (same as waterline validation error) and the rule 'model'
+     *
+     * @param  {string} attr Name of the forign key
+     * @param  {object|id} value Object to validate or directly value of the attr
+     * @return {Promise} The found foreign value/null or will error to validation object that you can return with badRequest
+     */
+    this.validateForeignKey = function(attr, value) {
+        return new Promise((resolve, reject) => {
+            // Convert value to id if necessary
+            if(typeof value !== 'string') {
+                value = value[attr];
+            }
+
+            // If it's a foreign key and not empty (required rule will throw error if necessary for this)
+            if(this.attributes[attr].model && value) {
+                sails.models[this.attributes[attr].model].findOneById(value).exec((error, found) => {
+                    if(error || !found) {
+                        let rtn = {
+                            code: 'E_VALIDATION',
+                            message: 'Foreign key validation error',
+                            invalidAttributes: {},
+                        };
+                        rtn.invalidAttributes[attr] = [];
+                        rtn.invalidAttributes[attr].push({
+                            rule: 'model',
+                            message: 'Foreign item not found',
+                        });
+                        return reject(rtn);
+                    }
+                    return resolve(found);
+                });
+            }
+            else {
+                return resolve(null);
+            }
+        });
+    };
 }
 
 module.exports = BaseModel;
