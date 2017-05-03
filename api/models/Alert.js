@@ -129,7 +129,7 @@ function Model () {
 
     this.fixtures = {
         alertsPerTeam: function(callback) {
-            Team.findOne({name: 'Flux admins'}).exec((err, admin) => {
+            Team.findOne({name: 'Flux'}).exec((err, admin) => {
                 if (err) {
                     callback(error);
                 }

@@ -95,7 +95,7 @@ function Model () {
     this.fixtures = {
         generateLogAlertButtons: function(callback) {
             // get the teams
-            Team.findOne({name: "Log"}).exec((error, team) => {
+            Team.findOne({name: "Logistique"}).exec((error, team) => {
                 if(error) {
                     callback(error);
                 }
@@ -104,30 +104,40 @@ function Model () {
                     "Technique": [
                         {
                             title: "Problème avec une tireuse",
-                            message: true,
-                            messagePlaceholder: "Quel est le problème ?"
+                            messageRequired: true,
+                            messagePrompt: "Quel est le problème ?",
+                            senderGroup: null,
+                            receiver: team.id,
                         },
                         {
                             title: "Problème avec un fût",
-                            message: true,
-                            messagePlaceholder: "Quel est le problème ?"
+                            messageRequired: true,
+                            messagePrompt: "Quel est le problème ?",
+                            senderGroup: null,
+                            receiver: team.id,
                         }
                     ],
                     "Manque": [
                         {
                             title: "Flutes de champagne",
-                            message: false,
-                            messagePlaceholder: ""
+                            messageRequired: false,
+                            messagePrompt: "",
+                            senderGroup: null,
+                            receiver: team.id,
                         },
                         {
                             title: "Sacs poubelle",
-                            message: false,
-                            messagePlaceholder: ""
+                            messageRequired: false,
+                            messagePrompt: "",
+                            senderGroup: null,
+                            receiver: team.id,
                         },
                         {
                             title: "Gobelets bière",
-                            message: false,
-                            messagePlaceholder: ""
+                            messageRequired: false,
+                            messagePrompt: "",
+                            senderGroup: null,
+                            receiver: team.id,
                         }
                     ]
                 };
@@ -141,7 +151,6 @@ function Model () {
                     for (let item of data[category]) {
                         result[category + i] = Object.assign(item, {
                             category,
-                            receiver: team
                         });
                         i++;
                     }
