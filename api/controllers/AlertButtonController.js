@@ -117,6 +117,7 @@ module.exports = {
                 receiver: req.param('receiver'),
                 messageRequired: req.param('messageRequired'),
                 messagePrompt: req.param('messagePrompt'),
+                messageDefault: req.param('messageDefault'),
             }).exec((error, alertButton) => {
                 if (error) {
                     return res.negotiate(error);
@@ -170,6 +171,7 @@ module.exports = {
             alertButton.receiver = req.param('receiver', alertButton.receiver);
             alertButton.messageRequired = req.param('messageRequired', alertButton.messageRequired);
             alertButton.messagePrompt = req.param('messagePrompt', alertButton.messagePrompt);
+            alertButton.messageDefault = req.param('messageDefault', alertButton.messageDefault);
 
             // find the receiver team
             AlertButton.validateForeignKey('receiver', alertButton)
