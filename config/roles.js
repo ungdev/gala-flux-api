@@ -87,6 +87,7 @@ module.exports.roles = {
         'ui/receiveAlerts',
         'ui/receiveDefaultAlerts',
         'user/team',
+        'user/read',
     ],
     'SecUTT': [
         'alert/restrictedReceiver',
@@ -98,6 +99,7 @@ module.exports.roles = {
         'ui/admin',
         'ui/receiveAlerts',
         'user/team',
+        'user/read',
     ],
     'Coord': [
         'alert/admin',
