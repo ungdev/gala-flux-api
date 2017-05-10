@@ -49,6 +49,11 @@ module.exports.policies = {
         subscribe:  ['jwtAuth'],
     },
 
+    ErrorLogController: {
+        find: ['jwtAuth'],
+        create: ['jwtAuth'],
+    },
+
     MessageController: {
         find: ['jwtAuth'],
         create:  ['jwtAuth'],
