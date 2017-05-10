@@ -33,6 +33,8 @@
  * - bottleType/read : Can read all bottlesTypes
  * - bottleType/admin : Can read/write on all bottlesTypes
  *
+ * - errorLog/read : Read log entries (every user can post)
+ *
  * - message/oneChannel : Receive #group:[groupname] and #[teamname] but can send only in #[teamname]
  * - message/public : Not compatible with `oneChannel`. Can send and receive in any public #[teamname] channel, can also receive and send in its own #group:[groupname] channel
  * - message/group : Require `message/public`. Can send and receive in any #group:[groupname] channel
