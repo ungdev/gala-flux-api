@@ -18,13 +18,13 @@ function Model () {
             unique: true
         },
 
-        // quantity in liters (example: 25)
+        // quantity in liters of the barrel (example: 25)
         liters: {
             type: "integer",
             required: true
         },
 
-        // the price at which it must be sold
+        // the price of a barrel at which it must be sold
         sellPrice: {
             type: "float",
             required: true
