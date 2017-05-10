@@ -20,16 +20,28 @@ function Model () {
             required: true,
         },
 
+
+        /**
+         * Sell price of a bottle
+         */
         sellPrice: {
-            type: 'integer',
+            type: "float",
             required: true,
         },
 
+
+        /**
+         * Supplier price of a bottle    
+         */
         supplierPrice: {
-            type: 'integer',
+            type: "float",
             required: true,
         },
 
+
+        /**
+         * Number of bottle
+         */
         originalStock: {
             type: 'integer',
             required: true,
