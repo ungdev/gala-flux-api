@@ -53,7 +53,7 @@ module.exports = {
 
         // check permissions
         if (!(Team.can(req, 'errorLog/read'))) {
-            return res.error(403, 'forbidden', 'You are not authorized read error logs');
+            return res.error(req, 403, 'forbidden', 'You are not authorized read error logs');
         }
 
         // read filters

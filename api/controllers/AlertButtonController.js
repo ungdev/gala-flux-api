@@ -59,7 +59,7 @@ module.exports = {
 
         // Check permissions
         if (!(Team.can(req, 'alertButton/read') || (Team.can(req, 'alertButton/admin')))) {
-            return res.error(403, 'forbidden', 'You are not authorized to read the Alert buttons.');
+            return res.error(req, 403, 'forbidden', 'You are not authorized to read the Alert buttons.');
         }
 
         // read filters
@@ -103,7 +103,7 @@ module.exports = {
     create: (req, res) => {
         // Check permissions
         if (!Team.can(req, 'alertButton/admin')) {
-            return res.error(403, 'forbidden', 'You are not authorized to create an Alert button.');
+            return res.error(req, 403, 'forbidden', 'You are not authorized to create an Alert button.');
         }
 
         // find the receiver team
@@ -151,7 +151,7 @@ module.exports = {
 
         // Check permissions
         if (!Team.can(req, 'alertButton/admin')) {
-            return res.error(403, 'forbidden', 'You are not authorized to update an Alert button.');
+            return res.error(req, 403, 'forbidden', 'You are not authorized to update an Alert button.');
         }
 
         // Find AlertButton
@@ -161,7 +161,7 @@ module.exports = {
                 return res.negotiate(error);
             }
             if(!alertButton) {
-                return res.error(404, 'notfound', 'The requested alert button cannot be found');
+                return res.error(req, 404, 'notfound', 'The requested alert button cannot be found');
             }
 
             // Set new values
@@ -209,12 +209,12 @@ module.exports = {
 
         // check permission
         if (!(Team.can(req, 'alertButton/admin') || Team.can(req, 'alertButton/createAlert'))) {
-            return res.error(403, 'forbidden', 'You are not authorized to update an Alert button.');
+            return res.error(req, 403, 'forbidden', 'You are not authorized to update an Alert button.');
         }
 
         // Check parameters
         if(!req.param('id')) {
-            return res.error(400, 'BadRequest', "The 'id' field must contains the clicked AlertButton id.");
+            return res.error(req, 400, 'BadRequest', "The 'id' field must contains the clicked AlertButton id.");
         }
 
         Alert.findOne({
@@ -227,7 +227,7 @@ module.exports = {
             }
             // If there is already an unsolved alert like this one for this team, throw error
             if (alert) {
-                return res.error(400, 'BadRequest', "This alert already exists.");
+                return res.error(req, 400, 'BadRequest', "This alert already exists.");
             }
 
             // Get the alert button clicked
@@ -237,12 +237,12 @@ module.exports = {
                         return res.negotiate(error);
                     }
                     if(!alertButton) {
-                        return res.error(404, 'notfound', 'The requested alert button cannot be found');
+                        return res.error(req, 404, 'notfound', 'The requested alert button cannot be found');
                     }
 
                     // Throw error if no message in parameters and message required for this alert
                     if(!req.param('message') && alertButton.message) {
-                        return res.error(400, 'BadRequest', "This alert need a 'message'.");
+                        return res.error(req, 400, 'BadRequest', "This alert need a 'message'.");
                     }
 
                     // Create a new Alert from the Alert Button attributes
@@ -291,12 +291,12 @@ module.exports = {
 
         // Check permissions
         if(!Team.can(req, 'alertButton/admin')) {
-            return res.error(403, 'forbidden', 'You are not authorized to delete an alert button.');
+            return res.error(req, 403, 'forbidden', 'You are not authorized to delete an alert button.');
         }
 
         // Check parameters
         if(!req.param('id')) {
-            return res.error(400, 'BadRequest', "The 'id' field must contains the AlertButton id.");
+            return res.error(req, 400, 'BadRequest', "The 'id' field must contains the AlertButton id.");
         }
 
         // Find the alert button
@@ -305,7 +305,7 @@ module.exports = {
             if (error) return res.negotiate(error);
 
             if(!alertButton) {
-                return res.error(404, 'notfound', 'The requested alert button cannot be found');
+                return res.error(req, 404, 'notfound', 'The requested alert button cannot be found');
             }
 
             AlertButton.destroy({id: alertButton.id})

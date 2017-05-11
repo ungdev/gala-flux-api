@@ -65,7 +65,7 @@ module.exports = {
     find: (req, res) => {
         // Check permissions
         if (!(Team.can(req, 'alert/admin') || Team.can(req, 'alert/read') || Team.can(req, 'alert/restrictedSender') || Team.can(req, 'alert/restrictedReceiver'))) {
-            return res.error(403, 'forbidden', 'You are not authorized to read alerts.');
+            return res.error(req, 403, 'forbidden', 'You are not authorized to read alerts.');
         }
 
         // read filters
@@ -118,15 +118,15 @@ module.exports = {
 
         // Check permissions
         if (!(Team.can(req, 'alert/admin') || Team.can(req, 'alert/restrictedSender') || Team.can(req, 'alert/restrictedReceiver'))) {
-            return res.error(403, 'forbidden', 'You are not authorized to update alerts.');
+            return res.error(req, 403, 'forbidden', 'You are not authorized to update alerts.');
         }
 
         // Check parameters
         if (!req.param('id')) {
-            return res.error(400, 'BadRequest', "Missing 'id' parameter.");
+            return res.error(req, 400, 'BadRequest', "Missing 'id' parameter.");
         }
         if (!req.param('severity') && req.param('message') === undefined) {
-            return res.error(400, 'BadRequest', "Nothing to update.");
+            return res.error(req, 400, 'BadRequest', "Nothing to update.");
         }
 
         // get the Alert to update
@@ -136,14 +136,14 @@ module.exports = {
                     return res.negotiate(error);
                 }
                 if (!alert) {
-                    return res.error(404, 'notFound', 'The requested alert cannot be found');
+                    return res.error(req, 404, 'notFound', 'The requested alert cannot be found');
                 }
 
                 // if the request can only update from his team, check the sender
                 // else, check if the requester is in the receiver team
                 if ((Team.can(req, 'alert/restrictedSender') && (alert.sender !== req.team.id || alert.severity == 'done')) ||
                 (Team.can(req, 'alert/restrictedReceiver') && alert.receiver != req.team.id)) {
-                    return res.error(403, 'forbidden', 'You are not allowed to update this alert.');
+                    return res.error(req, 403, 'forbidden', 'You are not allowed to update this alert.');
                 }
 
                 if (req.param('severity')) {
@@ -191,7 +191,7 @@ module.exports = {
 
         // Check permissions
         if (!(Team.can(req, 'alert/admin') || Team.can(req, 'alert/restrictedReceiver'))) {
-            return res.error(403, 'forbidden', 'You are not authorized to update alerts.');
+            return res.error(req, 403, 'forbidden', 'You are not authorized to update alerts.');
         }
 
         // Check parameters
@@ -199,7 +199,7 @@ module.exports = {
         if (!req.param('id')) missingParameters.push('id');
         if (!req.param('users')) missingParameters.push('users');
         if (missingParameters.length) {
-            return res.error(400, 'BadRequest', 'Unknown parameters : ' + missingParameters.join(', '));
+            return res.error(req, 400, 'BadRequest', 'Unknown parameters : ' + missingParameters.join(', '));
         }
 
         // find the requested Alert
@@ -209,7 +209,7 @@ module.exports = {
                 return res.negotiate(error);
             }
             if (!alert) {
-                return res.error(404, 'notfound', 'The requested alert cannot be found');
+                return res.error(req, 404, 'notfound', 'The requested alert cannot be found');
             }
 
             alert.users = req.param('users');

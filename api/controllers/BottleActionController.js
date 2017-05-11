@@ -67,7 +67,7 @@ module.exports = {
     find: function(req, res) {
         // Check permissions
         if (!(Team.can(req, 'bottleAction/admin') || Team.can(req, 'bottleAction/read') || Team.can(req, 'bottleAction/restricted'))) {
-            return res.error(403, 'forbidden', 'You are not authorized to view the bottle actions list.');
+            return res.error(req, 403, 'forbidden', 'You are not authorized to view the bottle actions list.');
         }
 
         // read filters
@@ -106,7 +106,7 @@ module.exports = {
 
     count: function(req, res) {
         // Check permissions
-        if (!(Team.can(req, 'bottleAqction/admin') || Team.can(req, 'bottleqAction/read') || Team.can(req, 'bottleqAction/restricted'))) {
+        if (!(Team.can(req, 'bottleAction/admin') || Team.can(req, 'bottleAction/read') || Team.can(req, 'bottleAction/restricted'))) {
             return res.error(req, 403, 'forbidden', 'You are not authorized to view the bottle count list.');
         }
 
@@ -199,7 +199,7 @@ module.exports = {
             // find bottleAction
             BottleAction.findOne({id: req.param('id')}).exec((error, bottleAction) => {
                 if (bottleAction) {
-                    return res.error(400, 'BadRequest', 'Bottle action is not valid.');
+                    return res.error(req, 400, 'BadRequest', 'Bottle action is not valid.');
                 }
 
                 // Create bottleAction

@@ -2,7 +2,7 @@
  * Generic Error Response
  *
  * Usage:
- * return res.error(404, 'UserNotFound', 'There is no User with this ID');
+ * return res.error(req, 404, 'UserNotFound', 'There is no User with this ID');
  *
  */
 

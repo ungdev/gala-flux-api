@@ -29,10 +29,10 @@ module.exports = function (req, res, next) {
             }
 
         } else {
-            return res.error(401, 'AuthBadFormat', 'Bearer format is http header `Authorization: Bearer [token]`');
+            return res.error(req, 401, 'AuthBadFormat', 'Bearer format is http header `Authorization: Bearer [token]`');
         }
     } else {
-        return res.error(401, 'AuthRequired', 'We couldn\'t find the JWT required to authenticate your request');
+        return res.error(req, 401, 'AuthRequired', 'We couldn\'t find the JWT required to authenticate your request');
     }
 
 
@@ -41,7 +41,7 @@ module.exports = function (req, res, next) {
             req.user = user;
             Team.findOne({id: user.team}).exec((error, team) => {
                 if(error) {
-                    return res.error(500, 'NoTeam', 'We didn\'t find the team associated with the logged in user');
+                    return res.error(req, 500, 'NoTeam', 'We didn\'t find the team associated with the logged in user');
                 }
                 user.lastConnection = Date.now();
                 user.save((error) => {
@@ -55,6 +55,6 @@ module.exports = function (req, res, next) {
             });
         })
         .catch((error) => {
-            return res.error(500, 'InvalidJwt', 'The given JWT is not valid : ' + error);
+            return res.error(req, 500, 'InvalidJwt', 'The given JWT is not valid : ' + error);
         })
 };
