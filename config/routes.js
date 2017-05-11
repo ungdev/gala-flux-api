@@ -97,4 +97,6 @@ module.exports.routes = {
     'post /user/avatar/:id': 'UserController.uploadAvatar',
     'post /user/subscribe': 'UserController.subscribe',
     'post /user/unsubscribe': 'UserController.unsubscribe',
+
+    'post /firebase/register': 'SessionController.register'
 };

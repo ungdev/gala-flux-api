@@ -31,6 +31,10 @@ module.exports.policies = {
         logout: ['jwtAuth'],
     },
 
+    SessionController: {
+        register: ['jwtAuth']
+    },
+
     BottleTypeController: {
         find: ['jwtAuth'],
         findOne: ['jwtAuth'],
