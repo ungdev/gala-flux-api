@@ -55,3 +55,7 @@ To create an admin account from command line, the server has to be stopped. Then
 node cli/createTeam.js # Not needed if you already fill the database with fixtures
 node cli/createUser.js
 ```
+
+## Firebase setup
+
+You have to generate a config file. [Go here and read the instructions](https://firebase.google.com/docs/admin/setup).

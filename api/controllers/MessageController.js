@@ -262,6 +262,8 @@ module.exports = {
                 return res.negotiate(error);
             }
 
+            FirebaseService.sendFirebaseMessage(channel, req.param('text'));
+
             return res.ok(message);
         });
 

@@ -55,6 +55,14 @@ try {
     }
 }
 
+// firebase
+var admin = require("firebase-admin");
+var serviceAccount = require("./config/serviceAccountKey.json");
+
+admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    databaseURL: "https://<DATABASE_NAME>.firebaseio.com"
+});
 
 // Start server
 sails.lift(rc('sails'));

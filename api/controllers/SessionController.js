@@ -8,7 +8,6 @@
 module.exports = {
 
     register: function(req, res) {
-        console.log("token :", req.param('token'));
         // check if the token already exists in the database
         Session.findOne({ firebaseToken: req.param('token') })
         .exec((error, session) => {
@@ -35,7 +34,6 @@ module.exports = {
                     return res.ok({message: "nouvelle session"});
                 });
             }
-
         });
     }
 
