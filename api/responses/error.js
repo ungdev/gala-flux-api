@@ -6,7 +6,7 @@
  *
  */
 
-module.exports = function error (code, status, message, data) {
+module.exports = function error (req, code, status, message, data) {
     if(typeof data === 'undefined') {
         data = {};
     }
@@ -17,8 +17,24 @@ module.exports = function error (code, status, message, data) {
     data._error = {
         code: code,
         status: status,
-        message: message
+        message: message,
+        req: {
+            method: req.method,
+            uri: req.url,
+            headers: req.headers,
+            params: req.params,
+            query: req.query,
+            body: req.body,
+            user: req.user ? req.user.id : null,
+            team: req.team ? req.team.id : null,
+            controller: req.options ? req.options.controller : null,
+            action: req.options ? req.options.action : null,
+        }
     };
+
+    if(req) {
+        console.log(req);
+    }
 
     return this.res.json(code, data);
 };

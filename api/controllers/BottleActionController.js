@@ -59,7 +59,7 @@ module.exports = {
      * @apiSuccess {Array} Array An array of bottles actions
      * @apiSuccess {BottleAction} Array.bottleAction A bottle action object
      * @apiSuccess {string} Array.bottle.team Team which produced a bottle action
-     * @apiSuccess {string} Array.bottle.bottleId Id of the concerned bottle
+     * @apiSuccess {string} Array.bottle.type Id of the concerned bottle
      * @apiSuccess {integer} Array.bottle.quantity Number of bottles sold or moved (can be negative)
      * @apiSuccess {string} Array.bottle.operation Operation performed on the bottle (sold or moved)
      */
@@ -92,7 +92,87 @@ module.exports = {
 
                 return res.ok(bottleActions);
             });
+    },
 
+
+    /**
+     * @api {get} /bottleAction/count Give the counts of bottles
+     * @apiName find
+     * @apiGroup BottleAction
+     * @apiDescription Give the current number of bottle of each type for each team
+     *
+     * @apiUse forbiddenError
+     */
+
+    count: function(req, res) {
+        // Check permissions
+        if (!(Team.can(req, 'bottleAqction/admin') || Team.can(req, 'bottleqAction/read') || Team.can(req, 'bottleqAction/restricted'))) {
+            return res.error(req, 403, 'forbidden', 'You are not authorized to view the bottle count list.');
+        }
+
+        // read filters
+        let where = {};
+        // if the requester is not admin, show only his team's bottleActions
+        if (Team.can(req, 'bottleAction/restricted')) {
+            where = {
+                or: [{ team: req.team.id }, { fromTeam: req.team.id }]
+            };
+        }
+
+        // Find bottleTypes
+        BottleType.find()
+        .exec((error, bottleTypes) => {
+            if (error) {
+                return res.negotiate(error);
+            }
+
+            // Find bottleActions
+            BottleAction.find(where)
+            .exec((error, bottleActions) => {
+                if (error) {
+                    return res.negotiate(error);
+                }
+
+                // Init result object
+                let result = {
+                    null: {},
+                };
+                for (let type of bottleTypes) {
+                    result[null][type.id] = {new: type.originalStock, empty: 0};
+                }
+
+                // Update it with actions
+                for (let bottleAction of bottleActions) {
+                    // Init team level
+                    if(!result[bottleAction.team || null]) {
+                        result[bottleAction.team || null] = {};
+                    }
+                    if(!result[bottleAction.fromTeam || null]) {
+                        result[bottleAction.fromTeam || null] = {};
+                    }
+
+                    // Init bottleType level
+                    if(!result[bottleAction.team || null][bottleAction.type]) {
+                        result[bottleAction.team || null][bottleAction.type] = {new: 0, empty: 0};
+                    }
+                    if(!result[bottleAction.fromTeam || null][bottleAction.type]) {
+                        result[bottleAction.fromTeam || null][bottleAction.type] = {new: 0, empty: 0};
+                    }
+
+                    // Update state entry
+                    if(bottleAction.operation == 'purchased') {
+                        result[bottleAction.team || null][bottleAction.type].new -= bottleAction.quantity;
+                        result[bottleAction.team || null][bottleAction.type].empty += bottleAction.quantity;
+                    }
+                    else if(bottleAction.operation == 'moved') {
+                        result[bottleAction.team || null][bottleAction.type].new -= bottleAction.quantity;
+                        result[bottleAction.fromTeam || null][bottleAction.type].new += bottleAction.quantity;
+                    }
+
+                    return res.ok(result);
+                }
+            });
+        });
     },
 
     /**
@@ -102,7 +182,7 @@ module.exports = {
      * @apiDescription Create a bottle action
      *
      * @apiParam {string} team Name of the team performing the bottle action
-     * @apiParam {string} bottleId Id of the bottle
+     * @apiParam {string} type Id of the bottle
      * @apiParam {integer} quantity Number of bottles concerned (can be negative)
      * @apiParam {string} operation Operation performed on the bottle (purchased or moved)
      *
@@ -125,7 +205,7 @@ module.exports = {
                 // Create bottleAction
                 bottleAction = {};
                 if (req.param('team')) bottleAction.team = req.param('team');
-                if (req.param('bottleId')) bottleAction.bottleId = req.param('bottleId');
+                if (req.param('type')) bottleAction.type = req.param('type');
                 if (req.param('quantity')) bottleAction.quantity = req.param('quantity');
                 if (req.param('operation')) bottleAction.operation = 'purchased';
 

@@ -18,11 +18,10 @@ function Model () {
             model: 'team',
         },
 
-
         /**
         * Can be null if BottleType deleted
         */
-        bottleId : {
+        type : {
             model: "BottleType",
         },
 
@@ -35,6 +34,7 @@ function Model () {
         operation : {
             type: 'string',
             enum: ['purchased', 'moved'],
+            required: true,
         },
 
     };
