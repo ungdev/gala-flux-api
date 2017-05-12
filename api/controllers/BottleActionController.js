@@ -165,12 +165,12 @@ module.exports = {
                         result[bottleAction.team || null][bottleAction.type].empty += bottleAction.quantity;
                     }
                     else if(bottleAction.operation == 'moved') {
-                        result[bottleAction.team || null][bottleAction.type].new -= bottleAction.quantity;
-                        result[bottleAction.fromTeam || null][bottleAction.type].new += bottleAction.quantity;
+                        result[bottleAction.fromTeam || null][bottleAction.type].new -= bottleAction.quantity;
+                        result[bottleAction.team || null][bottleAction.type].new += bottleAction.quantity;
                     }
-
-                    return res.ok(result);
                 }
+
+                return res.ok(result);
             });
         });
     },
@@ -194,20 +194,31 @@ module.exports = {
 
     create: function (req, res) {
         // Check permissions
-        if(Team.can(req, 'bottleAction/create') || Team.can(req, 'bottleAction/admin')) {
+        if(Team.can(req, 'bottleAction/restricted') || Team.can(req, 'bottleAction/admin')) {
 
-            // find bottleAction
-            BottleAction.findOne({id: req.param('id')}).exec((error, bottleAction) => {
-                if (bottleAction) {
-                    return res.error(req, 400, 'BadRequest', 'Bottle action is not valid.');
+            // find bottleType
+            BottleType.findOne({id: req.param('type')}).exec((error, bottleType) => {
+                if (error) {
+                    return res.negotiate(error);
+                }
+                if (!bottleType) {
+                    return res.error(req, 400, 'BadRequest', 'Bottle type is not valid.');
+                }
+
+                // Check restricted permission
+                if(Team.can(req, 'bottleAction/restricted')) {
+                    if(req.param('team') != req.team || req.param('fromTeam') || req.param('operation') != 'purchased') {
+                        return res.error(req, 400, 'BadRequest', "You are only allowed to update state of purchased bottle in you team.");
+                    }
                 }
 
                 // Create bottleAction
                 bottleAction = {};
                 if (req.param('team')) bottleAction.team = req.param('team');
+                if (req.param('fromTeam')) bottleAction.fromTeam = req.param('fromTeam');
                 if (req.param('type')) bottleAction.type = req.param('type');
                 if (req.param('quantity')) bottleAction.quantity = req.param('quantity');
-                if (req.param('operation')) bottleAction.operation = 'purchased';
+                if (req.param('operation')) bottleAction.operation = req.param('operation');
 
                 BottleAction.create(bottleAction).exec((error, bottleAction) => {
                     if (error) {
