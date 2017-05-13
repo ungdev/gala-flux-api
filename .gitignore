@@ -116,6 +116,3 @@ npm-debug.log
 nbproject
 .idea
 .node_history
-
-# firebase config
-/config/serviceAccountKey.json
