@@ -97,6 +97,65 @@ function Model () {
     };
 
 
+
+    /**
+     * This function will emit alert if necessary
+     * @param {id} teamId the team to check
+     * @param {BottleType} type type of the bottle to test
+     */
+    this.checkForAlert = function(teamId, type) {
+        if(teamId) {
+            BottleAction.find([{ team: teamId }, { fromTeam: teamId }])
+            .exec((error, bottleActions) => {
+                let newCount = 0;
+                let emptyCount = 0;
+                // Calculate number of bottle left
+                for (let bottleAction of bottleActions) {
+                    if(bottleAction.type == type.id) {
+                        if(bottleAction.operation == 'purchased' && bottleAction.team == teamId) {
+                            newCount -= bottleAction.quantity;
+                            emptyCount += bottleAction.quantity;
+                        }
+                        else if(bottleAction.operation == 'moved') {
+                            if(bottleAction.fromTeam == teamId) newCount -= bottleAction.quantity;
+                            if(bottleAction.team == teamId) newCount += bottleAction.quantity;
+                        }
+                    }
+                }
+
+                // Before emitting a new alert remove old one about this bottle
+                Alert.destroy({
+                    title: 'Bouteilles : ' + type.name + ' (' + type.shortName + ')',
+                    severity: ['warning', 'serious'],
+                    category: 'Manque auto',
+                    sender: teamId,
+                })
+                .exec((error) => {
+                    if (error) return;
+
+                    // if less than
+                    if (newCount <= 13 && newCount < emptyCount) {
+                        Alert.create({
+                            sender: teamId,
+                            severity: newCount >= 7 ? 'warning' : 'serious',
+                            title: 'Bouteilles : ' + type.name + ' (' + type.shortName + ')',
+                            message: ' Plus que ' + newCount + ' bouteille' + (newCount>1?'s':'') + ' à '+ (new Date).getHours() + ':' +  (new Date).getMinutes(),
+                            category: 'Manque auto',
+                        })
+                        .exec((error, alert) => {
+                            if (error) return;
+
+                            // push this modification in the alert history
+                            AlertHistory.pushToHistory(alert, (error, result) => {
+                                if (error) return;
+                            });
+
+                        });
+                    }
+                });
+            });
+        }
+    };
 }
 
 // Inherit Base Model

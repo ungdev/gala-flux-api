@@ -225,6 +225,10 @@ module.exports = {
                         return res.negotiate(error);
                     }
 
+                    // Update alerts
+                    BottleAction.checkForAlert(bottleAction.team, bottleType);
+                    BottleAction.checkForAlert(bottleAction.fromTeam, bottleType);
+
                     return res.ok(bottleAction);
                 });
             });

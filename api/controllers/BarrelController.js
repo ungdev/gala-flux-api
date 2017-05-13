@@ -77,7 +77,7 @@ module.exports = {
         if (Team.can(req, 'barrel/restricted')) {
             let whereTmp = where;
             where = { place: req.team.id};
-            if(whereTmp) where.or = whereTmp;
+            if(whereTmp && Object.keys(whereTmp).length) where.or = whereTmp;
         }
 
         // Find barrels
@@ -279,7 +279,7 @@ function checkTeamStocks(barrel) {
 
                 // Before emitting a new alert remove old one about this barrel
                 Alert.destroy({
-                    title: 'Stock : ' + type.name + ' (' + type.shortName + ')',
+                    title: 'Fût : ' + type.name + ' (' + type.shortName + ')',
                     severity: ['warning', 'serious'],
                     category: 'Manque auto',
                     sender: barrel.place,
@@ -292,7 +292,7 @@ function checkTeamStocks(barrel) {
                         Alert.create({
                             sender: barrel.place,
                             severity: count === 1 ? 'warning' : 'serious',
-                            title: 'Stock : ' + type.name + ' (' + type.shortName + ')',
+                            title: 'Fût : ' + type.name + ' (' + type.shortName + ')',
                             message: ((count === 1) ? 'Avant-dernier fût entammé' : 'Dernier fût entammé'),
                             category: 'Manque auto',
                         })

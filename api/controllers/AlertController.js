@@ -69,7 +69,7 @@ module.exports = {
         }
 
         // read filters
-        let where = [];
+        let where = {};
         if (req.allParams().filters) {
             where = req.allParams().filters;
         }
@@ -80,15 +80,14 @@ module.exports = {
                 severity: {'!': 'done'},
                 sender: req.team.id,
             };
-            if(whereTmp) where.or = whereTmp;
+            if(whereTmp && Object.keys(whereTmp).length) where.or = whereTmp;
         }
         else if (Team.can(req, 'alert/restrictedReceiver')) {
             let whereTmp = where;
             where = {
                 receiver: req.team.id,
-                or: where,
             };
-            if(whereTmp) where.or = whereTmp;
+            if(whereTmp && Object.keys(whereTmp).length) where.or = whereTmp;
         }
 
         // Find alerts
