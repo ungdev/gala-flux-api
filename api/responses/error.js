@@ -32,9 +32,5 @@ module.exports = function error (req, code, status, message, data) {
         }
     };
 
-    if(req) {
-        console.log(req);
-    }
-
     return this.res.json(code, data);
 };

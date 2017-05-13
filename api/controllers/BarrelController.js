@@ -69,16 +69,15 @@ module.exports = {
         }
 
         // read filters
-        let where = {};
+        let where = null;
         if (req.allParams().filters) {
             where = req.allParams().filters;
         }
         // if the requester is not admin, show only his team's barrels
         if (Team.can(req, 'barrel/restricted')) {
-            where = {
-                place: req.team.id,
-                where,
-            };
+            let whereTmp = where;
+            where = { place: req.team.id};
+            if(whereTmp) where.or = whereTmp;
         }
 
         // Find barrels

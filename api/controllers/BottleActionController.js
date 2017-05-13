@@ -24,7 +24,10 @@ module.exports = {
         }
         else if(Team.can(req, 'bottleAction/restricted')) {
             // Join only for update of it own bottles
-            sails.sockets.join('bottleAction/' + req.team.id);
+            sails.sockets.join(req, 'bottleAction/' + req.team.id, (error) => {
+                if (error) return res.negotiate(error);
+                return res.ok();
+            });
         }
         else {
             return res.ok();
@@ -38,12 +41,13 @@ module.exports = {
      * @apiDescription Unsubscribe from new items
      */
     unsubscribe: function(req, res) {
-        sails.sockets.leave('BottleAction/' + req.team.id);
-        BottleAction.unwatch(req);
-        BottleAction.find().exec((error, items) => {
-            if(error) return res.negotiate(error);
-            BottleAction.unsubscribe(req, _.pluck(items, 'id'));
-            return res.ok();
+        sails.sockets.leave(req, 'bottleAction/' + req.team.id, () => {
+            BottleAction.unwatch(req);
+            BottleAction.find().exec((error, items) => {
+                if(error) return res.negotiate(error);
+                BottleAction.unsubscribe(req, _.pluck(items, 'id'));
+                return res.ok();
+            });
         });
     },
 
@@ -71,16 +75,14 @@ module.exports = {
         }
 
         // read filters
-        let where = {};
+        let where = [];
         if (req.allParams().filters) {
             where = req.allParams().filters;
         }
         // if the requester is not admin, show only his team's bottleActions
         if (Team.can(req, 'bottleAction/restricted')) {
-            where = {
-                or: [{ team: req.team.id }, { fromTeam: req.team.id }],
-                where,
-            };
+            // "or and or" is not possibile in waterline, so we ignore other filters
+            where = [{ team: req.team.id }, { fromTeam: req.team.id }];
         }
 
         // Find bottleActions
@@ -114,9 +116,7 @@ module.exports = {
         let where = {};
         // if the requester is not admin, show only his team's bottleActions
         if (Team.can(req, 'bottleAction/restricted')) {
-            where = {
-                or: [{ team: req.team.id }, { fromTeam: req.team.id }]
-            };
+            where = [{ team: req.team.id }, { fromTeam: req.team.id }];
         }
 
         // Find bottleTypes
@@ -207,7 +207,7 @@ module.exports = {
 
                 // Check restricted permission
                 if(Team.can(req, 'bottleAction/restricted')) {
-                    if(req.param('team') != req.team || req.param('fromTeam') || req.param('operation') != 'purchased') {
+                    if(req.param('team') != req.team.id || req.param('fromTeam') || req.param('operation') != 'purchased') {
                         return res.error(req, 400, 'BadRequest', "You are only allowed to update state of purchased bottle in you team.");
                     }
                 }
@@ -217,7 +217,7 @@ module.exports = {
                 if (req.param('team')) bottleAction.team = req.param('team');
                 if (req.param('fromTeam')) bottleAction.fromTeam = req.param('fromTeam');
                 if (req.param('type')) bottleAction.type = req.param('type');
-                if (req.param('quantity')) bottleAction.quantity = req.param('quantity');
+                if (req.param('quantity') !== undefined) bottleAction.quantity = req.param('quantity');
                 if (req.param('operation')) bottleAction.operation = req.param('operation');
 
                 BottleAction.create(bottleAction).exec((error, bottleAction) => {

@@ -28,7 +28,6 @@ function Model () {
         quantity : {
             type: 'integer',
             required: true,
-            defaultsTo: '1',
         },
 
         operation : {
@@ -60,8 +59,8 @@ function Model () {
             id: newlyInsertedRecord.id,
             data: newlyInsertedRecord,
         };
-        sails.sockets.broadcast('BottleAction/' + newlyInsertedRecord.team, 'BottleAction', data);
-        sails.sockets.broadcast('BottleAction/' + newlyInsertedRecord.fromTeam, 'BottleAction', data);
+        sails.sockets.broadcast('bottleAction/' + newlyInsertedRecord.team, 'bottleaction', data);
+        sails.sockets.broadcast('bottleAction/' + newlyInsertedRecord.fromTeam, 'bottleaction', data);
         BottleAction.publishCreate(newlyInsertedRecord);
     };
 
@@ -79,8 +78,8 @@ function Model () {
             id: valuesToUpdate.id,
             data: valuesToUpdate,
         };
-        sails.sockets.broadcast('BottleAction/' + valuesToUpdate.team, 'BottleAction', data);
-        sails.sockets.broadcast('BottleAction/' + valuesToUpdate.fromTeam, 'BottleAction', data);
+        sails.sockets.broadcast('bottleAction/' + valuesToUpdate.team, 'bottleaction', data);
+        sails.sockets.broadcast('bottleAction/' + valuesToUpdate.fromTeam, 'bottleaction', data);
         BottleAction.publishUpdate(valuesToUpdate.id, valuesToUpdate);
     };
 

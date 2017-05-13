@@ -69,23 +69,26 @@ module.exports = {
         }
 
         // read filters
-        let where = {};
+        let where = [];
         if (req.allParams().filters) {
             where = req.allParams().filters;
         }
         // if the requester is not admin, show only his team's alert
         if (Team.can(req, 'alert/restrictedSender')) {
+            let whereTmp = where;
             where = {
                 severity: {'!': 'done'},
                 sender: req.team.id,
-                where,
             };
+            if(whereTmp) where.or = whereTmp;
         }
         else if (Team.can(req, 'alert/restrictedReceiver')) {
+            let whereTmp = where;
             where = {
                 receiver: req.team.id,
-                where,
+                or: where,
             };
+            if(whereTmp) where.or = whereTmp;
         }
 
         // Find alerts
