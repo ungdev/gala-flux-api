@@ -55,14 +55,24 @@ try {
     }
 }
 
-// firebase
-var admin = require("firebase-admin");
-var serviceAccount = require("./config/serviceAccountKey");
-
-admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-    databaseURL: "https://<DATABASE_NAME>.firebaseio.com"
-});
-
 // Start server
-sails.lift(rc('sails'));
+sails.lift(rc('sails'), (err) => {
+    if(err) {
+        throw err;
+    }
+
+    // Init firebase
+    if(sails.config.firebase.database) {
+        var admin = require("firebase-admin");
+        if(sails)
+
+        admin.initializeApp({
+            credential: admin.credential.cert(sails.config.firebase.serviceAccount),
+            databaseURL: 'https://' + sails.config.firebase.database + '.firebaseio.com'
+        });
+    }
+    else {
+        sails.log.warn('Empty firebase configuration. Push notifications are disabled.')
+    }
+
+});
