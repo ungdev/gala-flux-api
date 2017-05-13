@@ -107,7 +107,7 @@ module.exports = {
 
         // check permissions
         if(!(Team.can(req, 'team/read') || Team.can(req, 'team/admin'))) {
-            return res.error(403, 'forbidden', 'You are not authorized read team list');
+            return res.error(req, 403, 'forbidden', 'You are not authorized read team list');
         }
 
         // read filters
@@ -157,14 +157,14 @@ module.exports = {
                     return res.negotiate(error);
                 }
                 if(!team) {
-                    return res.error(404, 'notfound', 'The requested team cannot be found');
+                    return res.error(req, 404, 'notfound', 'The requested team cannot be found');
                 }
 
                 return res.ok(team);
             });
         }
         else {
-            return res.error(403, 'forbidden', 'You are not authorized read team data');
+            return res.error(req, 403, 'forbidden', 'You are not authorized read team data');
         }
     },
 
@@ -188,12 +188,12 @@ module.exports = {
     create: function (req, res) {
         // Check permissions
         if(!Team.can(req, 'team/admin')) {
-            return res.error(403, 'forbidden', 'You are not authorized to create a team.');
+            return res.error(req, 403, 'forbidden', 'You are not authorized to create a team.');
         }
 
         // Check parameters
         if(!req.param('role') || !Array.isArray(sails.config.roles[req.param('role')])) {
-            return res.error(400, 'UnknownRole', 'Unknown role.');
+            return res.error(req, 400, 'UnknownRole', 'Unknown role.');
         }
 
         // Create team
@@ -231,12 +231,12 @@ module.exports = {
     update: function (req, res) {
         // Check permissions
         if(!Team.can(req, 'team/admin')) {
-            return res.error(403, 'forbidden', 'You are not authorized to update a team.');
+            return res.error(req, 403, 'forbidden', 'You are not authorized to update a team.');
         }
 
         // Check parameters
         if(req.param('role') && !Array.isArray(sails.config.roles[req.param('role')])) {
-            return res.error(400, 'BadRequest', 'Unknown role.');
+            return res.error(req, 400, 'BadRequest', 'Unknown role.');
         }
 
         // Find team
@@ -246,7 +246,7 @@ module.exports = {
                 return res.negotiate(error);
             }
             if(!team) {
-                return res.error(404, 'notfound', 'The requested team cannot be found');
+                return res.error(req, 404, 'notfound', 'The requested team cannot be found');
             }
 
             // Update
@@ -281,7 +281,7 @@ module.exports = {
 
         // Check permissions
         if(!Team.can(req, 'team/admin')) {
-            return res.error(403, 'forbidden', 'You are not authorized to delete a team.');
+            return res.error(req, 403, 'forbidden', 'You are not authorized to delete a team.');
         }
 
         // Find team
@@ -291,7 +291,7 @@ module.exports = {
                 return res.negotiate(error);
             }
             if(!team) {
-                return res.error(404, 'notfound', 'The requested team cannot be found');
+                return res.error(req, 404, 'notfound', 'The requested team cannot be found');
             }
 
             Team.destroy({id: team.id}).exec((error) => {

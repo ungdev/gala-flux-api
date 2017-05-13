@@ -47,6 +47,7 @@
  * - ui/admin : Can see admin panel. If not set, the user will be thrown on bar interface
  * - ui/receiveAlerts : Can be selected as a receiver for alerts
  * - ui/receiveDefaultAlerts : Will see automatic alert with null receiver
+ * - ui/receiveStock : Can receive barrel and bottles
  *
  * - user/read : Can read all users
  * - user/team : Require `user/read`. Can create, update or delete user to/from it own team
@@ -66,6 +67,19 @@ module.exports.roles = {
         'message/oneChannel',
         'team/read',
         'user/read',
+    ],
+    'Bar': [
+        'alert/restrictedSender',
+        'alertButton/read',
+        'alertButton/createAlert',
+        'barrel/restricted',
+        'barrelType/read',
+        'bottleAction/restricted',
+        'bottleType/read',
+        'message/oneChannel',
+        'team/read',
+        'user/read',
+        'ui/receiveStock',
     ],
     'Orga': [
         'message/public',
