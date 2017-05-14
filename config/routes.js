@@ -98,5 +98,5 @@ module.exports.routes = {
     'post /user/subscribe': 'UserController.subscribe',
     'post /user/unsubscribe': 'UserController.unsubscribe',
 
-    'post /firebase/register': 'SessionController.register'
+    'post /session/open': 'SessionController.open'
 };

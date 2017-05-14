@@ -123,22 +123,10 @@ module.exports.sockets = {
     *                                                                          *
     ***************************************************************************/
     afterDisconnect: function(session, socket, cb) {
+        // if the user was authenticated
         if(socket.jwt) {
-            JwtService.verify(socket.jwt)
-                .then((user) => {
-                    user.lastDisconnection = Date.now();
-                    user.save((error) => {
-                        if (error) {
-                            throw new Error('Cannot register user logout: error when trying to updating user', error);
-                            return res.negotiate(error);
-                        }
-                        AlertService.checkTeamActivity(user.team);
-                        return cb();
-                    });
-                })
-                .catch((error) => {
-                    throw new Error('Cannot register user logout: invalid JWT', error);
-                });
+            // update his session
+            Session.handleLogout(socket.id);
         }
     },
 
