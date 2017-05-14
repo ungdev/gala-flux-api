@@ -33,6 +33,8 @@
  * - bottleType/read : Can read all bottlesTypes
  * - bottleType/admin : Can read/write on all bottlesTypes
  *
+ * - errorLog/read : Read log entries (every user can post)
+ *
  * - message/oneChannel : Receive #group:[groupname] and #[teamname] but can send only in #[teamname]
  * - message/public : Not compatible with `oneChannel`. Can send and receive in any public #[teamname] channel, can also receive and send in its own #group:[groupname] channel
  * - message/group : Require `message/public`. Can send and receive in any #group:[groupname] channel
@@ -45,6 +47,7 @@
  * - ui/admin : Can see admin panel. If not set, the user will be thrown on bar interface
  * - ui/receiveAlerts : Can be selected as a receiver for alerts
  * - ui/receiveDefaultAlerts : Will see automatic alert with null receiver
+ * - ui/receiveStock : Can receive barrel and bottles
  *
  * - user/read : Can read all users
  * - user/team : Require `user/read`. Can create, update or delete user to/from it own team
@@ -64,6 +67,19 @@ module.exports.roles = {
         'message/oneChannel',
         'team/read',
         'user/read',
+    ],
+    'Bar': [
+        'alert/restrictedSender',
+        'alertButton/read',
+        'alertButton/createAlert',
+        'barrel/restricted',
+        'barrelType/read',
+        'bottleAction/restricted',
+        'bottleType/read',
+        'message/oneChannel',
+        'team/read',
+        'user/read',
+        'ui/receiveStock',
     ],
     'Orga': [
         'message/public',
@@ -85,6 +101,7 @@ module.exports.roles = {
         'ui/receiveAlerts',
         'ui/receiveDefaultAlerts',
         'user/team',
+        'user/read',
     ],
     'SecUTT': [
         'alert/restrictedReceiver',
@@ -96,6 +113,7 @@ module.exports.roles = {
         'ui/admin',
         'ui/receiveAlerts',
         'user/team',
+        'user/read',
     ],
     'Coord': [
         'alert/admin',

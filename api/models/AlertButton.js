@@ -43,12 +43,19 @@ function Model () {
         },
 
         /**
-         * If a message is required, a prompt can be display to the user.
+         * A prompt can be display to the user over the message field.
          * This prompt can be a question, for example.
          */
         messagePrompt: {
             type: 'string'
-        }
+        },
+
+        /**
+         * A default message value can be set to help user answer the question
+         */
+        messageDefault: {
+            type: 'string'
+        },
 
     };
 
@@ -106,6 +113,7 @@ function Model () {
                             title: "Problème avec une tireuse",
                             messageRequired: true,
                             messagePrompt: "Quel est le problème ?",
+                            messageDefault: "La tireuse mousse : (Oui/Non)\nLa tireuse est chaude : (Oui/Non)\n",
                             senderGroup: null,
                             receiver: team.id,
                         },

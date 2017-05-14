@@ -20,16 +20,28 @@ function Model () {
             required: true,
         },
 
+
+        /**
+         * Sell price of a bottle
+         */
         sellPrice: {
-            type: 'integer',
+            type: "float",
             required: true,
         },
 
+
+        /**
+         * Supplier price of a bottle
+         */
         supplierPrice: {
-            type: 'integer',
+            type: "float",
             required: true,
         },
 
+
+        /**
+         * Number of bottle
+         */
         originalStock: {
             type: 'integer',
             required: true,
@@ -56,8 +68,8 @@ function Model () {
             async.each(bottleTypes, (bottleType, cb) => {
                 async.parallel([
 
-                    // update the bottleAction where the bottleId is this bottleType
-                    cb => BottleAction.update2({bottleId: bottleType.id}, {team: null}).exec(cb),
+                    // update the bottleAction where the type is this bottleType
+                    cb => BottleAction.update2({type: bottleType.id}, {team: null}).exec(cb),
 
                     ], (error) => {
                         if(error) return cb(error);

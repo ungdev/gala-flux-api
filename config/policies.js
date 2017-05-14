@@ -51,6 +51,12 @@ module.exports.policies = {
         create: ['jwtAuth'],
         unsubscribe:  ['jwtAuth'],
         subscribe:  ['jwtAuth'],
+        count:  ['jwtAuth'],
+    },
+
+    ErrorLogController: {
+        find: ['jwtAuth'],
+        create: ['jwtAuth'],
     },
 
     MessageController: {
