@@ -8,48 +8,59 @@
 module.exports = {
 
     open: function(req, res) {
+
+        // Debug sessions
+        /*
+        if(req.param('token', null)) {
+            sails.log.debug('open : ' + req.user.name + ' (' + req.team.name + '): Android('+sails.sockets.getId(req)+', '+req.param('token', '').substr(0, 32)+', '+req.param('deviceId', '')+')')
+        }
+        else {
+            sails.log.debug('open : ' + req.user.name + ' (' + req.team.name + '): Browser('+sails.sockets.getId(req) + ')')
+        }
+        */
+
         const newSession = {
             user: req.user,
-            androidId: "temp",
-            socketId: sails.sockets.getId(req)
+            socketId: sails.sockets.getId(req),
         };
 
-        // if there is no token, create a new session with the socket id
-        if (!req.param('token') || req.param('token') === 'null') {
-            Session.create(newSession).exec((error, session) => {
-                if (error) return res.negotiate(error);
+        // check if this device already exists in the database
+        let filter = [{ socketId: sails.sockets.getId(req) }];
+        if(req.param('deviceId')) filter.push({ deviceId: req.param('deviceId')});
+        if(req.param('token')) filter.push({ firebaseToken: req.param('token') });
 
-                return res.ok({message: "new session, no firebase token"});
-            });
-        } else {
-            // check if the token already exists in the database
-            Session.findOne({ firebaseToken: req.param('token') })
-                .exec((error, session) => {
+        Session.findOne(filter)
+        .exec((error, session) => {
+            if (error) return res.negotiate(error);
+
+            // if a session already exists, update the session
+            if (session) {
+                session.user = req.user;
+                session.lastAction = Date.now();
+                session.socketId = sails.sockets.getId(req);
+                session.firebaseToken = req.param('token', null);
+                session.deviceId = req.param('deviceId', null),
+
+                session.save(err => {
+                    if (err) return res.negotiate(err);
+
+                    return res.ok({message: "session updated"});
+                });
+            }
+            else {
+                let session = {};
+                session.user = req.user;
+                session.lastAction = Date.now();
+                session.socketId = sails.sockets.getId(req);
+                session.firebaseToken = req.param('token', null);
+                session.deviceId = req.param('deviceId', null),
+
+                Session.create(session).exec((error, session) => {
                     if (error) return res.negotiate(error);
 
-                    // if a session already exists for this firebase token, update the session
-                    if (session) {
-                        // update the last action
-                        session.lastAction = Date.now();
-                        // set the socket id
-                        session.socketId = req.socket.id;
-                        session.save(err => {
-                            if (err) return res.negotiate(err);
-
-                            return res.ok({message: "session updated"});
-                        });
-                    } else {
-                        // else, create a new session for this user
-                        newSession.firebaseToken = req.param('token');
-
-                        Session.create(newSession).exec((error, session) => {
-                            if (error) return res.negotiate(error);
-
-                            return res.ok({message: "new session"});
-                        });
-                    }
+                    return res.ok({message: "new session"});
                 });
-        }
-    }
-
+            }
+        });
+    },
 };

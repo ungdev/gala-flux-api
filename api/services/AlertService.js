@@ -1,88 +1,68 @@
 module.exports = {
 
     checkTeamActivity: function(teamId) {
+        // Wait 5 seconds to avoir to send an alert on refresh
+        setTimeout(() => {
 
-        let active = false;
+            // get the team
+            Team.findOne({ id: teamId }).exec((error, team) => {
+                if (error || !team) return sails.log.error('Error while checking team activity: cannot find the team', error);
 
-        // get the team
-        Team.findOne({ id: teamId }).exec((error, team) => {
-            if (error || !team) return false;
+                // get the users of this team
+                User.find({ team: team.id }).exec((error, users) => {
+                    if (error) return sails.log.error('Error while checking team activity: cannot read users of the team', error);
 
-            // get the users of this team
-            User.find({ team: team.id }).exec((error, users) => {
-                if (error) return false;
+                    const alertData = {
+                        sender: team.id,
+                        severity: "warning",
+                        title: team.name + " n'est plus connecté",
+                        category: "Deconnexion"
+                    };
 
-                const alertData = {
-                    sender: team.id,
-                    severity: "warning",
-                    title: team.name + " n'est plus connecté",
-                    category: "Deconnexion"
-                };
+                    // get list of sessions associated with users from this team
+                    let userIds = _.pluck(users, 'id');
 
-                async.each(users, (user, callback) => {
-                    // get the sessions of this user
-                    Session.find({user: user.id}).exec((err, sessions) => {
-                        if (err) {
-                            callback(err);
-                        } else {
-                            if (!sessions.length) {
-                                callback();
-                            } else {
-                                for (let session of sessions) {
-                                    // if this session is active, check if there is an alert to remove for this team
-                                    if (session.lastAction >= session.disconnectedAt) {
-                                        active = true;
-                                        // if an alert has been sent for this team, destroy it
-                                        Alert.findOne(alertData)
-                                            .exec((error, alert) => {
-                                                if (error) {
-                                                    callback(error);
-                                                } else if (!alert) {
-                                                    callback();
-                                                } else {
-                                                    Alert.destroy({id: alert.id}).exec((error) => {
-                                                        if (error) {
-                                                            callback(error);
-                                                        } else {
-                                                            callback();
-                                                        }
-                                                    });
-                                                }
-                                            });
-                                    } else {
-                                        callback();
-                                    }
-                                }
+                    // get the sessions of desktop user from this team
+                    Session.find({user: {$in: userIds}, firebaseToken: null}).exec((error, sessions) => {
+                        if (error) return sails.log.error('Error while checking team activity: cannot read sessions of the team', error);
 
+                        let active = false;
+
+                        // Look for active session
+                        for (let session of sessions) {
+                            // if this session is active, check if there is an alert to remove for this team
+                            if (session.lastAction >= session.disconnectedAt) {
+                                active = true;
+                                break;
                             }
                         }
-                    });
-                }, err => {
 
-                    // an error occured
-                    if (err) return err;
-
-                    // no error => if the team isn't active, an alert is required
-                    if (!active) {
                         // check if an alert for this team already exist
                         Alert.findOne(alertData).exec((error, alert) => {
-                            if (error || alert) return;
-                            // if there is no alert for this team, create one
-                            Alert.create(alertData).exec((error, alert) => {
-                                if (error) return;
+                            if (error) return sails.log.error('Error while checking team activity: cannot read existing alert', error);
 
-                                // push this modification in the alert history
-                                AlertHistory.pushToHistory(alert, (error, result) => {
-                                    if (error) return false;
+                            // If active and already an alert, delete the alert
+                            if(active && alert) {
+                                Alert.destroy({id: alert.id}).exec((error) => {
+                                    if (error) return sails.log.error('Error while checking team activity: cannot delete existing alert', error);
                                 });
+                            }
+                            // If not active and no alert, create the alert
+                            else if(!active && !alert) {
+                                Alert.create(alertData).exec((error, alert) => {
+                                    if (error) return sails.log.error('Error while checking team activity: cannot create the alert', error);
 
-                            });
+                                    // push this modification in the alert history
+                                    AlertHistory.pushToHistory(alert, (error, result) => {
+                                        if (error) return sails.log.error('Error while checking team activity: cannot update alert history', error);
+                                    });
+
+                                });
+                            }
                         });
-                    }
+                    });
                 });
-
             });
-        });
+        }, 5000);
     }
-
 };

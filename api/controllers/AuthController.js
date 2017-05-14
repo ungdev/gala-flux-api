@@ -343,7 +343,7 @@ module.exports = {
      * @apiDescription Will give the disconnected user
      */
     logout: function (req, res) {
-        const err = Session.handleLogout(req.socket.id);
+        const err = Session.handleLogout(req.socket.id, true);
         return err ? res.negotiate(err) : res.ok();
     }
 };

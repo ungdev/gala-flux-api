@@ -18,7 +18,6 @@ module.exports = {
 
         // Create receiver list
         let receivers = [];
-        // TODO
 
         // Send message
         return admin.messaging().sendToDevice(receivers,
@@ -51,7 +50,6 @@ module.exports = {
 
         // Create receiver list
         let receivers = [];
-        // TODO
 
         return Team.findOneById(alert.sender || '').exec((error, team) => {
             // Send message
