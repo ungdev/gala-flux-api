@@ -83,6 +83,9 @@ function Model () {
                     sails.sockets.broadcast('alert/' + alert.receiver, 'alert', data);
                     Alert.publishDestroy(alert.id);
 
+                    // Send alert notifications for android
+                    FirebaseService.notifyAlert({id: alert.id});
+
                     return cb();
                 });
             }, cb);
@@ -104,6 +107,9 @@ function Model () {
         sails.sockets.broadcast('alert/' + newlyInsertedRecord.sender, 'alert', data);
         sails.sockets.broadcast('alert/' + newlyInsertedRecord.receiver, 'alert', data);
         Alert.publishCreate(newlyInsertedRecord);
+
+        // Send alert notifications for android
+        FirebaseService.notifyAlert(newlyInsertedRecord);
     };
 
 
@@ -124,6 +130,9 @@ function Model () {
         sails.sockets.broadcast('alert/' + valuesToUpdate.sender, 'alert', data);
         sails.sockets.broadcast('alert/' + valuesToUpdate.receiver, 'alert', data);
         Alert.publishUpdate(valuesToUpdate.id, valuesToUpdate);
+
+        // Send alert notifications for android
+        FirebaseService.notifyAlert(valuesToUpdate);
     };
 
 

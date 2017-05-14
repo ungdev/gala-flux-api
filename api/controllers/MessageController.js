@@ -262,7 +262,7 @@ module.exports = {
                 return res.negotiate(error);
             }
 
-            FirebaseService.sendFirebaseMessage(channel, req.param('text'));
+            FirebaseService.notifyChatMessage(message, req.user, req.team);
 
             return res.ok(message);
         });

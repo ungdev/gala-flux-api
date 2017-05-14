@@ -64,8 +64,11 @@ sails.lift(rc('sails'), (err) => {
     // Init firebase
     if(sails.config.firebase.database) {
         var admin = require("firebase-admin");
-        if(sails)
 
+        // fix private_key format
+        sails.config.firebase.serviceAccount.private_key = sails.config.firebase.serviceAccount.private_key.replace(/\\+n/g, '\n');
+
+        sails.log.info('Init Firebase.')
         admin.initializeApp({
             credential: admin.credential.cert(sails.config.firebase.serviceAccount),
             databaseURL: 'https://' + sails.config.firebase.database + '.firebaseio.com'

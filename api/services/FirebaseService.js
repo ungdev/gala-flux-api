@@ -1,53 +1,76 @@
 var request = require('request');
+var admin = require("firebase-admin");
 
 module.exports = {
 
-    /*
-     * Send new message for a particular topic to the Firebase API endpoint
+    /**
+     * Send new a notification for a new chat message
      *
-     * @param {string} to: the topic
-     * @param {string} message: the message to send
+     * @param {Message} message: Chat message object
+     * @param {User} sender
+     * @param {Team} senderTeam
+     * @return {Promise}
      */
-    sendFirebaseMessage(to, message) {
+    notifyChatMessage(message, sender, team) {
+        if(!sails.config.firebase.database) {
+            return;
+        }
 
-        request({
-            url: 'https://fcm.googleapis.com/fcm/send',
-            method: 'POST',
-            headers: {
-                'Content-Type': ' application/json',
-                'Authorization': 'key=' + sails.config.serverKey
-            },
-            body: JSON.stringify({
-                to: toHex(to),
-                data: {
-                    message
-                }
-            }),
-        }, (error, response, body) => {
-            if (error) {
-                console.error(error, response, body);
+        // Create receiver list
+        let receivers = [];
+        // TODO
+
+        // Send message
+        return admin.messaging().sendToDevice(receivers,
+        {
+            data: {
+                type: 'message',
+                sender: message.sender || '',
+                senderName: sender.name || '',
+                senderTeamName: team.name || '',
+                text: message.text || '',
+                channel: message.channel || '',
             }
-            else if (response.statusCode >= 400) {
-                console.error('HTTP Error: '+response.statusCode+' - '+response.statusMessage+'\n'+body);
-            }
-            else {
-                console.log('Done!')
-            }
+        })
+        .catch(function(error) {
+            sails.log.error('Error while sending message notification to android', error);
         });
+    },
 
+
+    /**
+     * Send new a notification for a new alert
+     *
+     * @param {Alert} alert: Alert object
+     * @return {Promise}
+     */
+    notifyAlert(alert) {
+        if(!sails.config.firebase.database) {
+            return;
+        }
+
+        // Create receiver list
+        let receivers = [];
+        // TODO
+
+        return Team.findOneById(alert.sender || '').exec((error, team) => {
+            // Send message
+            return admin.messaging().sendToDevice(receivers,
+            {
+                data: {
+                    type: 'alert',
+                    id: alert.id || '',
+                    sender: alert.sender || '',
+                    senderName: (team && team.name) || 'Équipe supprimée',
+                    senderLocation: (team && team.location) || '',
+                    severity: alert.severity || 'done',
+                    title: alert.title || '',
+                    message: alert.message || '',
+                }
+            })
+            .catch(function(error) {
+                sails.log.error('Error while sending alert notification to android', error);
+            });
+        })
     }
-
 };
-
-/**
- * String to hex
- * @param {string} str
- * @returns {string}
- */
-function toHex(str) {
-    let result = '';
-    for (let i = 0; i < str.length; i++) {
-        result += str.charCodeAt(i).toString(16);
-    }
-    return result;
-}

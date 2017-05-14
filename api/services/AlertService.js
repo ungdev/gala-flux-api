@@ -9,8 +9,8 @@ module.exports = {
 
                 const alertData = {
                     sender: team.id,
-                    severity: "serious",
-                    title: "Team" + team.name + " deconnectée",
+                    severity: "warning",
+                    title: team.name + " n'est plus connecté",
                     category: "Deconnexion"
                 };
 
