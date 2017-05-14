@@ -4,8 +4,11 @@ module.exports = {
 
         // get the team
         Team.findOne({ id: teamId }).exec((error, team) => {
+            if (error || !team) return false;
+
             // get the users of this team
             User.find({ team: team.id }).exec((error, users) => {
+                if (error) return false;
 
                 const alertData = {
                     sender: team.id,
@@ -13,10 +16,6 @@ module.exports = {
                     title: "Team" + team.name + " deconnectée",
                     category: "Deconnexion"
                 };
-
-                if (error) {
-                    return false;
-                }
 
                 // check if a user of this team is active
                 for (let user of users) {
