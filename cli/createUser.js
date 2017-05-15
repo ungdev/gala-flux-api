@@ -11,6 +11,7 @@ const fs = require('fs');
 const inquirer = require('inquirer');
 
 Sails.lift({port: 1338}, (error) => {
+    sails.config.firebase = {};
     sails.log.info();
     sails.log.info();
     sails.log.info('=========== Create user ===========');

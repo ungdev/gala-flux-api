@@ -262,6 +262,8 @@ module.exports = {
                 return res.negotiate(error);
             }
 
+            FirebaseService.notifyChatMessage(message, req.user, req.team);
+
             return res.ok(message);
         });
 

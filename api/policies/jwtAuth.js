@@ -43,15 +43,25 @@ module.exports = function (req, res, next) {
                 if(error) {
                     return res.error(req, 500, 'NoTeam', 'We didn\'t find the team associated with the logged in user');
                 }
-                user.lastConnection = Date.now();
-                user.save((error) => {
-                    if (error) {
-                        return res.negotiate(error);
+                req.team = team;
+                Session.findOne({socketId: req.socket.id}).exec((err, session) => {
+                    if (err) return res.negotiate(error);
+
+                    // if session exist, update lastAction
+                    if (session) {
+                        session.lastAction = Date.now();
+                        session.save(err => {
+                            if (err) return res.negotiate(error);
+
+                            AlertService.checkTeamActivity(user.team);
+                            return next();
+                        });
+                    } else {
+                        AlertService.checkTeamActivity(user.team);
+                        return next();
                     }
-                    AlertService.checkTeamActivity(user.team);
-                    req.team = team;
-                    return next();
                 });
+
             });
         })
         .catch((error) => {

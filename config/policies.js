@@ -31,6 +31,13 @@ module.exports.policies = {
         logout: ['jwtAuth'],
     },
 
+    SessionController: {
+        open: ['jwtAuth'],
+        find: ["jwtAuth"],
+        unsubscribe:  ['jwtAuth'],
+        subscribe:  ['jwtAuth'],
+    },
+
     BottleTypeController: {
         find: ['jwtAuth'],
         findOne: ['jwtAuth'],

@@ -38,6 +38,12 @@ module.exports = {
     etuutt : {
         id: '',
         secret: '',
-    }
+    },
+
+    /************************************************************************************
+     * https://console.firebase.google.com/project/[YOUR-APP]/settings/cloudmessaging   *
+     * copy the server key here                                                         *
+     ************************************************************************************/
+    serverKey: "your-key"
 
 };
