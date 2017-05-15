@@ -61,11 +61,40 @@ sails.lift(rc('sails'), (err) => {
         throw err;
     }
 
+    // Clean session collection
+    Session.destroy({firebaseToken: null}).exec((error) => {
+        if (error) sails.log.error('Error while cleaning session collection', error);
+    });
+
+    // Debug sessions
+    /*
+    setInterval(() => {
+        Session.find().exec((error, sessions) => {
+            sails.log.debug('-------------------------------------------------------------sessions : ' + sessions.length);
+            for (let session of sessions) {
+                User.findOneById(session.user).exec((error, user) => {
+                    Team.findOneById(user.team).exec((error, team) => {
+                        if(session.firebaseToken) {
+                            sails.log.debug('debug: ' + user.name + ' (' + team.name + '): Android('+session.socketId+', '+session.firebaseToken.substr(0, 32)+', '+session.deviceId+')')
+                        }
+                        else {
+                            sails.log.debug('debug: ' + user.name + ' (' + team.name + '): Browser('+session.socketId + ')')
+                        }
+                    });
+                });
+            }
+        });
+    }, 3000);
+    */
+
     // Init firebase
     if(sails.config.firebase.database) {
         var admin = require("firebase-admin");
-        if(sails)
 
+        // fix private_key format
+        sails.config.firebase.serviceAccount.private_key = sails.config.firebase.serviceAccount.private_key.replace(/\\+n/g, '\n');
+
+        sails.log.info('Init Firebase.')
         admin.initializeApp({
             credential: admin.credential.cert(sails.config.firebase.serviceAccount),
             databaseURL: 'https://' + sails.config.firebase.database + '.firebaseio.com'

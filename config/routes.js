@@ -81,6 +81,7 @@ module.exports.routes = {
 
     'post /bottleaction/subscribe': 'BottleActionController.subscribe',
     'post /bottleaction/unsubscribe': 'BottleActionController.unsubscribe',
+    'get /bottleaction/count': 'BottleActionController.count',
 
     'post /bottletype/subscribe': 'BottleTypeController.subscribe',
     'post /bottletype/unsubscribe': 'BottleTypeController.unsubscribe',

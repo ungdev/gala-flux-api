@@ -112,7 +112,7 @@ module.exports = {
 
         // check permissions
         if (!(Team.can(req, 'user/read') || Team.can(req, 'user/admin'))) {
-            return res.error(403, 'forbidden', 'You are not authorized read user list');
+            return res.error(req, 403, 'forbidden', 'You are not authorized read user list');
         }
 
         // read filters
@@ -160,14 +160,14 @@ module.exports = {
                     return res.negotiate(error);
                 }
                 if(!user) {
-                    return res.error(404, 'notfound', 'The requested user cannot be found');
+                    return res.error(req, 404, 'notfound', 'The requested user cannot be found');
                 }
 
                 return res.ok(user);
             });
         }
         else {
-            return res.error(403, 'forbidden', 'You are not authorized read user data');
+            return res.error(req, 403, 'forbidden', 'You are not authorized read user data');
         }
     },
 
@@ -191,19 +191,19 @@ module.exports = {
     create: function (req, res) {
         // Check permissions
         if(!Team.can(req, 'user/admin') && !(Team.can(req, 'user/team') && req.param('team') == req.team.id)) {
-            return res.error(403, 'forbidden', 'You are not authorized to create another user in this team.');
+            return res.error(req, 403, 'forbidden', 'You are not authorized to create another user in this team.');
         }
 
         // Check parameters
         if(!req.param('login') && !req.param('ip')) {
-            return res.error(400, 'BadRequest', 'Either `ip` or `login` field has to be set.');
+            return res.error(req, 400, 'BadRequest', 'Either `ip` or `login` field has to be set.');
         }
         else if(req.param('login') && req.param('ip')) {
-            return res.error(400, 'BadRequest', 'Either `ip` or `login` has to be empty.');
+            return res.error(req, 400, 'BadRequest', 'Either `ip` or `login` has to be empty.');
         }
         Team.findOne({id: req.param('team')}).exec((error, team) => {
             if(!team) {
-                return res.error(400, 'BadRequest', 'Team id is not valid.');
+                return res.error(req, 400, 'BadRequest', 'Team id is not valid.');
             }
 
             // Create user
@@ -246,12 +246,12 @@ module.exports = {
     update: function (req, res) {
         // Check permissions 1
         if(!Team.can(req, 'user/admin') && !(Team.can(req, 'user/team'))) {
-            return res.error(403, 'forbidden', 'You are not authorized to update an user.');
+            return res.error(req, 403, 'forbidden', 'You are not authorized to update an user.');
         }
 
         // Check parameters
         if(req.param('login') && req.param('ip')) {
-            return res.error(400, 'BadRequest', 'Either `ip` or `login` has to be empty.');
+            return res.error(req, 400, 'BadRequest', 'Either `ip` or `login` has to be empty.');
         }
 
         // Find user
@@ -261,15 +261,15 @@ module.exports = {
                 return res.negotiate(error);
             }
             if(!user) {
-                return res.error(404, 'notfound', 'The requested user cannot be found');
+                return res.error(req, 404, 'notfound', 'The requested user cannot be found');
             }
 
             // Check permissions 2
             if(Team.can(req, 'user/team') && user.team != req.team.id) {
-                return res.error(403, 'forbidden', 'You are not authorized to update an user from this team.');
+                return res.error(req, 403, 'forbidden', 'You are not authorized to update an user from this team.');
             }
             else if(Team.can(req, 'user/team') && req.param('team') && req.param('team') != req.team.id) {
-                return res.error(403, 'forbidden', 'You are not authorized to change the team of your user.');
+                return res.error(req, 403, 'forbidden', 'You are not authorized to change the team of your user.');
             }
 
 
@@ -282,7 +282,7 @@ module.exports = {
             // Check team
             Team.findOne({id: user.team}).exec((error, team) => {
                 if(!team && req.param('team')) {
-                    return res.error(400, 'BadRequest', 'Team id is not valid.');
+                    return res.error(req, 400, 'BadRequest', 'Team id is not valid.');
                 }
 
                 user.save((error) => {
@@ -312,7 +312,7 @@ module.exports = {
     destroy: function (req, res) {
         // Check permissions 1
         if(!Team.can(req, 'user/admin') && !(Team.can(req, 'user/team'))) {
-            return res.error(403, 'forbidden', 'You are not authorized to update an user.');
+            return res.error(req, 403, 'forbidden', 'You are not authorized to update an user.');
         }
 
         // Find user
@@ -322,12 +322,12 @@ module.exports = {
                 return res.negotiate(error);
             }
             if(!user) {
-                return res.error(404, 'notfound', 'The requested user cannot be found');
+                return res.error(req, 404, 'notfound', 'The requested user cannot be found');
             }
 
             // Check permissions 2
             if(Team.can(req, 'user/team') && user.team != req.team.id) {
-                return res.error(403, 'forbidden', 'You are not authorized to delete an user from this team.');
+                return res.error(req, 403, 'forbidden', 'You are not authorized to delete an user from this team.');
             }
 
             User.destroy({id: user.id})
@@ -392,15 +392,15 @@ module.exports = {
         if (!sails.config.etuutt.id
             || !sails.config.etuutt.secret
             || !sails.config.etuutt.baseUri) {
-            return res.error(501, 'EtuUTTNotConfigured', 'The server is not configured for the API of EtuUTT');
+            return res.error(req, 501, 'EtuUTTNotConfigured', 'The server is not configured for the API of EtuUTT');
         }
 
         if(!req.user.accessToken || !req.user.refreshToken || !req.user.login) {
-            return res.error(403, 'NotEtuuttUser', 'Authenticated user is not logged in via EtuUTT.');
+            return res.error(req, 403, 'NotEtuuttUser', 'Authenticated user is not logged in via EtuUTT.');
         }
 
         if(!req.param('query')) {
-            return res.error(400, 'BadRequest', 'query parameter is missing.');
+            return res.error(req, 400, 'BadRequest', 'query parameter is missing.');
         }
 
         let EtuUTT = EtuUTTService(req.user);
@@ -436,10 +436,10 @@ module.exports = {
                 return res.ok(out);
             }
 
-            return res.error(500, 'EtuUTTError', 'Unexpected EtuUTT answer format');
+            return res.error(req, 500, 'EtuUTTError', 'Unexpected EtuUTT answer format');
         })
         .catch((error) => {
-            return res.error(500, 'EtuUTTError', 'An error occurs during communications with the api of EtuUTT: ' + error);
+            return res.error(req, 500, 'EtuUTTError', 'An error occurs during communications with the api of EtuUTT: ' + error);
         });
     },
 
@@ -459,7 +459,7 @@ module.exports = {
     uploadAvatar: function (req, res) {
         // Check permissions
         if(!Team.can(req, 'user/admin') && !(Team.can(req, 'user/team'))) {
-            return res.error(403, 'forbidden', 'You are not authorized to create another user in this team.');
+            return res.error(req, 403, 'forbidden', 'You are not authorized to create another user in this team.');
         }
 
         // Find target user
@@ -469,12 +469,12 @@ module.exports = {
                 return res.negotiate(error);
             }
             if(!user) {
-                return res.error(404, 'notfound', 'The requested user cannot be found');
+                return res.error(req, 404, 'notfound', 'The requested user cannot be found');
             }
 
             // Check permissions 2
             if(Team.can(req, 'user/team') && user.team != req.team.id) {
-                return res.error(403, 'forbidden', 'You are not authorized to update an user from this team.');
+                return res.error(req, 403, 'forbidden', 'You are not authorized to update an user from this team.');
             }
 
             req.file('avatar').upload({
@@ -488,7 +488,7 @@ module.exports = {
                 }
 
                 if (uploadedFiles.length === 0){
-                    return res.error(400, 'BadRequest', 'Missing avatar file');
+                    return res.error(req, 400, 'BadRequest', 'Missing avatar file');
                 }
 
                 // Resize and move avatar file

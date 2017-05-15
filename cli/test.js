@@ -7,6 +7,7 @@
 const Sails = require('sails');
 
 Sails.lift({port: 1338}, (error) => {
+    sails.config.firebase = {};
     if(error) {
         process.exit(1);
     }

@@ -213,7 +213,7 @@ module.exports = {
         if(Team.can(req, 'message/oneChannel')
             && channel != 'public:'+Message.toChannel(req.team.name)) {
 
-            return res.error(403, 'forbidden', 'You cannot send message in another channel than ' + 'public:'+Message.toChannel(req.team.name));
+            return res.error(req, 403, 'forbidden', 'You cannot send message in another channel than ' + 'public:'+Message.toChannel(req.team.name));
         }
 
         // Not compatible with `oneChannel`. Can send and receive in any
@@ -236,20 +236,20 @@ module.exports = {
                 return (new RegExp(regex)).test(channel);
             });
             if(!match) {
-                return res.error(403, 'forbidden', 'You are not authorized to send in this channel');
+                return res.error(req, 403, 'forbidden', 'You are not authorized to send in this channel');
             }
         }
         // No permission
         else if(!Team.can(req, 'message/admin') && !Team.can(req, 'message/public') && !Team.can(req, 'message/oneChannel')) {
-            return res.error(403, 'forbidden', 'You are not authorized to send any messages');
+            return res.error(req, 403, 'forbidden', 'You are not authorized to send any messages');
         }
 
         // Check parameters
         if(!req.param('text')) {
-            return res.error(400, 'BadRequest', 'The parameter `text` is empty.');
+            return res.error(req, 400, 'BadRequest', 'The parameter `text` is empty.');
         }
         else if (req.param('recipientTeam') && req.param('recipientGroup')) {
-            return res.error(400, 'BadRequest', 'You cannot use `recipientTeam` and `recipientGroup` at the same time');
+            return res.error(req, 400, 'BadRequest', 'You cannot use `recipientTeam` and `recipientGroup` at the same time');
         }
 
         // Create message
@@ -262,7 +262,7 @@ module.exports = {
                 return res.negotiate(error);
             }
 
-            FirebaseService.sendFirebaseMessage(channel, req.param('text'));
+            FirebaseService.notifyChatMessage(message, req.user, req.team);
 
             return res.ok(message);
         });
@@ -321,7 +321,7 @@ module.exports = {
             })
         }
         else {
-            return res.error(403, 'forbidden', 'You are not authorized to read any channel');
+            return res.error(req, 403, 'forbidden', 'You are not authorized to read any channel');
         }
     },
 };

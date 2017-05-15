@@ -74,7 +74,7 @@ module.exports = {
                 });
         }
         else {
-            return res.error(403, 'forbidden', 'You are not authorized to view the bottletype list');
+            return res.error(req, 403, 'forbidden', 'You are not authorized to view the bottletype list');
         }
     },
 
@@ -108,14 +108,14 @@ module.exports = {
                         return res.negotiate(error);
                     }
                     if(!bottletype) {
-                        return res.error(400, 'BadRequest', 'The requested bottletype cannot be found');
+                        return res.error(req, 400, 'BadRequest', 'The requested bottletype cannot be found');
                     }
 
                     return res.ok(bottletype);
                 });
         }
         else {
-            return res.error(403, 'forbidden', 'You are not authorized to read bottletype data');
+            return res.error(req, 403, 'forbidden', 'You are not authorized to read bottletype data');
         }
     },
 
@@ -140,12 +140,12 @@ module.exports = {
     create: function (req, res) {
         // Check permissions
         if(!Team.can(req, 'bottleType/admin')) {
-            return res.error(403, 'forbidden', 'You are not authorized to create a bottletype.');
+            return res.error(req, 403, 'forbidden', 'You are not authorized to create a bottletype.');
         }
 
         BottleType.findOne({id: req.param('id')}).exec((error, bottletype) => {
             if(bottletype) {
-                return res.error(400, 'BadRequest', 'BottleType short name is not valid.');
+                return res.error(req, 400, 'BadRequest', 'BottleType short name is not valid.');
             }
 
             // Create bottletype
@@ -182,7 +182,7 @@ module.exports = {
     destroy: function (req, res) {
         // Check permissions
         if(!Team.can(req, 'bottleType/admin')) {
-            return res.error(403, 'forbidden', 'You are not authorized to delete a bottletype.');
+            return res.error(req, 403, 'forbidden', 'You are not authorized to delete a bottletype.');
         }
 
         // Find bottletype
@@ -192,7 +192,7 @@ module.exports = {
                     return res.negotiate(error);
                 }
                 if(!bottletype) {
-                    return res.error(400, 'BadRequest', 'The requested bottletype cannot be found');
+                    return res.error(req, 400, 'BadRequest', 'The requested bottletype cannot be found');
                 }
                 BottleType.destroy({id: bottletype.id}).exec((error) => {
                     if (error) {
@@ -227,7 +227,7 @@ module.exports = {
     update: function (req, res) {
         // Check permissions
         if(!Team.can(req, 'bottleType/admin')) {
-            return res.error(403, 'forbidden', 'You are not authorized to update a bottletype.');
+            return res.error(req, 403, 'forbidden', 'You are not authorized to update a bottletype.');
         }
 
         // Find bottletype
@@ -237,7 +237,7 @@ module.exports = {
                     return res.negotiate(error);
                 }
                 if(!bottletype) {
-                    return res.error(404, 'NotFound', 'The requested bottletype cannot be found');
+                    return res.error(req, 404, 'NotFound', 'The requested bottletype cannot be found');
                 }
 
                 // Update bottletype

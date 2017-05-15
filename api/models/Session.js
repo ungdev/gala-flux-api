@@ -14,7 +14,7 @@ module.exports = {
             required: true
         },
 
-        androidId: {
+        deviceId: {
             type: "string"
         },
 
@@ -69,9 +69,10 @@ module.exports = {
     /**
      * When a socket is closed or a user clicked on the logout button, update the session
      * @param {string} socketId
+     * @param {boolean} requested if the logout is requested by user, we can even delete android sessions
      * @return {boolean} update success
      */
-    handleLogout: function(socketId) {
+    handleLogout: function(socketId, requested) {
 
         // get the session with this socket id
         Session.findOne({socketId}).exec((err, session) => {
@@ -81,7 +82,7 @@ module.exports = {
             if (!session) return null;
 
             // if the session has a firebase token, update the disconnectedAt value
-            if (session.firebaseToken) {
+            if (session.firebaseToken && !requested) {
                 session.disconnectedAt = Date.now();
                 session.save(err => {
                     if (err) return err;
