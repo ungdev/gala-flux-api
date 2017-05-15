@@ -101,7 +101,7 @@ module.exports.roles = {
         'ui/receiveAlerts',
         'ui/receiveDefaultAlerts',
         'user/team',
-        'session/read'
+        'session/read',
         'user/read',
     ],
     'SecUTT': [
