@@ -98,5 +98,7 @@ module.exports.routes = {
     'post /user/subscribe': 'UserController.subscribe',
     'post /user/unsubscribe': 'UserController.unsubscribe',
 
-    'post /session/open': 'SessionController.open'
+    'post /session/open': 'SessionController.open',
+    'post /session/subscribe': 'SessionController.subscribe',
+    'post /session/unsubscribe': 'SessionController.unsubscribe',
 };

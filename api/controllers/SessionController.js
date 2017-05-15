@@ -7,6 +7,53 @@
 
 module.exports = {
 
+    /**
+     * @api {post} /session/subscribe Subscribe to new items
+     * @apiName subscribe
+     * @apiGroup Session
+     * @apiDescription Subscribe to all new items.
+     */
+    subscribe: function(req, res) {
+        if (Team.can(req, 'session/read')) {
+            Session.watch(req);
+            Session.find().exec((error, items) => {
+                if (error) return res.negotiate(error);
+                Session.subscribe(req, _.pluck(items, 'id'));
+                return res.ok();
+            });
+        }
+        else {
+            return res.ok();
+        }
+    },
+
+    /**
+     * @api {post} /session/unsubscribe Unsubscribe from new items
+     * @apiName subscribe
+     * @apiGroup Session
+     * @apiDescription Unsubscribe from new items
+     */
+    unsubscribe: function(req, res) {
+        Session.unwatch(req);
+        Session.find().exec((error, items) => {
+            if (error) return res.negotiate(error);
+            Session.unsubscribe(req, _.pluck(items, 'id'));
+            return res.ok();
+        });
+    },
+
+    find: function(req, res) {
+        // Check permissions
+        if (!(Team.can(req, 'session/read') )) {
+            return res.error(403, 'forbidden', "You are not allowed to read the sessions");
+        }
+
+        Session.find().exec((error, sessions) => {
+            if (error) return res.negotiate(error);
+            return res.ok(sessions);
+        });
+    },
+
     open: function(req, res) {
         const newSession = {
             user: req.user,

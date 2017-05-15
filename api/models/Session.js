@@ -49,6 +49,23 @@ module.exports = {
 
     },
 
+    // Override the default toJSON method
+    toJSON: function() {
+        let obj = this.toObject();
+
+        delete obj.socketId;
+        delete obj.firebaseToken;
+        delete obj.androidId;
+
+        return obj;
+    },
+
+    // Attribute hidden on when sending to client
+    hiddenAttr: ['firebaseToken', 'androidId', 'socketId'],
+
+    // Update will be emitted to client only if another attribute has been updated
+    ignoredAttrUpdate: ['firebaseToken', 'androidId', 'socketId', 'createdAt', 'user'],
+
     /**
      * When a socket is closed or a user clicked on the logout button, update the session
      * @param {string} socketId

@@ -32,7 +32,10 @@ module.exports.policies = {
     },
 
     SessionController: {
-        open: ['jwtAuth']
+        open: ['jwtAuth'],
+        find: ["jwtAuth"],
+        unsubscribe:  ['jwtAuth'],
+        subscribe:  ['jwtAuth'],
     },
 
     BottleTypeController: {
