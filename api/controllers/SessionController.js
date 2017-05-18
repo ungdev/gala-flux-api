@@ -82,7 +82,7 @@ module.exports = {
 
             // if a session already exists, update the session
             if (session) {
-                session.user = req.user;
+                session.user = req.user.id;
                 session.lastAction = Date.now();
                 session.socketId = sails.sockets.getId(req);
                 session.firebaseToken = req.param('token', null);
@@ -96,7 +96,7 @@ module.exports = {
             }
             else {
                 let session = {};
-                session.user = req.user;
+                session.user = req.user.id;
                 session.lastAction = Date.now();
                 session.socketId = sails.sockets.getId(req);
                 session.firebaseToken = req.param('token', null);

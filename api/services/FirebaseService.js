@@ -128,6 +128,7 @@ module.exports = {
                                 type: 'alert',
                                 id: alert.id || '',
                                 sender: alert.sender || '',
+                                receiver: alert.receiver || null,
                                 senderName: (team && team.name) || 'Équipe supprimée',
                                 senderLocation: (team && team.location) || '',
                                 severity: alert.severity || 'done',
