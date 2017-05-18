@@ -213,64 +213,73 @@ module.exports = {
         }
 
         // Check parameters
-        if(!req.param('id')) {
-            return res.error(req, 400, 'BadRequest', "The 'id' field must contains the clicked AlertButton id.");
+        if(!req.param('button')) {
+            return res.error(req, 400, 'BadRequest', "The 'button' field must contains the clicked AlertButton id.");
+        }
+        const teamId = (req.param('team') !== 'null') && (req.param('team') !== null) ? req.param('team') : req.team.id;
+        console.log(teamId + " - " + req.team.id);
+        if (!(Team.can(req, 'alertButton/admin')) && (teamId !== req.team.id)) {
+            return res.error(req, 403, 'forbidden', 'You are not authorized to create an Alert for another team.');
         }
 
-        Alert.findOne({
-            button: req.param('id'),
-            sender: req.team.id,
-            severity: {$ne: "done"}
-        }).exec((error, alert) => {
-            if (error) {
-                return res.negotiate(error);
-            }
-            // If there is already an unsolved alert like this one for this team, throw error
-            if (alert) {
-                return res.error(req, 400, 'BadRequest', "This alert already exists.");
-            }
+        Team.findOne({id: teamId}).exec((error, team) => {
+            if (error) return res.negotiate(error);
 
-            // Get the alert button clicked
-            AlertButton.findOne({id: req.param('id')})
-                .exec((error, alertButton) => {
-                    if (error) {
-                        return res.negotiate(error);
-                    }
-                    if(!alertButton) {
-                        return res.error(req, 404, 'notfound', 'The requested alert button cannot be found');
-                    }
+            Alert.findOne({
+                button: req.param('button'),
+                sender: team,
+                severity: {$ne: "done"}
+            }).exec((error, alert) => {
+                if (error) {
+                    return res.negotiate(error);
+                }
+                // If there is already an unsolved alert like this one for this team, throw error
+                if (alert) {
+                    return res.error(req, 400, 'BadRequest', "This alert already exists.");
+                }
 
-                    // Throw error if no message in parameters and message required for this alert
-                    if(!req.param('message') && alertButton.message) {
-                        return res.error(req, 400, 'BadRequest', "This alert need a 'message'.");
-                    }
-
-                    // Create a new Alert from the Alert Button attributes
-                    Alert.create({
-                        sender: req.team,
-                        receiver: alertButton.receiver,
-                        severity: "warning",
-                        title: alertButton.title,
-                        category: alertButton.category,
-                        button: alertButton,
-                        message: req.param('message', '')
-                    }).exec((error, alert) => {
+                // Get the alert button clicked
+                AlertButton.findOne({id: req.param('button')})
+                    .exec((error, alertButton) => {
                         if (error) {
                             return res.negotiate(error);
                         }
+                        if(!alertButton) {
+                            return res.error(req, 404, 'notfound', 'The requested alert button cannot be found');
+                        }
 
-                        // push this modification in the alert history
-                        AlertHistory.pushToHistory(alert, (error, result) => {
+                        // Throw error if no message in parameters and message required for this alert
+                        if(!req.param('message') && alertButton.message) {
+                            return res.error(req, 400, 'BadRequest', "This alert need a 'message'.");
+                        }
+
+                        // Create a new Alert from the Alert Button attributes
+                        Alert.create({
+                            sender: team,
+                            receiver: alertButton.receiver,
+                            severity: "warning",
+                            title: alertButton.title,
+                            category: alertButton.category,
+                            button: alertButton,
+                            message: req.param('message', '')
+                        }).exec((error, alert) => {
                             if (error) {
                                 return res.negotiate(error);
                             }
 
-                            return res.ok(alert);
+                            // push this modification in the alert history
+                            AlertHistory.pushToHistory(alert, (error, result) => {
+                                if (error) {
+                                    return res.negotiate(error);
+                                }
+
+                                return res.ok(alert);
+                            });
+
                         });
 
                     });
-
-                });
+            });
         });
 
     },
