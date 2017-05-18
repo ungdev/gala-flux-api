@@ -287,6 +287,7 @@ module.exports = {
             return res.ok([...list]);
         }
         else if(Team.can(req, 'message/admin') || Team.can(req, 'message/public')) {
+            list.add('public:General');
             Team.find().exec((error, teams) => {
                 // Public
                 for (let team of teams) {
