@@ -284,9 +284,10 @@ module.exports = {
         if(Team.can(req, 'message/oneChannel')) {
             list.add('public:'+Message.toChannel(req.team.name));
             list.add('group:'+Message.toChannel(req.team.group));
-            return res.ok(list);
+            return res.ok([...list]);
         }
         else if(Team.can(req, 'message/admin') || Team.can(req, 'message/public')) {
+            list.add('public:General');
             Team.find().exec((error, teams) => {
                 // Public
                 for (let team of teams) {
