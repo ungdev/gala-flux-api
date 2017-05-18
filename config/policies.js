@@ -57,6 +57,10 @@ module.exports.policies = {
         count:  ['jwtAuth'],
     },
 
+    DeveloperController: {
+        refresh: ['jwtAuth'],
+    },
+
     ErrorLogController: {
         find: ['jwtAuth'],
         create: ['jwtAuth'],

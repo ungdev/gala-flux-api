@@ -86,6 +86,8 @@ module.exports.routes = {
     'post /bottletype/subscribe': 'BottleTypeController.subscribe',
     'post /bottletype/unsubscribe': 'BottleTypeController.unsubscribe',
 
+    'post /developer/refresh': 'DeveloperController.refresh',
+
     'get /message/channels': 'MessageController.getChannels',
     'post /message/subscribe': 'MessageController.subscribe',
     'post /message/unsubscribe': 'MessageController.unsubscribe',
