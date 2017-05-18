@@ -33,6 +33,8 @@
  * - bottleType/read : Can read all bottlesTypes
  * - bottleType/admin : Can read/write on all bottlesTypes
  *
+ * - developer/refresh : Can request a refresh of all browser which have an open socket
+ *
  * - errorLog/read : Read log entries (every user can post)
  *
  * - message/oneChannel : Receive #group:[groupname] and #[teamname] but can send only in #[teamname]
@@ -52,6 +54,8 @@
  * - user/read : Can read all users
  * - user/team : Require `user/read`. Can create, update or delete user to/from it own team
  * - user/admin : Can read/write on all users
+ *
+ * - session/read : Can read current active sessions
  */
 
 
@@ -130,7 +134,7 @@ module.exports.roles = {
         'ui/admin',
         'ui/receiveAlerts',
         'user/admin',
-        'session/read'
+        'session/read',
     ],
     'Admin': [
         'alert/admin',
@@ -145,6 +149,7 @@ module.exports.roles = {
         'team/admin',
         'ui/admin',
         'user/admin',
-        'session/read'
+        'session/read',
+        'developer/refresh',
     ]
 };
