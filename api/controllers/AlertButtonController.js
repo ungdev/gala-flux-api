@@ -217,7 +217,6 @@ module.exports = {
             return res.error(req, 400, 'BadRequest', "The 'button' field must contains the clicked AlertButton id.");
         }
         const teamId = (req.param('team') !== 'null') && (req.param('team') !== null) ? req.param('team') : req.team.id;
-        console.log(teamId + " - " + req.team.id);
         if (!(Team.can(req, 'alertButton/admin')) && (teamId !== req.team.id)) {
             return res.error(req, 403, 'forbidden', 'You are not authorized to create an Alert for another team.');
         }
