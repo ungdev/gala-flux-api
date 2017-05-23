@@ -5,7 +5,7 @@
  * @help        :: See http://sailsjs.org/#!/documentation/concepts/Controllers
  */
 
-module.exports = {
+class BarrelTypeController {
 
     /**
      * @api {post} /barreltype/subscribe Subscribe to new items
@@ -13,7 +13,7 @@ module.exports = {
      * @apiGroup BarrelType
      * @apiDescription Subscribe to all new items.
      */
-    subscribe: function(req, res) {
+    static subscribe(req, res) {
         if(Team.can(req, 'barrelType/read') || Team.can(req, 'barrelType/admin')) {
             BarrelType.watch(req);
             BarrelType.find().exec((error, items) => {
@@ -25,7 +25,7 @@ module.exports = {
         else {
             return res.ok();
         }
-    },
+    }
 
     /**
      * @api {post} /barreltype/unsubscribe Unsubscribe from new items
@@ -33,14 +33,14 @@ module.exports = {
      * @apiGroup BarrelType
      * @apiDescription Unsubscribe from new items
      */
-    unsubscribe: function(req, res) {
+    static unsubscribe(req, res) {
         BarrelType.unwatch(req);
         BarrelType.find().exec((error, items) => {
             if(error) return res.negotiate(error);
             BarrelType.unsubscribe(req, _.pluck(items, 'id'));
             return res.ok();
         });
-    },
+    }
 
     /**
      * @api {get} /barreltype
@@ -52,11 +52,11 @@ module.exports = {
      *
      * @apiUse forbiddenError
      */
-    find: (req, res) => {
+    static find(req, res) {
 
         // Check permissions
         if (!Team.can(req, 'barrelType/admin') && !Team.can(req, 'barrelType/read')) {
-            return res.error(req, 403, 'forbidden', 'You are not authorized to read the barrel types.');
+            return res.error(403, 'forbidden', 'You are not authorized to read the barrel types.');
         }
 
         // read filters
@@ -75,7 +75,7 @@ module.exports = {
                 return res.ok(barrelTypes);
             });
 
-    },
+    }
 
     /**
      * @api {post} /barreltype
@@ -94,11 +94,11 @@ module.exports = {
      * @apiUse badRequestError
      * @apiUse forbiddenError
      */
-    create: (req, res) => {
+    static create(req, res) {
 
         // Check permissions
         if (!Team.can(req, 'barrelType/admin')) {
-            return res.error(req, 403, 'forbidden', 'You are not authorized to create an Barrel Type.');
+            return res.error(403, 'forbidden', 'You are not authorized to create an Barrel Type.');
         }
 
         // Create the BarrelType
@@ -115,7 +115,7 @@ module.exports = {
             return res.ok(barrelType);
         });
 
-    },
+    }
 
     /**
      * @api {put} /barreltype/:id
@@ -135,11 +135,11 @@ module.exports = {
      * @apiUse forbiddenError
      * @apiUse notFoundError
      */
-    update: (req, res) => {
+    static update(req, res) {
 
         // Check permissions
         if (!Team.can(req, 'barrelType/admin')) {
-            return res.error(req, 403, 'forbidden', 'You are not authorized to update a Barrel Type.');
+            return res.error(403, 'forbidden', 'You are not authorized to update a Barrel Type.');
         }
 
         // Find the barrel type
@@ -149,7 +149,7 @@ module.exports = {
                     return res.negotiate(error);
                 }
                 if(!barrelType) {
-                    return res.error(req, 404, 'notfound', 'The requested barrel type cannot be found');
+                    return res.error(404, 'notfound', 'The requested barrel type cannot be found');
                 }
 
                 // Update
@@ -169,7 +169,7 @@ module.exports = {
 
             });
 
-    },
+    }
 
     /**
      * @api {delete} /barreltype/:id
@@ -182,11 +182,11 @@ module.exports = {
      * @apiUse forbiddenError
      * @apiUse notFoundError
      */
-    destroy: function (req, res) {
+    static destroy(req, res) {
 
         // Check permissions
         if(!Team.can(req, 'barrelType/admin')) {
-            return res.error(req, 403, 'forbidden', 'You are not authorized to delete a barrel type.');
+            return res.error(403, 'forbidden', 'You are not authorized to delete a barrel type.');
         }
 
         // Find the barrel type
@@ -195,7 +195,7 @@ module.exports = {
                 if (error) return res.negotiate(error);
 
                 if(!barrelType) {
-                    return res.error(req, 404, 'notfound', 'The requested barrel type cannot be found');
+                    return res.error(404, 'notfound', 'The requested barrel type cannot be found');
                 }
 
                 BarrelType.destroy({id: barrelType.id})
@@ -205,7 +205,7 @@ module.exports = {
                         return res.ok();
                     });
             });
-    },
+    }
 
     /**
      * @api {post} /barreltype/barrel
@@ -222,19 +222,19 @@ module.exports = {
      * @apiUse forbiddenError
      * @apiUse notFoundError
      */
-    setBarrelNumber: (req, res) => {
+    static setBarrelNumber(req, res) {
 
         // Check permissions
         if(!Team.can(req, 'barrelType/admin')) {
-            return res.error(req, 403, 'forbidden', 'You are not authorized to create new barrels.');
+            return res.error(403, 'forbidden', 'You are not authorized to create new barrels.');
         }
 
         // check parameters
         if (!req.param('id')) {
-            return res.error(req, 400, 'BadRequest', "Missing barrel type id");
+            return res.error(400, 'BadRequest', "Missing barrel type id");
         }
         if (req.param('number') && (parseInt(req.param('number')) < 0 || parseInt(req.param('number')) > 500)) {
-            return res.error(req, 400, 'BadRequest', "The number of barrels to create must be a positive integer (less than 500).");
+            return res.error(400, 'BadRequest', "The number of barrels to create must be a positive integer (less than 500).");
         }
 
         // get the barrel type
@@ -247,7 +247,7 @@ module.exports = {
 
             // If the barrel type doesn't exists, throw error
             if (!barrelType) {
-                return res.error(req, 404, 'notFound', "Can't find the requested barrel type.");
+                return res.error(404, 'notFound', "Can't find the requested barrel type.");
             }
 
             // Get current list of barrel
@@ -316,3 +316,5 @@ module.exports = {
         });
     }
 };
+
+module.exports = BarrelTypeController;

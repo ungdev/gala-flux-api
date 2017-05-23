@@ -1,10 +1,10 @@
+const Flux = require('../../Flux');
 const Jwt = require('jsonwebtoken');
 
 /**
  * JwtService - Set of function usefull for checking and generating jwt
  */
-module.exports = {
-
+class JWTService {
 
     /**
      * sign - Syncronosly generate a JWT token from an user object
@@ -12,13 +12,13 @@ module.exports = {
      * @param  {User} user The user object that will be send via JWT
      * @return {string}      The generate JWT
      */
-    sign: function(user) {
+    static sign(user) {
         return Jwt.sign({
             userId: user.id
         },
-        sails.config.jwt.secret,
-        { expiresIn: sails.config.jwt.expiresIn });
-    },
+        Flux.config.jwt.secret,
+        { expiresIn: Flux.config.jwt.expiresIn });
+    }
 
     /**
      * verify - Assyncronously verify JWT validity and return associated user
@@ -26,10 +26,10 @@ module.exports = {
      * @param  {string} jwt The JWT to test
      * @return {Promise}    The promise that will give associated user on success
      */
-    verify: function(jwt) {
+    static verify(jwt) {
 
         return new Promise((resolve, reject) => {
-            return Jwt.verify(jwt, sails.config.jwt.secret, (error, decoded) => {
+            return Jwt.verify(jwt, Flux.config.jwt.secret, (error, decoded) => {
                 if(error) {
                     return reject(error);
                 }
@@ -47,5 +47,7 @@ module.exports = {
                 });
             });
         });
-    },
-};
+    }
+}
+
+module.exports = JWTService;

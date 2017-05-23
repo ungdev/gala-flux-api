@@ -5,7 +5,7 @@
  * @help        :: See http://sailsjs.org/#!/documentation/concepts/Controllers
  */
 
-module.exports = {
+class BarrelController {
 
     /**
      * @api {post} /barrel/subscribe Subscribe to new items
@@ -13,7 +13,7 @@ module.exports = {
      * @apiGroup Barrel
      * @apiDescription Subscribe to all new items.
      */
-    subscribe: function(req, res) {
+    static subscribe(req, res) {
         if(Team.can(req, 'barrel/read') || Team.can(req, 'barrel/admin')) {
             Barrel.watch(req);
             Barrel.find().exec((error, items) => {
@@ -32,7 +32,7 @@ module.exports = {
         else {
             return res.ok();
         }
-    },
+    }
 
     /**
      * @api {post} /barrel/unsubscribe Unsubscribe from new items
@@ -40,7 +40,7 @@ module.exports = {
      * @apiGroup Barrel
      * @apiDescription Unsubscribe from new items
      */
-    unsubscribe: function(req, res) {
+    static unsubscribe(req, res) {
         sails.sockets.leave(req, 'barrel/' + req.team.id, () => {
             Barrel.unwatch(req);
             Barrel.find().exec((error, items) => {
@@ -49,7 +49,7 @@ module.exports = {
                 return res.ok();
             });
         });
-    },
+    }
 
     /**
      * @api {get} /barrel
@@ -61,11 +61,11 @@ module.exports = {
      *
      * @apiUse forbiddenError
      */
-    find: (req, res) => {
+    static find(req, res) {
 
         // Check permissions
         if (!(Team.can(req, 'barrel/admin') || Team.can(req, 'barrel/read') || Team.can(req, 'barrel/restricted'))) {
-            return res.error(req, 403, 'forbidden', 'You are not authorized to read barrels.');
+            return res.error(403, 'forbidden', 'You are not authorized to read barrels.');
         }
 
         // read filters
@@ -90,7 +90,7 @@ module.exports = {
             return res.ok(barrels);
         });
 
-    },
+    }
 
     /**
      * @api {put} /barrel/:id
@@ -106,7 +106,7 @@ module.exports = {
      * @apiUse forbiddenError
      * @apiUse notFoundError
      */
-    update: (req, res) => {
+    static update(req, res) {
 
         let checkState = false;
 
@@ -114,15 +114,15 @@ module.exports = {
         if (Team.can(req, 'barrel/admin')) {
             // an admin can update both place and state
             if (req.param('state') === undefined && req.param('place') === undefined) {
-                return res.error(req, 400, 'BadRequest', "You must send attributes to update.");
+                return res.error(400, 'BadRequest', "You must send attributes to update.");
             }
         } else if (Team.can(req, 'barrel/restricted')) {
             // can only update the barrel's state
             if (req.param('state') === undefined) {
-                return res.error(req, 400, 'BadRequest', "Missing barrel's state.");
+                return res.error(400, 'BadRequest', "Missing barrel's state.");
             }
         } else if (!Team.can(req, 'barrel/admin')) {
-            return res.error(req, 403, 'forbidden', 'You are not authorized to update barrels.');
+            return res.error(403, 'forbidden', 'You are not authorized to update barrels.');
         }
 
         Barrel.findOne({id: req.param('id')})
@@ -131,12 +131,12 @@ module.exports = {
                     return res.negotiate(error);
                 }
                 if (!barrel) {
-                    return res.error(req, 404, 'notFound', 'The requested barrel cannot be found');
+                    return res.error(404, 'notFound', 'The requested barrel cannot be found');
                 }
 
                 // if the requester is not admin, check if the barrel belongs to his team
                 if (!Team.can(req, 'barrel/admin') && (req.team.id !== barrel.place)) {
-                    return res.error(req, 403, 'forbidden', 'You are not authorized to update this barrel.');
+                    return res.error(403, 'forbidden', 'You are not authorized to update this barrel.');
                 }
 
                 // if the requester sent a new value for the 'state' attribute
@@ -144,7 +144,7 @@ module.exports = {
                     // check if the state can be set with this new value (next or previous state).
                     // because it's not allowed to move from new to empty for example
                     if (!isStateValid(req.param('state'), barrel.state)) {
-                        return res.error(req, 400, 'BadRequest', "You are not allowed to set the state with this value.");
+                        return res.error(400, 'BadRequest', "You are not allowed to set the state with this value.");
                     }
                     // check if an alert has to be sent or removed
                     if ((barrel.state === "new" && req.param("state") === "opened") || (barrel.state === "opened" && req.param("state") === "new")) {
@@ -168,7 +168,7 @@ module.exports = {
                                 return res.negotiate(error);
                             }
                             if(!team) {
-                                return res.error(req, 404, 'notfound', 'The requested team cannot be found');
+                                return res.error(404, 'notfound', 'The requested team cannot be found');
                             }
 
                             // the team exists, save the barrel with this new place
@@ -181,7 +181,7 @@ module.exports = {
 
             });
 
-    },
+    }
 
     /**
      * @api {put} /barrel/location
@@ -195,11 +195,11 @@ module.exports = {
      * @apiUse forbiddenError
      * @apiUse notFoundError
      */
-    setLocation: function (req, res) {
+    static setLocation(req, res) {
 
         // check permissions
         if (!(Team.can(req, 'barrel/admin'))) {
-            return res.error(req, 403, 'forbidden', "You are not authorized to update barrels's location.");
+            return res.error(403, 'forbidden', "You are not authorized to update barrels's location.");
         }
 
         // check team
@@ -209,7 +209,7 @@ module.exports = {
 
             // if the location is not the log (null) and the asked team can't be found, return error
             if (req.param('location') !== null && req.param('location') !== "null" && !team) {
-                return res.error(req, 403, 'forbidden', "The location is not valid.");
+                return res.error(403, 'forbidden', "The location is not valid.");
             }
 
             // prepare each update
@@ -372,3 +372,5 @@ function isStateValid(state, currentState) {
     const d = Math.abs(states.indexOf(currentState) - states.indexOf(state))
     return d === 1 || d === 0;
 }
+
+module.exports = BarrelController;

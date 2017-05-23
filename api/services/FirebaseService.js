@@ -1,7 +1,7 @@
 var request = require('request');
 var admin = require("firebase-admin");
 
-module.exports = {
+class FirebaseService {
 
     /**
      * Send new a notification for a new chat message
@@ -11,7 +11,7 @@ module.exports = {
      * @param {Team} senderTeam
      * @return {Promise}
      */
-    notifyChatMessage(message, sender, senderTeam) {
+    static notifyChatMessage(message, sender, senderTeam) {
         if(!sails.config.firebase.database) {
             return;
         }
@@ -78,7 +78,7 @@ module.exports = {
                 }
             });
         });
-    },
+    }
 
 
     /**
@@ -87,7 +87,7 @@ module.exports = {
      * @param {Alert} alert: Alert object
      * @return {Promise}
      */
-    notifyAlert(alert) {
+    static notifyAlert(alert) {
         if(!sails.config.firebase.database) {
             return;
         }
@@ -144,4 +144,6 @@ module.exports = {
             });
         });
     }
-};
+}
+
+module.exports = FirebaseService;

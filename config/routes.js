@@ -1,107 +1,56 @@
-/**
-/**
- * Route Mappings
- * (sails.config.routes)
- *
- * Your routes map URLs to views and controllers.
- *
- * If Sails receives a URL that doesn't match any of the routes below,
- * it will check for matching files (images, scripts, stylesheets, etc.)
- * in your assets directory.  e.g. `http://localhost:1337/images/foo.jpg`
- * might match an image file: `/assets/images/foo.jpg`
- *
- * Finally, if those don't match either, the default 404 handler is triggered.
- * See `api/responses/notFound.js` to adjust your app's 404 logic.
- *
- * Note: Sails doesn't ACTUALLY serve stuff from `assets`-- the default Gruntfile in Sails copies
- * flat files from `assets` to `.tmp/public`.  This allows you to do things like compile LESS or
- * CoffeeScript for the front-end.
- *
- * For more information on configuring custom routes, check out:
- * http://sailsjs.org/#!/documentation/concepts/Routes/RouteTargetSyntax.html
- */
+module.exports = {
+    'get /alert': { action: 'AlertController.find', middlewares: ['auth', 'requireAuth'] },
+    'put /alert/:id': { action: 'AlertController.update', middlewares: ['auth', 'requireAuth'] },
+    // 'post /alert': { action: 'AlertController.create', middlewares: ['auth', 'requireAuth'] },
+    'delete /alert/:id': { action: 'AlertController.update', middlewares: ['auth', 'requireAuth'] },
 
-module.exports.routes = {
+    'put /alert/:id/users': { action: 'AlertController.updateAssignedUsers', middlewares: ['auth', 'requireAuth'] },
+    'post /alert/subscribe': { action: 'AlertController.subscribe', middlewares: ['auth', 'requireAuth'] },
+    'post /alert/unsubscribe': { action: 'AlertController.unsubscribe', middlewares: ['auth', 'requireAuth'] },
 
-    /***************************************************************************
-    *                                                                          *
-    * Make the view located at `views/homepage.ejs` (or `views/homepage.jade`, *
-    * etc. depending on your default view engine) your home page.              *
-    *                                                                          *
-    * (Alternatively, remove this and add an `index.html` file in your         *
-    * `assets` directory)                                                      *
-    *                                                                          *
-    ***************************************************************************/
+    'post /alertbutton/alert': { action: 'AlertButtonController.createAlert', middlewares: ['auth', 'requireAuth'] },
+    'post /alertbutton/subscribe': { action: 'AlertButtonController.subscribe', middlewares: ['auth', 'requireAuth'] },
+    'post /alertbutton/unsubscribe': { action: 'AlertButtonController.unsubscribe', middlewares: ['auth', 'requireAuth'] },
 
-    '/': {
-        view: 'homepage'
-    },
+    'post /login/ip': { action: 'AuthController.ipLogin' },
+    'get  /login/oauth': { action: 'AuthController.oauthLogin' },
+    'post /login/oauth/submit': { action: 'AuthController.oauthLoginSubmit' },
+    'post /login/jwt': { action: 'AuthController.jwtLogin' },
+    'get  /login/roles': { action: 'AuthController.getRoles', middlewares: ['auth', 'requireAuth'] },
+    'post /login/as/:id': { action: 'AuthController.loginAs', middlewares: ['auth', 'requireAuth'] },
+    'post /logout': { action: 'AuthController.logout', middlewares: ['auth', 'requireAuth'] },
 
-    /***************************************************************************
-    *                                                                          *
-    * Custom routes here...                                                    *
-    *                                                                          *
-    * If a request to a URL doesn't match any of the custom routes above, it   *
-    * is matched against Sails route blueprints. See `config/blueprints.js`    *
-    * for configuration options and examples.                                  *
-    *.                                                                         *
-    * Sails automatically create following routes for each controllers
-    * 'get /user': 'UserController.find',
-    * 'get /user/:id': 'UserController.findOne',
-    * 'post /user': 'UserController.create',
-    * 'put /user/:id': 'UserController.update',
-    * 'delete /user/:id': 'UserController.destroy',
-    *                                                                          *
-    ***************************************************************************/
+    'put /barrel/location': { action: 'BarrelController.setLocation', middlewares: ['auth', 'requireAuth'] },
+    'post /barrel/subscribe': { action: 'BarrelController.subscribe', middlewares: ['auth', 'requireAuth'] },
+    'post /barrel/unsubscribe': { action: 'BarrelController.unsubscribe', middlewares: ['auth', 'requireAuth'] },
 
+    'post /barreltype/barrel': { action: 'BarrelTypeController.setBarrelNumber', middlewares: ['auth', 'requireAuth'] },
+    'post /barreltype/subscribe': { action: 'BarrelTypeController.subscribe', middlewares: ['auth', 'requireAuth'] },
+    'post /barreltype/unsubscribe': { action: 'BarrelTypeController.unsubscribe', middlewares: ['auth', 'requireAuth'] },
 
-    'put /alert/:id/users': 'AlertController.updateAssignedUsers',
-    'post /alert/subscribe': 'AlertController.subscribe',
-    'post /alert/unsubscribe': 'AlertController.unsubscribe',
+    'post /bottleaction/subscribe': { action: 'BottleActionController.subscribe', middlewares: ['auth', 'requireAuth'] },
+    'post /bottleaction/unsubscribe': { action: 'BottleActionController.unsubscribe', middlewares: ['auth', 'requireAuth'] },
+    'get /bottleaction/count': { action: 'BottleActionController.count', middlewares: ['auth', 'requireAuth'] },
 
-    'post /alertbutton/alert': 'AlertButtonController.createAlert',
-    'post /alertbutton/subscribe': 'AlertButtonController.subscribe',
-    'post /alertbutton/unsubscribe': 'AlertButtonController.unsubscribe',
+    'post /bottletype/subscribe': { action: 'BottleTypeController.subscribe', middlewares: ['auth', 'requireAuth'] },
+    'post /bottletype/unsubscribe': { action: 'BottleTypeController.unsubscribe', middlewares: ['auth', 'requireAuth'] },
 
-    'post /login/ip': 'AuthController.ipLogin',
-    'get  /login/oauth': 'AuthController.oauthLogin',
-    'post /login/oauth/submit': 'AuthController.oauthLoginSubmit',
-    'post /login/jwt': 'AuthController.jwtLogin',
-    'get  /login/roles': 'AuthController.getRoles',
-    'post /login/as/:id': 'AuthController.loginAs',
-    'post /logout': 'AuthController.logout',
+    'post /developer/refresh': { action: 'DeveloperController.refresh', middlewares: ['auth', 'requireAuth'] },
 
-    'put /barrel/location': 'BarrelController.setLocation',
-    'post /barrel/subscribe': 'BarrelController.subscribe',
-    'post /barrel/unsubscribe': 'BarrelController.unsubscribe',
+    'get /message/channels': { action: 'MessageController.getChannels', middlewares: ['auth', 'requireAuth'] },
+    'post /message/subscribe': { action: 'MessageController.subscribe', middlewares: ['auth', 'requireAuth'] },
+    'post /message/unsubscribe': { action: 'MessageController.unsubscribe', middlewares: ['auth', 'requireAuth'] },
 
-    'post /barreltype/barrel': 'BarrelTypeController.setBarrelNumber',
-    'post /barreltype/subscribe': 'BarrelTypeController.subscribe',
-    'post /barreltype/unsubscribe': 'BarrelTypeController.unsubscribe',
+    'post /team/subscribe': { action: 'TeamController.subscribe', middlewares: ['auth', 'requireAuth'] },
+    'post /team/unsubscribe': { action: 'TeamController.unsubscribe', middlewares: ['auth', 'requireAuth'] },
 
-    'post /bottleaction/subscribe': 'BottleActionController.subscribe',
-    'post /bottleaction/unsubscribe': 'BottleActionController.unsubscribe',
-    'get /bottleaction/count': 'BottleActionController.count',
+    'get /user/etuutt': { action: 'UserController.etuuttFind', middlewares: ['auth', 'requireAuth'] },
+    'get /user/avatar/:id': { action: 'UserController.getAvatar' },
+    'post /user/avatar/:id': { action: 'UserController.uploadAvatar', middlewares: ['auth', 'requireAuth'] },
+    'post /user/subscribe': { action: 'UserController.subscribe', middlewares: ['auth', 'requireAuth'] },
+    'post /user/unsubscribe': { action: 'UserController.unsubscribe', middlewares: ['auth', 'requireAuth'] },
 
-    'post /bottletype/subscribe': 'BottleTypeController.subscribe',
-    'post /bottletype/unsubscribe': 'BottleTypeController.unsubscribe',
-
-    'post /developer/refresh': 'DeveloperController.refresh',
-
-    'get /message/channels': 'MessageController.getChannels',
-    'post /message/subscribe': 'MessageController.subscribe',
-    'post /message/unsubscribe': 'MessageController.unsubscribe',
-
-    'post /team/subscribe': 'TeamController.subscribe',
-    'post /team/unsubscribe': 'TeamController.unsubscribe',
-
-    'get /user/etuutt': 'UserController.etuuttFind',
-    'get /user/avatar/:id': 'UserController.getAvatar',
-    'post /user/avatar/:id': 'UserController.uploadAvatar',
-    'post /user/subscribe': 'UserController.subscribe',
-    'post /user/unsubscribe': 'UserController.unsubscribe',
-
-    'post /session/open': 'SessionController.open',
-    'post /session/subscribe': 'SessionController.subscribe',
-    'post /session/unsubscribe': 'SessionController.unsubscribe',
+    'post /session/open': { action: 'SessionController.open', middlewares: ['auth', 'requireAuth'] },
+    'post /session/subscribe': { action: 'SessionController.subscribe', middlewares: ['auth', 'requireAuth'] },
+    'post /session/unsubscribe': { action: 'SessionController.unsubscribe', middlewares: ['auth', 'requireAuth'] },
 };

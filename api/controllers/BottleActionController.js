@@ -5,7 +5,7 @@
  * @help        :: See http://sailsjs.org/#!/documentation/concepts/Controllers
  */
 
-module.exports = {
+class BottleActionController {
 
     /**
      * @api {post} /bottleAction/subscribe Subscribe to new items
@@ -13,7 +13,7 @@ module.exports = {
      * @apiGroup BottleAction
      * @apiDescription Subscribe to all new items.
      */
-    subscribe: function(req, res) {
+    static subscribe(req, res) {
         if(Team.can(req, 'bottleAction/read') || Team.can(req, 'bottleAction/admin')) {
             BottleAction.watch(req);
             BottleAction.find().exec((error, items) => {
@@ -32,7 +32,7 @@ module.exports = {
         else {
             return res.ok();
         }
-    },
+    }
 
     /**
      * @api {post} /bottleAction/unsubscribe Unsubscribe from new items
@@ -40,7 +40,7 @@ module.exports = {
      * @apiGroup BottleAction
      * @apiDescription Unsubscribe from new items
      */
-    unsubscribe: function(req, res) {
+    static unsubscribe(req, res) {
         sails.sockets.leave(req, 'bottleAction/' + req.team.id, () => {
             BottleAction.unwatch(req);
             BottleAction.find().exec((error, items) => {
@@ -49,7 +49,7 @@ module.exports = {
                 return res.ok();
             });
         });
-    },
+    }
 
 
     /**
@@ -68,10 +68,10 @@ module.exports = {
      * @apiSuccess {string} Array.bottle.operation Operation performed on the bottle (sold or moved)
      */
 
-    find: function(req, res) {
+    static find(req, res) {
         // Check permissions
         if (!(Team.can(req, 'bottleAction/admin') || Team.can(req, 'bottleAction/read') || Team.can(req, 'bottleAction/restricted'))) {
-            return res.error(req, 403, 'forbidden', 'You are not authorized to view the bottle actions list.');
+            return res.error(403, 'forbidden', 'You are not authorized to view the bottle actions list.');
         }
 
         // read filters
@@ -94,7 +94,7 @@ module.exports = {
 
                 return res.ok(bottleActions);
             });
-    },
+    }
 
 
     /**
@@ -106,10 +106,10 @@ module.exports = {
      * @apiUse forbiddenError
      */
 
-    count: function(req, res) {
+    static count(req, res) {
         // Check permissions
         if (!(Team.can(req, 'bottleAction/admin') || Team.can(req, 'bottleAction/read') || Team.can(req, 'bottleAction/restricted'))) {
-            return res.error(req, 403, 'forbidden', 'You are not authorized to view the bottle count list.');
+            return res.error(403, 'forbidden', 'You are not authorized to view the bottle count list.');
         }
 
         // read filters
@@ -173,7 +173,7 @@ module.exports = {
                 return res.ok(result);
             });
         });
-    },
+    }
 
     /**
      * @api {post} /bottleaction/create Create a bottle action
@@ -192,7 +192,7 @@ module.exports = {
      * @apiUse forbiddenError
      */
 
-    create: function (req, res) {
+    static create(req, res) {
         // Check permissions
         if(Team.can(req, 'bottleAction/restricted') || Team.can(req, 'bottleAction/admin')) {
 
@@ -202,13 +202,13 @@ module.exports = {
                     return res.negotiate(error);
                 }
                 if (!bottleType) {
-                    return res.error(req, 400, 'BadRequest', 'Bottle type is not valid.');
+                    return res.error(400, 'BadRequest', 'Bottle type is not valid.');
                 }
 
                 // Check restricted permission
                 if(Team.can(req, 'bottleAction/restricted')) {
                     if(req.param('team') != req.team.id || req.param('fromTeam') || req.param('operation') != 'purchased') {
-                        return res.error(req, 400, 'BadRequest', "You are only allowed to update state of purchased bottle in you team.");
+                        return res.error(400, 'BadRequest', "You are only allowed to update state of purchased bottle in you team.");
                     }
                 }
 
@@ -233,5 +233,7 @@ module.exports = {
                 });
             });
         }
-    },
+    }
 };
+
+module.exports = BottleActionController;

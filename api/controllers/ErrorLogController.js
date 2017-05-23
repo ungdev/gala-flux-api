@@ -5,7 +5,7 @@
  * @help        :: See http://sailsjs.org/#!/documentation/concepts/Controllers
  */
 
-module.exports = {
+class BottleActionController {
 
     /**
      * @api {post} /errorlog/subscribe Subscribe to new items
@@ -13,7 +13,7 @@ module.exports = {
      * @apiGroup ErrorLog
      * @apiDescription Subscribe to all new items.
      */
-    subscribe: function(req, res) {
+    static subscribe(req, res) {
         if(Team.can(req, 'errorLog/read')) {
             ErrorLog.watch(req);
             ErrorLog.find().exec((error, items) => {
@@ -22,7 +22,7 @@ module.exports = {
                 return res.ok();
             });
         }
-    },
+    }
 
 
     /**
@@ -31,14 +31,14 @@ module.exports = {
      * @apiGroup ErrorLog
      * @apiDescription Unsubscribe from new items
      */
-    unsubscribe: function(req, res) {
+    static unsubscribe(req, res) {
         ErrorLog.unwatch(req);
         ErrorLog.find().exec((error, items) => {
             if(error) return res.negotiate(error);
             ErrorLog.unsubscribe(req, _.pluck(items, 'id'));
             return res.ok();
         });
-    },
+    }
 
 
     /**
@@ -49,11 +49,11 @@ module.exports = {
      *
      * @apiUse forbiddenError
      */
-    find: function (req, res) {
+    static find(req, res) {
 
         // check permissions
         if (!(Team.can(req, 'errorLog/read'))) {
-            return res.error(req, 403, 'forbidden', 'You are not authorized read error logs');
+            return res.error(403, 'forbidden', 'You are not authorized read error logs');
         }
 
         // read filters
@@ -70,7 +70,7 @@ module.exports = {
             return res.ok(user);
         });
 
-    },
+    }
 
 
     /**
@@ -82,7 +82,7 @@ module.exports = {
      * @apiUse badRequestError
      * @apiUse forbiddenError
      */
-    create: function (req, res) {
+    static create(req, res) {
         let ip = (req.ip ? req.ip : req.socket.handshake.address);
         ErrorLog.count({ip: ip}).exec((error, count) => {
             if(error) {
@@ -113,6 +113,8 @@ module.exports = {
                 return res.ok();
             });
         });
-    },
+    }
 
 };
+
+module.exports = ErrorLogController;

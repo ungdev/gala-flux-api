@@ -32,7 +32,7 @@
  */
 
 
-module.exports = {
+class AuthController {
 
     /**
      * @api {post} /login/ip Authenticate user by IP
@@ -55,13 +55,13 @@ module.exports = {
      *     }
      *
      */
-    ipLogin: function (req, res) {
+    static ipLogin(req, res) {
         User.attemptIpAuth((req.ip ? req.ip : req.socket.handshake.address), (err, user) => {
             if (err) {
                 return res.negotiate(err);
             }
             if (!user) {
-                return res.error(req, 401, 'IPNotFound', 'There is no User associated with this IP');
+                return res.error(401, 'IPNotFound', 'There is no User associated with this IP');
             }
             let jwt = JwtService.sign(user);
             if(req.socket) {
@@ -69,7 +69,7 @@ module.exports = {
             }
             return res.ok({jwt});
         });
-    },
+    }
 
 
     /**
@@ -100,17 +100,17 @@ module.exports = {
      *         }
      *     }
      */
-    oauthLogin: function (req, res) {
+    static oauthLogin(req, res) {
         if (!sails.config.etuutt.id
             || !sails.config.etuutt.secret
             || !sails.config.etuutt.baseUri) {
-            return res.error(req, 501, 'EtuUTTNotConfigured', 'The server is not configured for the API of EtuUTT');
+            return res.error(501, 'EtuUTTNotConfigured', 'The server is not configured for the API of EtuUTT');
         }
 
         let redirectUri = EtuUTTService().oauthAuthorize();
 
         return res.ok({redirectUri});
-    },
+    }
 
 
     /**
@@ -162,15 +162,15 @@ module.exports = {
      *
      * @apiUse badRequestError
      */
-    oauthLoginSubmit: function (req, res) {
+    static oauthLoginSubmit(req, res) {
         if (!sails.config.etuutt.id
             || !sails.config.etuutt.secret
             || !sails.config.etuutt.baseUri) {
-            return res.error(req, 501, 'EtuUTTNotConfigured', 'The server is not configured for the API of EtuUTT');
+            return res.error(501, 'EtuUTTNotConfigured', 'The server is not configured for the API of EtuUTT');
         }
 
         if(!req.param('authorizationCode')) {
-            return res.error(req, 400, 'BadRequest', 'The parameter `authorizationCode` cannot be found.');
+            return res.error(400, 'BadRequest', 'The parameter `authorizationCode` cannot be found.');
         }
 
         let EtuUTT = EtuUTTService();
@@ -187,7 +187,7 @@ module.exports = {
                     return res.negotiate(err);
                 }
                 if (!user) {
-                    return res.error(req, 401, 'LoginNotFound', 'There is no User associated with this login');
+                    return res.error(401, 'LoginNotFound', 'There is no User associated with this login');
                 }
 
                 // Update user data
@@ -216,9 +216,9 @@ module.exports = {
             });
         })
         .catch((error) => {
-            return res.error(req, 500, 'EtuUTTError', 'An error occurs during communications with the api of EtuUTT: ' + error);
+            return res.error(500, 'EtuUTTError', 'An error occurs during communications with the api of EtuUTT: ' + error);
         })
-    },
+    }
 
     /**
      * @api {post} /login/jwt Authenticate user by JWT
@@ -245,9 +245,9 @@ module.exports = {
      *     }
      *
      */
-     jwtLogin: function (req, res) {
+     static jwtLogin(req, res) {
          if(!req.param('jwt')) {
-             return res.error(req, 400, 'BadRequest', 'The parameter `jwt` cannot be found.');
+             return res.error(400, 'BadRequest', 'The parameter `jwt` cannot be found.');
          }
 
         JwtService.verify(req.param('jwt'))
@@ -260,9 +260,10 @@ module.exports = {
             return res.ok({jwt});
         })
         .catch((error) => {
-            return res.error(req, 500, 'InvalidJwt', 'The given JWT is not valid : ' + error);
+            console.log(res.error)
+            return res.error(500, 'InvalidJwt', 'The given JWT is not valid : ' + error);
         })
-    },
+    }
 
     /**
      * @api {post} /login/as/:id Auth as another user
@@ -288,10 +289,10 @@ module.exports = {
      *     }
      *
      */
-    loginAs: function (req, res) {
+    static loginAs(req, res) {
         // Check permissions
         if(!Team.can(req, 'auth/as')) {
-            return res.error(req, 403, 'forbidden', 'You are not authorized to log in as someone else.');
+            return res.error(403, 'forbidden', 'You are not authorized to log in as someone else.');
         }
 
         User.findOne({
@@ -302,7 +303,7 @@ module.exports = {
                 return res.negotiate(error);
             }
             if (!user) {
-                return res.error(req, 401, 'IdNotFound', 'There is no User associated with this id');
+                return res.error(401, 'IdNotFound', 'There is no User associated with this id');
             }
             let jwt = JwtService.sign(user);
             if(req.socket) {
@@ -310,7 +311,7 @@ module.exports = {
             }
             return res.ok({jwt});
         });
-    },
+    }
 
     /**
      * @api {get} /login/roles Get roles config
@@ -332,9 +333,9 @@ module.exports = {
      *     }
      *
      */
-    getRoles: function (req, res) {
+    static getRoles(req, res) {
         return res.ok(sails.config.roles);
-    },
+    }
 
     /**
      * @api {post} /logout Inform that a user is disconnected
@@ -342,8 +343,10 @@ module.exports = {
      * @apiGroup Authentication
      * @apiDescription Will give the disconnected user
      */
-    logout: function (req, res) {
+    static logout(req, res) {
         const err = Session.handleLogout(req.socket.id, true);
         return err ? res.negotiate(err) : res.ok();
     }
 };
+
+module.exports = AuthController;

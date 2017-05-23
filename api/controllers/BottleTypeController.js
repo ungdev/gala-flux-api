@@ -1,11 +1,11 @@
 /**
- * BottleTypeTypeController
+ * BottleTypeController
  *
  * @description :: Server-side logic for managing BottleTypes
  * @help        :: See http://sailsjs.org/#!/documentation/concepts/Controllers
  */
 
-module.exports = {
+class BottleTypeController {
 
     /**
      * @api {post} /bottletype/subscribe Subscribe to new items
@@ -13,7 +13,7 @@ module.exports = {
      * @apiGroup BottleType
      * @apiDescription Subscribe to all new items.
      */
-    subscribe: function(req, res) {
+    static subscribe(req, res) {
         if(Team.can(req, 'bottleType/read') || Team.can(req, 'bottleType/admin')) {
             BottleType.watch(req);
             BottleType.find().exec((error, items) => {
@@ -25,7 +25,7 @@ module.exports = {
         else {
             return res.ok();
         }
-    },
+    }
 
 
     /**
@@ -34,14 +34,14 @@ module.exports = {
      * @apiGroup BottleType
      * @apiDescription Unsubscribe from new items
      */
-    unsubscribe: function(req, res) {
+    static unsubscribe(req, res) {
         BottleType.unwatch(req);
         BottleType.find().exec((error, items) => {
             if(error) return res.negotiate(error);
             BottleType.unsubscribe(req, _.pluck(items, 'id'));
             return res.ok();
         });
-    },
+    }
 
     /**
      * @api {get} /bottletype/find Find all bottletypes
@@ -61,7 +61,7 @@ module.exports = {
      * @apiSuccess {integer} Array.bottletype.originalStock Number of bottletypes at the beginning of the event
      */
 
-    find: function (req, res) {
+    static find(req, res) {
         // Check permissions
         if(Team.can(req, 'bottleType/read') || Team.can(req, 'bottleType/admin')) {
             BottleType.find()
@@ -74,9 +74,9 @@ module.exports = {
                 });
         }
         else {
-            return res.error(req, 403, 'forbidden', 'You are not authorized to view the bottletype list');
+            return res.error(403, 'forbidden', 'You are not authorized to view the bottletype list');
         }
-    },
+    }
 
     /**
      * @api {get} /bottletype/find/:id Find one bottletype
@@ -97,7 +97,7 @@ module.exports = {
      * @apiSuccess {integer} bottletype.supplierPrice Price at which the bottletypes were bought in cents
      * @apiSuccess {integer} bottletype.originalStock Number of bottletypes at the beginning of the event
      */
-    findOne: function (req, res) {
+    static findOne(req, res) {
         // Check permissions
         if(Team.can(req, 'bottleType/read') || Team.can(req, 'bottleType/admin')) {
 
@@ -108,16 +108,16 @@ module.exports = {
                         return res.negotiate(error);
                     }
                     if(!bottletype) {
-                        return res.error(req, 400, 'BadRequest', 'The requested bottletype cannot be found');
+                        return res.error(400, 'BadRequest', 'The requested bottletype cannot be found');
                     }
 
                     return res.ok(bottletype);
                 });
         }
         else {
-            return res.error(req, 403, 'forbidden', 'You are not authorized to read bottletype data');
+            return res.error(403, 'forbidden', 'You are not authorized to read bottletype data');
         }
-    },
+    }
 
     /**
      * @api {post} /bottletype/create Create bottletype
@@ -137,15 +137,15 @@ module.exports = {
      * @apiUse badRequestError
      * @apiUse forbiddenError
      */
-    create: function (req, res) {
+    static create(req, res) {
         // Check permissions
         if(!Team.can(req, 'bottleType/admin')) {
-            return res.error(req, 403, 'forbidden', 'You are not authorized to create a bottletype.');
+            return res.error(403, 'forbidden', 'You are not authorized to create a bottletype.');
         }
 
         BottleType.findOne({id: req.param('id')}).exec((error, bottletype) => {
             if(bottletype) {
-                return res.error(req, 400, 'BadRequest', 'BottleType short name is not valid.');
+                return res.error(400, 'BadRequest', 'BottleType short name is not valid.');
             }
 
             // Create bottletype
@@ -165,7 +165,7 @@ module.exports = {
                 return res.ok(bottletype);
             });
         })
-    },
+    }
 
     /**
      * @api {delete} /bottletype/:id Delete a bottletype
@@ -179,10 +179,10 @@ module.exports = {
      * @apiUse forbiddenError
      * @apiUse notFoundError
      */
-    destroy: function (req, res) {
+    static destroy(req, res) {
         // Check permissions
         if(!Team.can(req, 'bottleType/admin')) {
-            return res.error(req, 403, 'forbidden', 'You are not authorized to delete a bottletype.');
+            return res.error(403, 'forbidden', 'You are not authorized to delete a bottletype.');
         }
 
         // Find bottletype
@@ -192,7 +192,7 @@ module.exports = {
                     return res.negotiate(error);
                 }
                 if(!bottletype) {
-                    return res.error(req, 400, 'BadRequest', 'The requested bottletype cannot be found');
+                    return res.error(400, 'BadRequest', 'The requested bottletype cannot be found');
                 }
                 BottleType.destroy({id: bottletype.id}).exec((error) => {
                     if (error) {
@@ -202,7 +202,7 @@ module.exports = {
                     return res.ok();
                 });
             });
-    },
+    }
 
 
     /**
@@ -224,10 +224,10 @@ module.exports = {
      * @apiUse forbiddenError
      * @apiUse notFoundError
      */
-    update: function (req, res) {
+    static update(req, res) {
         // Check permissions
         if(!Team.can(req, 'bottleType/admin')) {
-            return res.error(req, 403, 'forbidden', 'You are not authorized to update a bottletype.');
+            return res.error(403, 'forbidden', 'You are not authorized to update a bottletype.');
         }
 
         // Find bottletype
@@ -237,7 +237,7 @@ module.exports = {
                     return res.negotiate(error);
                 }
                 if(!bottletype) {
-                    return res.error(req, 404, 'NotFound', 'The requested bottletype cannot be found');
+                    return res.error(404, 'NotFound', 'The requested bottletype cannot be found');
                 }
 
                 // Update bottletype
@@ -256,5 +256,7 @@ module.exports = {
                     return res.ok(bottletype);
                 });
             });
-    },
+    }
 };
+
+module.exports = BottleTypeController;

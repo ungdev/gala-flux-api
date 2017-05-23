@@ -53,7 +53,7 @@ const gm = require('gm');
  */
 
 
-module.exports = {
+class UserController {
 
     /**
      * @api {post} /user/subscribe Subscribe to new items
@@ -61,7 +61,7 @@ module.exports = {
      * @apiGroup User
      * @apiDescription Subscribe to all new items.
      */
-    subscribe: function(req, res) {
+    static subscribe(req, res) {
         if(Team.can(req, 'user/read') || Team.can(req, 'user/admin')) {
             User.watch(req);
             User.find().exec((error, items) => {
@@ -74,7 +74,7 @@ module.exports = {
             User.subscribe(req, [req.user.id]);
             return res.ok();
         }
-    },
+    }
 
 
     /**
@@ -83,14 +83,14 @@ module.exports = {
      * @apiGroup User
      * @apiDescription Unsubscribe from new items
      */
-    unsubscribe: function(req, res) {
+    static unsubscribe(req, res) {
         User.unwatch(req);
         User.find().exec((error, items) => {
             if(error) return res.negotiate(error);
             User.unsubscribe(req, _.pluck(items, 'id'));
             return res.ok();
         });
-    },
+    }
 
 
     /**
@@ -108,11 +108,11 @@ module.exports = {
      * @apiSuccess {string} Array.user.name Display name of the user
      * @apiSuccess {id} Array.user.team Associated team ID
      */
-    find: function (req, res) {
+    static find(req, res) {
 
         // check permissions
         if (!(Team.can(req, 'user/read') || Team.can(req, 'user/admin'))) {
-            return res.error(req, 403, 'forbidden', 'You are not authorized read user list');
+            return res.error(403, 'forbidden', 'You are not authorized read user list');
         }
 
         // read filters
@@ -129,7 +129,7 @@ module.exports = {
             return res.ok(user);
         });
 
-    },
+    }
 
 
     /**
@@ -150,7 +150,7 @@ module.exports = {
      * @apiSuccess {string} user.name Display name of the user
      * @apiSuccess {id} user.team Associated team ID
      */
-    findOne: function (req, res) {
+    static findOne(req, res) {
         if(Team.can(req, 'user/read')
         || Team.can(req, 'user/admin')
         || req.param('id') == req.user.id) {
@@ -160,16 +160,16 @@ module.exports = {
                     return res.negotiate(error);
                 }
                 if(!user) {
-                    return res.error(req, 404, 'notfound', 'The requested user cannot be found');
+                    return res.error(404, 'notfound', 'The requested user cannot be found');
                 }
 
                 return res.ok(user);
             });
         }
         else {
-            return res.error(req, 403, 'forbidden', 'You are not authorized read user data');
+            return res.error(403, 'forbidden', 'You are not authorized read user data');
         }
-    },
+    }
 
 
     /**
@@ -188,22 +188,22 @@ module.exports = {
      * @apiUse badRequestError
      * @apiUse forbiddenError
      */
-    create: function (req, res) {
+    static create(req, res) {
         // Check permissions
         if(!Team.can(req, 'user/admin') && !(Team.can(req, 'user/team') && req.param('team') == req.team.id)) {
-            return res.error(req, 403, 'forbidden', 'You are not authorized to create another user in this team.');
+            return res.error(403, 'forbidden', 'You are not authorized to create another user in this team.');
         }
 
         // Check parameters
         if(!req.param('login') && !req.param('ip')) {
-            return res.error(req, 400, 'BadRequest', 'Either `ip` or `login` field has to be set.');
+            return res.error(400, 'BadRequest', 'Either `ip` or `login` field has to be set.');
         }
         else if(req.param('login') && req.param('ip')) {
-            return res.error(req, 400, 'BadRequest', 'Either `ip` or `login` has to be empty.');
+            return res.error(400, 'BadRequest', 'Either `ip` or `login` has to be empty.');
         }
         Team.findOne({id: req.param('team')}).exec((error, team) => {
             if(!team) {
-                return res.error(req, 400, 'BadRequest', 'Team id is not valid.');
+                return res.error(400, 'BadRequest', 'Team id is not valid.');
             }
 
             // Create user
@@ -223,7 +223,7 @@ module.exports = {
                 return res.ok(user);
             });
         })
-    },
+    }
 
     /**
      * @api {put} /user/:id Update an user
@@ -243,15 +243,15 @@ module.exports = {
      * @apiUse forbiddenError
      * @apiUse notFoundError
      */
-    update: function (req, res) {
+    static update(req, res) {
         // Check permissions 1
         if(!Team.can(req, 'user/admin') && !(Team.can(req, 'user/team'))) {
-            return res.error(req, 403, 'forbidden', 'You are not authorized to update an user.');
+            return res.error(403, 'forbidden', 'You are not authorized to update an user.');
         }
 
         // Check parameters
         if(req.param('login') && req.param('ip')) {
-            return res.error(req, 400, 'BadRequest', 'Either `ip` or `login` has to be empty.');
+            return res.error(400, 'BadRequest', 'Either `ip` or `login` has to be empty.');
         }
 
         // Find user
@@ -261,15 +261,15 @@ module.exports = {
                 return res.negotiate(error);
             }
             if(!user) {
-                return res.error(req, 404, 'notfound', 'The requested user cannot be found');
+                return res.error(404, 'notfound', 'The requested user cannot be found');
             }
 
             // Check permissions 2
             if(Team.can(req, 'user/team') && user.team != req.team.id) {
-                return res.error(req, 403, 'forbidden', 'You are not authorized to update an user from this team.');
+                return res.error(403, 'forbidden', 'You are not authorized to update an user from this team.');
             }
             else if(Team.can(req, 'user/team') && req.param('team') && req.param('team') != req.team.id) {
-                return res.error(req, 403, 'forbidden', 'You are not authorized to change the team of your user.');
+                return res.error(403, 'forbidden', 'You are not authorized to change the team of your user.');
             }
 
 
@@ -282,7 +282,7 @@ module.exports = {
             // Check team
             Team.findOne({id: user.team}).exec((error, team) => {
                 if(!team && req.param('team')) {
-                    return res.error(req, 400, 'BadRequest', 'Team id is not valid.');
+                    return res.error(400, 'BadRequest', 'Team id is not valid.');
                 }
 
                 user.save((error) => {
@@ -294,7 +294,7 @@ module.exports = {
                 });
             });
         });
-    },
+    }
 
 
     /**
@@ -309,10 +309,10 @@ module.exports = {
      * @apiUse forbiddenError
      * @apiUse notFoundError
      */
-    destroy: function (req, res) {
+    static destroy(req, res) {
         // Check permissions 1
         if(!Team.can(req, 'user/admin') && !(Team.can(req, 'user/team'))) {
-            return res.error(req, 403, 'forbidden', 'You are not authorized to update an user.');
+            return res.error(403, 'forbidden', 'You are not authorized to update an user.');
         }
 
         // Find user
@@ -322,12 +322,12 @@ module.exports = {
                 return res.negotiate(error);
             }
             if(!user) {
-                return res.error(req, 404, 'notfound', 'The requested user cannot be found');
+                return res.error(404, 'notfound', 'The requested user cannot be found');
             }
 
             // Check permissions 2
             if(Team.can(req, 'user/team') && user.team != req.team.id) {
-                return res.error(req, 403, 'forbidden', 'You are not authorized to delete an user from this team.');
+                return res.error(403, 'forbidden', 'You are not authorized to delete an user from this team.');
             }
 
             User.destroy({id: user.id})
@@ -336,7 +336,7 @@ module.exports = {
                 return res.ok();
             });
         });
-    },
+    }
 
 
 
@@ -388,19 +388,19 @@ module.exports = {
      *
      * @apiUse badRequestError
      */
-    etuuttFind: function (req, res) {
+    static etuuttFind(req, res) {
         if (!sails.config.etuutt.id
             || !sails.config.etuutt.secret
             || !sails.config.etuutt.baseUri) {
-            return res.error(req, 501, 'EtuUTTNotConfigured', 'The server is not configured for the API of EtuUTT');
+            return res.error(501, 'EtuUTTNotConfigured', 'The server is not configured for the API of EtuUTT');
         }
 
         if(!req.user.accessToken || !req.user.refreshToken || !req.user.login) {
-            return res.error(req, 403, 'NotEtuuttUser', 'Authenticated user is not logged in via EtuUTT.');
+            return res.error(403, 'NotEtuuttUser', 'Authenticated user is not logged in via EtuUTT.');
         }
 
         if(!req.param('query')) {
-            return res.error(req, 400, 'BadRequest', 'query parameter is missing.');
+            return res.error(400, 'BadRequest', 'query parameter is missing.');
         }
 
         let EtuUTT = EtuUTTService(req.user);
@@ -436,12 +436,12 @@ module.exports = {
                 return res.ok(out);
             }
 
-            return res.error(req, 500, 'EtuUTTError', 'Unexpected EtuUTT answer format');
+            return res.error(500, 'EtuUTTError', 'Unexpected EtuUTT answer format');
         })
         .catch((error) => {
-            return res.error(req, 500, 'EtuUTTError', 'An error occurs during communications with the api of EtuUTT: ' + error);
+            return res.error(500, 'EtuUTTError', 'An error occurs during communications with the api of EtuUTT: ' + error);
         });
-    },
+    }
 
     /**
      * @api {post} /user/avatar/:id Upload avater of given user
@@ -456,10 +456,10 @@ module.exports = {
      * @apiUse badRequestError
      * @apiUse forbiddenError
      */
-    uploadAvatar: function (req, res) {
+    static uploadAvatar(req, res) {
         // Check permissions
         if(!Team.can(req, 'user/admin') && !(Team.can(req, 'user/team'))) {
-            return res.error(req, 403, 'forbidden', 'You are not authorized to create another user in this team.');
+            return res.error(403, 'forbidden', 'You are not authorized to create another user in this team.');
         }
 
         // Find target user
@@ -469,12 +469,12 @@ module.exports = {
                 return res.negotiate(error);
             }
             if(!user) {
-                return res.error(req, 404, 'notfound', 'The requested user cannot be found');
+                return res.error(404, 'notfound', 'The requested user cannot be found');
             }
 
             // Check permissions 2
             if(Team.can(req, 'user/team') && user.team != req.team.id) {
-                return res.error(req, 403, 'forbidden', 'You are not authorized to update an user from this team.');
+                return res.error(403, 'forbidden', 'You are not authorized to update an user from this team.');
             }
 
             req.file('avatar').upload({
@@ -488,7 +488,7 @@ module.exports = {
                 }
 
                 if (uploadedFiles.length === 0){
-                    return res.error(req, 400, 'BadRequest', 'Missing avatar file');
+                    return res.error(400, 'BadRequest', 'Missing avatar file');
                 }
 
                 // Resize and move avatar file
@@ -507,7 +507,7 @@ module.exports = {
                 });
             });
         });
-    },
+    }
 
     /**
      * @api {get} /user/avatar/:id Get avater of given user
@@ -517,7 +517,7 @@ module.exports = {
      * @apiDescription Get avatar of the given user. No authentication required.
      * If the user or the avatar is not found, a default avatar will be shown
      */
-    getAvatar: function (req, res) {
+    static getAvatar(req, res) {
         // Find target user
         User.findOne({id: req.param('id')})
         .exec((userError, user) => {
@@ -545,5 +545,7 @@ module.exports = {
                 return;
             });
         });
-    },
+    }
 };
+
+module.exports = UserController;

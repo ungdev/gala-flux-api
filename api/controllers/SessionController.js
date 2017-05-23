@@ -5,7 +5,7 @@
  * @help        :: See http://sailsjs.org/#!/documentation/concepts/Controllers
  */
 
-module.exports = {
+class SessionController {
 
     /**
      * @api {post} /session/subscribe Subscribe to new items
@@ -13,7 +13,7 @@ module.exports = {
      * @apiGroup Session
      * @apiDescription Subscribe to all new items.
      */
-    subscribe: function(req, res) {
+    static subscribe(req, res) {
         if (Team.can(req, 'session/read')) {
             Session.watch(req);
             Session.find().exec((error, items) => {
@@ -25,7 +25,7 @@ module.exports = {
         else {
             return res.ok();
         }
-    },
+    }
 
     /**
      * @api {post} /session/unsubscribe Unsubscribe from new items
@@ -33,16 +33,16 @@ module.exports = {
      * @apiGroup Session
      * @apiDescription Unsubscribe from new items
      */
-    unsubscribe: function(req, res) {
+    static unsubscribe(req, res) {
         Session.unwatch(req);
         Session.find().exec((error, items) => {
             if (error) return res.negotiate(error);
             Session.unsubscribe(req, _.pluck(items, 'id'));
             return res.ok();
         });
-    },
+    }
 
-    find: function(req, res) {
+    static find(req, res) {
         // Check permissions
         if (!(Team.can(req, 'session/read') )) {
             return res.error(403, 'forbidden', "You are not allowed to read the sessions");
@@ -52,9 +52,9 @@ module.exports = {
             if (error) return res.negotiate(error);
             return res.ok(sessions);
         });
-    },
+    }
 
-    open: function(req, res) {
+    static open(req, res) {
 
         // Debug sessions
         /*
@@ -109,5 +109,7 @@ module.exports = {
                 });
             }
         });
-    },
+    }
 };
+
+module.exports = SessionController;

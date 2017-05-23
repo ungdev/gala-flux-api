@@ -6,7 +6,7 @@
  *
  */
 
-module.exports = {
+class AlertButtonController {
 
     /**
      * @api {post} /alertbutton/subscribe Subscribe to new items
@@ -14,7 +14,7 @@ module.exports = {
      * @apiGroup AlertButton
      * @apiDescription Subscribe to all new items.
      */
-    subscribe: function(req, res) {
+    static subscribe(req, res) {
         if(Team.can(req, 'alertButton/read') || Team.can(req, 'alertButton/admin')) {
             AlertButton.watch(req);
             AlertButton.find().exec((error, items) => {
@@ -26,7 +26,7 @@ module.exports = {
         else {
             return res.ok();
         }
-    },
+    }
 
 
     /**
@@ -35,14 +35,14 @@ module.exports = {
      * @apiGroup AlertButton
      * @apiDescription Unsubscribe from new items
      */
-    unsubscribe: function(req, res) {
+    static unsubscribe(req, res) {
         AlertButton.unwatch(req);
         AlertButton.find().exec((error, items) => {
             if(error) return res.negotiate(error);
             AlertButton.unsubscribe(req, _.pluck(items, 'id'));
             return res.ok();
         });
-    },
+    }
 
 
     /**
@@ -55,11 +55,11 @@ module.exports = {
      *
      * @apiUse forbiddenError
      */
-    find: (req, res) => {
+    static find(req, res) {
 
         // Check permissions
         if (!(Team.can(req, 'alertButton/read') || (Team.can(req, 'alertButton/admin')))) {
-            return res.error(req, 403, 'forbidden', 'You are not authorized to read the Alert buttons.');
+            return res.error(403, 'forbidden', 'You are not authorized to read the Alert buttons.');
         }
 
         // read filters
@@ -81,7 +81,7 @@ module.exports = {
                 return res.ok(alertsButtons);
             });
 
-    },
+    }
 
     /**
      * @api {post} /alertbutton
@@ -100,10 +100,10 @@ module.exports = {
      * @apiUse badRequestError
      * @apiUse forbiddenError
      */
-    create: (req, res) => {
+    static create(req, res) {
         // Check permissions
         if (!Team.can(req, 'alertButton/admin')) {
-            return res.error(req, 403, 'forbidden', 'You are not authorized to create an Alert button.');
+            return res.error(403, 'forbidden', 'You are not authorized to create an Alert button.');
         }
 
         // find the receiver team
@@ -128,7 +128,7 @@ module.exports = {
         .catch(error => {
             return res.badRequest(error);
         });
-    },
+    }
 
     /**
      * @api {put} /alertbutton/:id
@@ -147,11 +147,11 @@ module.exports = {
      * @apiUse forbiddenError
      * @apiUse notFoundError
      */
-    update: (req, res) => {
+    static update(req, res) {
 
         // Check permissions
         if (!Team.can(req, 'alertButton/admin')) {
-            return res.error(req, 403, 'forbidden', 'You are not authorized to update an Alert button.');
+            return res.error(403, 'forbidden', 'You are not authorized to update an Alert button.');
         }
 
         // Find AlertButton
@@ -161,7 +161,7 @@ module.exports = {
                 return res.negotiate(error);
             }
             if(!alertButton) {
-                return res.error(req, 404, 'notfound', 'The requested alert button cannot be found');
+                return res.error(404, 'notfound', 'The requested alert button cannot be found');
             }
 
             // Set new values
@@ -188,7 +188,7 @@ module.exports = {
                 return res.badRequest(error);
             });
         });
-    },
+    }
 
     /**
      * @api {post} /alertbutton/alert
@@ -205,20 +205,20 @@ module.exports = {
      * @apiUse forbiddenError
      * @apiUse notFoundError
      */
-    createAlert: (req, res) => {
+    static createAlert(req, res) {
 
         // check permission
         if (!(Team.can(req, 'alertButton/admin') || Team.can(req, 'alertButton/createAlert'))) {
-            return res.error(req, 403, 'forbidden', 'You are not authorized to update an Alert button.');
+            return res.error(403, 'forbidden', 'You are not authorized to update an Alert button.');
         }
 
         // Check parameters
         if(!req.param('button')) {
-            return res.error(req, 400, 'BadRequest', "The 'button' field must contains the clicked AlertButton id.");
+            return res.error(400, 'BadRequest', "The 'button' field must contains the clicked AlertButton id.");
         }
         const teamId = (req.param('team') !== 'null') && (req.param('team') !== null) ? req.param('team') : req.team.id;
         if (!(Team.can(req, 'alertButton/admin')) && (teamId !== req.team.id)) {
-            return res.error(req, 403, 'forbidden', 'You are not authorized to create an Alert for another team.');
+            return res.error(403, 'forbidden', 'You are not authorized to create an Alert for another team.');
         }
 
         Team.findOne({id: teamId}).exec((error, team) => {
@@ -234,7 +234,7 @@ module.exports = {
                 }
                 // If there is already an unsolved alert like this one for this team, throw error
                 if (alert) {
-                    return res.error(req, 400, 'BadRequest', "This alert already exists.");
+                    return res.error(400, 'BadRequest', "This alert already exists.");
                 }
 
                 // Get the alert button clicked
@@ -244,12 +244,12 @@ module.exports = {
                             return res.negotiate(error);
                         }
                         if(!alertButton) {
-                            return res.error(req, 404, 'notfound', 'The requested alert button cannot be found');
+                            return res.error(404, 'notfound', 'The requested alert button cannot be found');
                         }
 
                         // Throw error if no message in parameters and message required for this alert
                         if(!req.param('message') && alertButton.message) {
-                            return res.error(req, 400, 'BadRequest', "This alert need a 'message'.");
+                            return res.error(400, 'BadRequest', "This alert need a 'message'.");
                         }
 
                         // Create a new Alert from the Alert Button attributes
@@ -281,7 +281,7 @@ module.exports = {
             });
         });
 
-    },
+    }
 
     /**
      * @api {delete} /alertbutton/:id
@@ -295,16 +295,16 @@ module.exports = {
      * @apiUse forbiddenError
      * @apiUse notFoundError
      */
-    destroy: function (req, res) {
+    static destroy(req, res) {
 
         // Check permissions
         if(!Team.can(req, 'alertButton/admin')) {
-            return res.error(req, 403, 'forbidden', 'You are not authorized to delete an alert button.');
+            return res.error(403, 'forbidden', 'You are not authorized to delete an alert button.');
         }
 
         // Check parameters
         if(!req.param('id')) {
-            return res.error(req, 400, 'BadRequest', "The 'id' field must contains the AlertButton id.");
+            return res.error(400, 'BadRequest', "The 'id' field must contains the AlertButton id.");
         }
 
         // Find the alert button
@@ -313,7 +313,7 @@ module.exports = {
             if (error) return res.negotiate(error);
 
             if(!alertButton) {
-                return res.error(req, 404, 'notfound', 'The requested alert button cannot be found');
+                return res.error(404, 'notfound', 'The requested alert button cannot be found');
             }
 
             AlertButton.destroy({id: alertButton.id})
@@ -323,6 +323,8 @@ module.exports = {
                 return res.ok();
             });
         });
-    },
+    }
 
 };
+
+module.exports = AlertButtonController;

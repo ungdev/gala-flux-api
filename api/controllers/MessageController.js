@@ -33,7 +33,7 @@
  *
  */
 
-module.exports = {
+class MessageController {
 
 
     /**
@@ -42,7 +42,7 @@ module.exports = {
      * @apiGroup Message
      * @apiDescription Subscribe to all new messages.
      */
-    subscribe: function(req, res) {
+    static subscribe(req, res) {
         // Receive #group:[groupname] and #[teamname] but can send only in #[teamname]
         if(Team.can(req, 'message/oneChannel')) {
             sails.sockets.join(req, 'message/' + ('public:'+Message.toChannel(req.team.name)), () => {
@@ -88,7 +88,7 @@ module.exports = {
             });
         }
 
-    },
+    }
 
     /**
      * @api {post} /message/unsubscribe Unsubscribe from new messages
@@ -96,7 +96,7 @@ module.exports = {
      * @apiGroup Message
      * @apiDescription Unsubscribe from new messages
      */
-    unsubscribe: function(req, res) {
+    static unsubscribe(req, res) {
         Message.unwatch(req);
         sails.sockets.leave(req, 'message/' + 'public:*', () => {
             sails.sockets.leave(req, 'message/' + 'group:*', () => {
@@ -119,7 +119,7 @@ module.exports = {
                 });
             });
         });
-    },
+    }
 
     /**
      * @api {get} /message/find Get all messages
@@ -135,7 +135,7 @@ module.exports = {
      * * `private:[teamname]` : For internal private messages inside the team
      * * `group:[groupname]` : For group discutions according to the `group` field in team
      */
-    find: function (req, res) {
+    static find(req, res) {
         let where = false;
 
         // Receive #group:[groupname] and #[teamname] but can send only in #[teamname]
@@ -184,7 +184,7 @@ module.exports = {
             // Return message list
             return res.ok(messages);
         });
-    },
+    }
 
 
     /**
@@ -201,7 +201,7 @@ module.exports = {
      * @apiUse badRequestError
      * @apiUse forbiddenError
      */
-    create: function (req, res) {
+    static create(req, res) {
         // Default values
         let channel = req.param('channel');
         if(!channel) {
@@ -213,7 +213,7 @@ module.exports = {
         if(Team.can(req, 'message/oneChannel')
             && channel != 'public:'+Message.toChannel(req.team.name)) {
 
-            return res.error(req, 403, 'forbidden', 'You cannot send message in another channel than ' + 'public:'+Message.toChannel(req.team.name));
+            return res.error(403, 'forbidden', 'You cannot send message in another channel than ' + 'public:'+Message.toChannel(req.team.name));
         }
 
         // Not compatible with `oneChannel`. Can send and receive in any
@@ -236,20 +236,20 @@ module.exports = {
                 return (new RegExp(regex, 'g')).test(channel);
             });
             if(!match) {
-                return res.error(req, 403, 'forbidden', 'You are not authorized to send in this channel');
+                return res.error(403, 'forbidden', 'You are not authorized to send in this channel');
             }
         }
         // No permission
         else if(!Team.can(req, 'message/admin') && !Team.can(req, 'message/public') && !Team.can(req, 'message/oneChannel')) {
-            return res.error(req, 403, 'forbidden', 'You are not authorized to send any messages');
+            return res.error(403, 'forbidden', 'You are not authorized to send any messages');
         }
 
         // Check parameters
         if(!req.param('text')) {
-            return res.error(req, 400, 'BadRequest', 'The parameter `text` is empty.');
+            return res.error(400, 'BadRequest', 'The parameter `text` is empty.');
         }
         else if (req.param('recipientTeam') && req.param('recipientGroup')) {
-            return res.error(req, 400, 'BadRequest', 'You cannot use `recipientTeam` and `recipientGroup` at the same time');
+            return res.error(400, 'BadRequest', 'You cannot use `recipientTeam` and `recipientGroup` at the same time');
         }
 
         // Create message
@@ -267,7 +267,7 @@ module.exports = {
             return res.ok(message);
         });
 
-    },
+    }
 
 
     /**
@@ -277,7 +277,7 @@ module.exports = {
      * @apiDescription Get the list of channels according to read permissions
      * @apiSuccess {Array} list An array of channel name (without #)
      */
-    getChannels: function (req, res) {
+    static getChannels(req, res) {
         let list = new Set();
 
         // Receive #group:[groupname] and #[teamname] but can send only in #[teamname]
@@ -322,7 +322,9 @@ module.exports = {
             })
         }
         else {
-            return res.error(req, 403, 'forbidden', 'You are not authorized to read any channel');
+            return res.error(403, 'forbidden', 'You are not authorized to read any channel');
         }
-    },
+    }
 };
+
+module.exports = MessageController;

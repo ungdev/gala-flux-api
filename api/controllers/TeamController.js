@@ -48,7 +48,7 @@
  */
 
 
-module.exports = {
+class TeamController {
 
     /**
      * @api {post} /team/subscribe Subscribe to new items
@@ -56,7 +56,7 @@ module.exports = {
      * @apiGroup Team
      * @apiDescription Subscribe to all new items.
      */
-    subscribe: function(req, res) {
+    static subscribe(req, res) {
         if(Team.can(req, 'team/read') || Team.can(req, 'team/admin')) {
             Team.watch(req);
             Team.find().exec((error, items) => {
@@ -69,7 +69,7 @@ module.exports = {
             Team.subscribe(req, [req.team.id]);
             return res.ok();
         }
-    },
+    }
 
 
     /**
@@ -78,14 +78,14 @@ module.exports = {
      * @apiGroup Team
      * @apiDescription Unsubscribe from new items
      */
-    unsubscribe: function(req, res) {
+    static unsubscribe(req, res) {
         Team.unwatch(req);
         Team.find().exec((error, items) => {
             if(error) return res.negotiate(error);
             Team.unsubscribe(req, _.pluck(items, 'id'));
             return res.ok();
         });
-    },
+    }
 
     /**
      * @api {get} /team/find Find all teams and subscribe to them
@@ -103,11 +103,11 @@ module.exports = {
      * @apiSuccess {string} Array.team.location Location of the team in the buildings
      * @apiSuccess {string} Array.team.role Role of the team
      */
-    find: function (req, res) {
+    static find(req, res) {
 
         // check permissions
         if(!(Team.can(req, 'team/read') || Team.can(req, 'team/admin'))) {
-            return res.error(req, 403, 'forbidden', 'You are not authorized read team list');
+            return res.error(403, 'forbidden', 'You are not authorized read team list');
         }
 
         // read filters
@@ -125,7 +125,7 @@ module.exports = {
                 return res.ok(team);
             });
 
-    },
+    }
 
 
     /**
@@ -147,7 +147,7 @@ module.exports = {
      * @apiSuccess {string} team.location Location of the team in the buildings
      * @apiSuccess {string} team.role Role of the team
      */
-    findOne: function (req, res) {
+    static findOne(req, res) {
         if(Team.can(req, 'team/read')
         || Team.can(req, 'team/admin')
         || req.param('id') == req.team.id) {
@@ -157,16 +157,16 @@ module.exports = {
                     return res.negotiate(error);
                 }
                 if(!team) {
-                    return res.error(req, 404, 'notfound', 'The requested team cannot be found');
+                    return res.error(404, 'notfound', 'The requested team cannot be found');
                 }
 
                 return res.ok(team);
             });
         }
         else {
-            return res.error(req, 403, 'forbidden', 'You are not authorized read team data');
+            return res.error(403, 'forbidden', 'You are not authorized read team data');
         }
-    },
+    }
 
 
     /**
@@ -185,15 +185,15 @@ module.exports = {
      * @apiUse badRequestError
      * @apiUse forbiddenError
      */
-    create: function (req, res) {
+    static create(req, res) {
         // Check permissions
         if(!Team.can(req, 'team/admin')) {
-            return res.error(req, 403, 'forbidden', 'You are not authorized to create a team.');
+            return res.error(403, 'forbidden', 'You are not authorized to create a team.');
         }
 
         // Check parameters
         if(!req.param('role') || !Array.isArray(sails.config.roles[req.param('role')])) {
-            return res.error(req, 400, 'UnknownRole', 'Unknown role.');
+            return res.error(400, 'UnknownRole', 'Unknown role.');
         }
 
         // Create team
@@ -208,7 +208,7 @@ module.exports = {
             }
             return res.ok(team);
         });
-    },
+    }
 
     /**
      * @api {put} /team/:id Update a team
@@ -228,15 +228,15 @@ module.exports = {
      * @apiUse forbiddenError
      * @apiUse notFoundError
      */
-    update: function (req, res) {
+    static update(req, res) {
         // Check permissions
         if(!Team.can(req, 'team/admin')) {
-            return res.error(req, 403, 'forbidden', 'You are not authorized to update a team.');
+            return res.error(403, 'forbidden', 'You are not authorized to update a team.');
         }
 
         // Check parameters
         if(req.param('role') && !Array.isArray(sails.config.roles[req.param('role')])) {
-            return res.error(req, 400, 'BadRequest', 'Unknown role.');
+            return res.error(400, 'BadRequest', 'Unknown role.');
         }
 
         // Find team
@@ -246,7 +246,7 @@ module.exports = {
                 return res.negotiate(error);
             }
             if(!team) {
-                return res.error(req, 404, 'notfound', 'The requested team cannot be found');
+                return res.error(404, 'notfound', 'The requested team cannot be found');
             }
 
             // Update
@@ -262,7 +262,7 @@ module.exports = {
                 return res.ok(team);
             });
         });
-    },
+    }
 
 
     /**
@@ -277,11 +277,11 @@ module.exports = {
      * @apiUse forbiddenError
      * @apiUse notFoundError
      */
-    destroy: function (req, res) {
+    static destroy(req, res) {
 
         // Check permissions
         if(!Team.can(req, 'team/admin')) {
-            return res.error(req, 403, 'forbidden', 'You are not authorized to delete a team.');
+            return res.error(403, 'forbidden', 'You are not authorized to delete a team.');
         }
 
         // Find team
@@ -291,7 +291,7 @@ module.exports = {
                 return res.negotiate(error);
             }
             if(!team) {
-                return res.error(req, 404, 'notfound', 'The requested team cannot be found');
+                return res.error(404, 'notfound', 'The requested team cannot be found');
             }
 
             Team.destroy({id: team.id}).exec((error) => {
@@ -302,5 +302,7 @@ module.exports = {
                 return res.ok();
             });
         });
-    },
+    }
 };
+
+module.exports = TeamController;
