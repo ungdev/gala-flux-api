@@ -16,4 +16,9 @@ module.exports = {
      * Thoses middlewares will be added to all requests no matter the route configuration
      */
     middlewares: [],
+
+    /**
+     * If true, this will trust the reverse proxy and accept given IP as remote IP
+     */
+    trustProxy: true,
 };

@@ -6,7 +6,9 @@ const bodyParser = require('body-parser')
 const Flux = require('./Flux.js');
 
 // Configure express
+express.set('trust proxy', Flux.config.server.trustProxy);
 express.use(bodyParser.json());
+
 
 // Add required extend middlewares
 express.use(require(Flux.rootdir + '/api/middlewares/extendRes'));
