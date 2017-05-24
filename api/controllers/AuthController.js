@@ -1,3 +1,6 @@
+const Flux = require('../../Flux');
+const JWTService = require('../services/JWTService');
+
 /**
  * AuthController
  *
@@ -56,19 +59,22 @@ class AuthController {
      *
      */
     static ipLogin(req, res) {
-        User.attemptIpAuth((req.ip ? req.ip : req.socket.handshake.address), (err, user) => {
-            if (err) {
-                return res.negotiate(err);
-            }
+        Flux.User.findOne({ where: {ip: req.ip} })
+        .then(user => {
             if (!user) {
                 return res.error(401, 'IPNotFound', 'There is no User associated with this IP');
             }
-            let jwt = JwtService.sign(user);
+
+            let jwt = JWTService.sign(user);
+
             if(req.socket) {
+                // TODO save in the session table
                 req.socket.jwt = jwt;
             }
+
             return res.ok({jwt});
-        });
+        })
+        .catch(res.error500);
     }
 
 

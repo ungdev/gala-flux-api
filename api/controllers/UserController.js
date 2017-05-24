@@ -1,6 +1,8 @@
 const Url = require('url');
 const fs = require('fs');
 const gm = require('gm');
+const Flux = require('../../Flux');
+const Controller = require('./Controller');
 
 
 /**
@@ -53,7 +55,7 @@ const gm = require('gm');
  */
 
 
-class UserController {
+class UserController extends Controller {
 
     /**
      * @api {post} /user/subscribe Subscribe to new items
@@ -92,7 +94,6 @@ class UserController {
         });
     }
 
-
     /**
      * @api {get} /user/find Find all users and subscribe to them
      * @apiName find
@@ -109,68 +110,8 @@ class UserController {
      * @apiSuccess {id} Array.user.team Associated team ID
      */
     static find(req, res) {
-
-        // check permissions
-        if (!(Team.can(req, 'user/read') || Team.can(req, 'user/admin'))) {
-            return res.error(403, 'forbidden', 'You are not authorized read user list');
-        }
-
-        // read filters
-        let where = {};
-        if (req.allParams().filters) {
-            where = req.allParams().filters;
-        }
-
-        User.find(where)
-        .exec((error, user) => {
-            if (error) {
-                return res.negotiate(error);
-            }
-            return res.ok(user);
-        });
-
+        Controller.find(Flux.User, req, res);
     }
-
-
-    /**
-     * @api {get} /user/find/:id Find one user
-     * @apiName findOne
-     * @apiGroup User
-     * @apiDescription Find one user from its id.
-     * Even if you have no permission, you can always read your own object.
-     *
-     * @apiUse forbiddenError
-     * @apiUse notFoundError
-     *
-     * @apiParam {string} id Id of the user you want to see
-     *
-     * @apiSuccess {User} user An user object
-     * @apiSuccess {string} user.login Login of EtuUTT user
-     * @apiSuccess {string} user.ip IP of IP user
-     * @apiSuccess {string} user.name Display name of the user
-     * @apiSuccess {id} user.team Associated team ID
-     */
-    static findOne(req, res) {
-        if(Team.can(req, 'user/read')
-        || Team.can(req, 'user/admin')
-        || req.param('id') == req.user.id) {
-            User.findOne({id: req.param('id')})
-            .exec((error, user) => {
-                if (error) {
-                    return res.negotiate(error);
-                }
-                if(!user) {
-                    return res.error(404, 'notfound', 'The requested user cannot be found');
-                }
-
-                return res.ok(user);
-            });
-        }
-        else {
-            return res.error(403, 'forbidden', 'You are not authorized read user data');
-        }
-    }
-
 
     /**
      * @api {post} /user/create Create an user

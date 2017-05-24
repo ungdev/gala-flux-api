@@ -59,7 +59,7 @@
  */
 
 
-module.exports.roles = {
+module.exports = {
     'Point de vente': [
         'alert/restrictedSender',
         'alertButton/read',

@@ -1,4 +1,5 @@
 const fs = require('fs');
+const Sequelize = require('sequelize');
 
 
 /**
@@ -25,6 +26,36 @@ class Flux {
         }
 
         return instance;
+    }
+
+    /**
+     * This method will load models and add public access to them into this object.
+     * This cannot be executed in constructor because database is not initialized.
+     */
+    initModels() {
+        const modelPath = this.rootdir + '/api/models/';
+        let models = [];
+        fs.readdirSync(modelPath).forEach(filename => {
+            // throw wanring and ignore if it doesn't begin with an uppercase letter
+            if (filename.charAt(0) !== filename.charAt(0).toUpperCase()) {
+                this.warn('Model files should begin with an uppercase letter. File ignored: ', filename);
+                return;
+            }
+
+            // add model to list
+            instance[filename.split('.')[0]] = require(modelPath + filename);
+            models.push(instance[filename.split('.')[0]]);
+        });
+
+        // Load references between models
+        for (let model of models) {
+            if(typeof model.buildReferences === 'function') {
+                model.buildReferences();
+            }
+        }
+
+        // Add models to Flux object
+        Object.assign(instance, models);
     }
 
     /**
@@ -87,6 +118,21 @@ class Flux {
      */
     configReload() {
         this._configuration = null;
+    }
+
+    get sequelize() {
+        // Connect to db if necessary
+        if (!this._sequelize) {
+            // TODO use configuration
+            this._sequelize = new Sequelize('flux', 'root', '', {
+                host: 'localhost',
+                dialect: 'mysql',
+            });
+            this._sequelize.sync();
+        }
+
+        // Return sequelize object
+        return this._sequelize;
     }
 
     /**

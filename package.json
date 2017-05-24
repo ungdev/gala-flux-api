@@ -13,7 +13,9 @@
     "gm": "^1.23.0",
     "inquirer": "^3.0.6",
     "jsonwebtoken": "^7.3.0",
+    "mysql2": "^1.2.0",
     "request": "^2.81.0",
+    "sequelize": "4.0.0-2",
     "simple-oauth2": "^1.1.0"
   },
   "engines": {

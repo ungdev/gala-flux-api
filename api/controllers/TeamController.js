@@ -1,3 +1,6 @@
+const Flux = require('../../Flux');
+const Controller = require('./Controller');
+
 /**
  * TeamController
  *
@@ -47,8 +50,10 @@
  *
  */
 
+let test = 'true';
 
-class TeamController {
+
+class TeamController extends Controller {
 
     /**
      * @api {post} /team/subscribe Subscribe to new items
@@ -104,68 +109,7 @@ class TeamController {
      * @apiSuccess {string} Array.team.role Role of the team
      */
     static find(req, res) {
-
-        // check permissions
-        if(!(Team.can(req, 'team/read') || Team.can(req, 'team/admin'))) {
-            return res.error(403, 'forbidden', 'You are not authorized read team list');
-        }
-
-        // read filters
-        let where = {};
-        if (req.allParams().filters) {
-            where = req.allParams().filters;
-        }
-
-        Team.find(where)
-            .exec((error, team) => {
-                if (error) {
-                    return res.negotiate(error);
-                }
-
-                return res.ok(team);
-            });
-
-    }
-
-
-    /**
-     * @api {get} /team/find/:id Find one team
-     * @apiName findOne
-     * @apiGroup Team
-     * @apiDescription Find one team from its id.
-     * Even if you have no permission, you can always read your own team.
-     *
-     * @apiUse forbiddenError
-     * @apiUse notFoundError
-     *
-     * @apiParam {string} id Id of the team you want to see
-     *
-     * @apiSuccess {Team} team A team object
-     * @apiSuccess {id} team.id Id of the team
-     * @apiSuccess {string} team.name Display name of the team
-     * @apiSuccess {string} team.group Group of team used for group messages
-     * @apiSuccess {string} team.location Location of the team in the buildings
-     * @apiSuccess {string} team.role Role of the team
-     */
-    static findOne(req, res) {
-        if(Team.can(req, 'team/read')
-        || Team.can(req, 'team/admin')
-        || req.param('id') == req.team.id) {
-            Team.findOne({id: req.param('id')})
-            .exec((error, team) => {
-                if (error) {
-                    return res.negotiate(error);
-                }
-                if(!team) {
-                    return res.error(404, 'notfound', 'The requested team cannot be found');
-                }
-
-                return res.ok(team);
-            });
-        }
-        else {
-            return res.error(403, 'forbidden', 'You are not authorized read team data');
-        }
+        Controller.find(Flux.Team, req, res);
     }
 
 

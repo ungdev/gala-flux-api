@@ -1,9 +1,11 @@
 const express = require('express')();
-const bodyParser = require('body-parser')
+const bodyParser = require('body-parser');
 // const passport = require('passport');
 
 // Load Flux object
 const Flux = require('./Flux.js');
+Flux.initModels();
+
 
 // Configure express
 express.set('trust proxy', Flux.config.server.trustProxy);
@@ -46,7 +48,7 @@ for (let route in routes) {
     if(routes[route].action || routes[route].action.split('.') != 2) {
         let controller = routes[route].action.split('.')[0];
         let action = routes[route].action.split('.')[1];
-        let func = require(Flux.rootdir + '/api/controllers/' + controller)[action];
+        let func = ((req, res) => require(Flux.rootdir + '/api/controllers/' + controller)[action](req, res));
         if(typeof func === 'function') {
             express[method](path, require(Flux.rootdir + '/api/controllers/' + controller)[action]);
         }

@@ -20,7 +20,7 @@ module.exports = function (req, res, next) {
             data = {};
         }
 
-        return this.status(200).json(data);
+        return res.status(200).json(data);
     };
 
     /**
@@ -55,7 +55,20 @@ module.exports = function (req, res, next) {
             }
         };
 
-        return this.status(code).json(data);
+        return res.status(code).json(data);
+    };
+
+
+    /**
+     * Unexpected error. Will throw an error 500
+     *
+     * Usage:
+     * return res.error(404, 'UserNotFound', 'There is no User with this ID');
+     *
+     */
+    res.error500 = function(error) {
+        Flux.error(error);
+        return res.error(500, 'UnexpectedError', 'Unexpected server error');
     };
 
     return next();

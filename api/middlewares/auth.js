@@ -42,16 +42,19 @@ module.exports = function (req, res, next) {
             let jwt = parts[1];
 
             JWTService.verify(jwt)
-            .then((user) => {
+            .then(user => {
                 req.user = user;
-                Team.findOne({id: user.team}).exec((error, team) => {
-                    if(error) {
-                        Flux.warn('We didn\'t find the team associated with the logged in user');
-                        return next();
-                    }
-                    req.team = team;
+                return Flux.Team.findOne({ where: {id: user.teamId}})
+            })
+            .then(team => {
+                if(!team) {
+                    Flux.warn('We didn\'t find the team associated with the logged in user');
+                    return next();
+                }
 
-                });
+                // Success
+                req.team = team;
+                return next();
             })
             .catch((error) => {
                 Flux.warn('The given JWT is not valid', error);

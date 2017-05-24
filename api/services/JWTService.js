@@ -35,16 +35,11 @@ class JWTService {
                 }
 
                 // Check if user exist
-                User.findOne({
+                Flux.User.findOne({ where: {
                     id: decoded.userId,
-                })
-                .exec((error, user) => {
-                    if(error) {
-                        return reject(error);
-                    }
-
-                    return resolve(user);
-                });
+                }})
+                .then(resolve)
+                .catch(reject);
             });
         });
     }
