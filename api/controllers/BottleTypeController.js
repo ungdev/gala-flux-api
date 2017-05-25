@@ -13,8 +13,8 @@ class BottleTypeController {
      * @apiGroup BottleType
      * @apiDescription Subscribe to all new items.
      */
-    static subscribe(req, res) {
-        if(Team.can(req, 'bottleType/read') || Team.can(req, 'bottleType/admin')) {
+     subscribe(req, res) {
+        if(req.team.can('bottleType/read') || req.team.can('bottleType/admin')) {
             BottleType.watch(req);
             BottleType.find().exec((error, items) => {
                 if(error) return res.negotiate(error);
@@ -34,7 +34,7 @@ class BottleTypeController {
      * @apiGroup BottleType
      * @apiDescription Unsubscribe from new items
      */
-    static unsubscribe(req, res) {
+     unsubscribe(req, res) {
         BottleType.unwatch(req);
         BottleType.find().exec((error, items) => {
             if(error) return res.negotiate(error);
@@ -61,9 +61,9 @@ class BottleTypeController {
      * @apiSuccess {integer} Array.bottletype.originalStock Number of bottletypes at the beginning of the event
      */
 
-    static find(req, res) {
+     find(req, res) {
         // Check permissions
-        if(Team.can(req, 'bottleType/read') || Team.can(req, 'bottleType/admin')) {
+        if(req.team.can('bottleType/read') || req.team.can('bottleType/admin')) {
             BottleType.find()
                 .exec((error, bottletype) => {
                     if (error) {
@@ -97,9 +97,9 @@ class BottleTypeController {
      * @apiSuccess {integer} bottletype.supplierPrice Price at which the bottletypes were bought in cents
      * @apiSuccess {integer} bottletype.originalStock Number of bottletypes at the beginning of the event
      */
-    static findOne(req, res) {
+     findOne(req, res) {
         // Check permissions
-        if(Team.can(req, 'bottleType/read') || Team.can(req, 'bottleType/admin')) {
+        if(req.team.can('bottleType/read') || req.team.can('bottleType/admin')) {
 
             // Find bottletype
             BottleType.findOne({id: req.param('id')})
@@ -137,9 +137,9 @@ class BottleTypeController {
      * @apiUse badRequestError
      * @apiUse forbiddenError
      */
-    static create(req, res) {
+     create(req, res) {
         // Check permissions
-        if(!Team.can(req, 'bottleType/admin')) {
+        if(!req.team.can('bottleType/admin')) {
             return res.error(403, 'forbidden', 'You are not authorized to create a bottletype.');
         }
 
@@ -179,9 +179,9 @@ class BottleTypeController {
      * @apiUse forbiddenError
      * @apiUse notFoundError
      */
-    static destroy(req, res) {
+     destroy(req, res) {
         // Check permissions
-        if(!Team.can(req, 'bottleType/admin')) {
+        if(!req.team.can('bottleType/admin')) {
             return res.error(403, 'forbidden', 'You are not authorized to delete a bottletype.');
         }
 
@@ -224,9 +224,9 @@ class BottleTypeController {
      * @apiUse forbiddenError
      * @apiUse notFoundError
      */
-    static update(req, res) {
+     update(req, res) {
         // Check permissions
-        if(!Team.can(req, 'bottleType/admin')) {
+        if(!req.team.can('bottleType/admin')) {
             return res.error(403, 'forbidden', 'You are not authorized to update a bottletype.');
         }
 

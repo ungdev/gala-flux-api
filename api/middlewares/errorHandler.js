@@ -5,5 +5,11 @@ const Flux = require('../../Flux');
  * This middleware should be add after all routes and middleware
  */
 module.exports = function(err, req, res, next) {
-    res.error500(err);
+    if(res.error) {
+        res.error(err);
+    }
+    else {
+        Flux.error(err);
+        res.status(500).json({});
+    }
 };

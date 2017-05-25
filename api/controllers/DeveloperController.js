@@ -7,8 +7,8 @@
 
 class DeveloperController {
 
-    static refresh(req, res) {
-        if (!(Team.can(req, 'developer/refresh') )) {
+     refresh(req, res) {
+        if (!(req.team.can('developer/refresh') )) {
             return res.error(403, 'forbidden', "You are not allowed to start a global refresh");
         }
 

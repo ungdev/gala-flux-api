@@ -14,25 +14,25 @@ class AlertController {
      * @apiGroup Alert
      * @apiDescription Subscribe to all new items.
      */
-    static subscribe(req, res) {
-        if(Team.can(req, 'alert/read') || Team.can(req, 'alert/admin')) {
-            Alert.watch(req);
-            Alert.find().exec((error, items) => {
-                if(error) return res.negotiate(error);
-                Alert.subscribe(req, _.pluck(items, 'id'));
-                return res.ok();
-            });
-        }
-        else if(Team.can(req, 'alert/restrictedSender') || Team.can(req, 'alert/restrictedReceiver')) {
-            // Join only for update of it own bottles
-            sails.sockets.join(req, 'alert/' + req.team.id, (error) => {
-                if (error) return res.negotiate(error);
-                return res.ok();
-            });
-        }
-        else {
-            return res.ok();
-        }
+     subscribe(req, res) {
+        // if(req.team.can('alert/read') || req.team.can('alert/admin')) {
+        //     Alert.watch(req);
+        //     Alert.find().exec((error, items) => {
+        //         if(error) return res.negotiate(error);
+        //         Alert.subscribe(req, _.pluck(items, 'id'));
+        //         return res.ok();
+        //     });
+        // }
+        // else if(req.team.can('alert/restrictedSender') || req.team.can('alert/restrictedReceiver')) {
+        //     // Join only for update of it own bottles
+        //     sails.sockets.join(req, 'alert/' + req.team.id, (error) => {
+        //         if (error) return res.negotiate(error);
+        //         return res.ok();
+        //     });
+        // }
+        // else {
+        //     return res.ok();
+        // }
     }
 
     /**
@@ -41,15 +41,15 @@ class AlertController {
      * @apiGroup Alert
      * @apiDescription Unsubscribe from new items
      */
-    static unsubscribe(req, res) {
-        sails.sockets.leave(req, 'alert/' + req.team.id, () => {
-            Alert.unwatch(req);
-            Alert.find().exec((error, items) => {
-                if(error) return res.negotiate(error);
-                Alert.unsubscribe(req, _.pluck(items, 'id'));
-                return res.ok();
-            });
-        });
+     unsubscribe(req, res) {
+        // sails.sockets.leave(req, 'alert/' + req.team.id, () => {
+        //     Alert.unwatch(req);
+        //     Alert.find().exec((error, items) => {
+        //         if(error) return res.negotiate(error);
+        //         Alert.unsubscribe(req, _.pluck(items, 'id'));
+        //         return res.ok();
+        //     });
+        // });
     }
 
     /**
@@ -62,9 +62,9 @@ class AlertController {
      *
      * @apiUse forbiddenError
      */
-    static find(req, res) {
+     find(req, res) {
         // Check permissions
-        // if (!(Team.can(req, 'alert/admin') || Team.can(req, 'alert/read') || Team.can(req, 'alert/restrictedSender') || Team.can(req, 'alert/restrictedReceiver'))) {
+        // if (!(req.team.can('alert/admin') || req.team.can('alert/read') || req.team.can('alert/restrictedSender') || req.team.can('alert/restrictedReceiver'))) {
         //     return res.error(403, 'forbidden', 'You are not authorized to read alerts.');
         // }
         //
@@ -74,7 +74,7 @@ class AlertController {
         //     where = req.allParams().filters;
         // }
         // // if the requester is not admin, show only his team's alert
-        // if (Team.can(req, 'alert/restrictedSender')) {
+        // if (req.team.can('alert/restrictedSender')) {
         //     let whereTmp = where;
         //     where = {
         //         severity: {'!': 'done'},
@@ -82,7 +82,7 @@ class AlertController {
         //     };
         //     if(whereTmp && Object.keys(whereTmp).length) where.or = whereTmp;
         // }
-        // else if (Team.can(req, 'alert/restrictedReceiver')) {
+        // else if (req.team.can('alert/restrictedReceiver')) {
         //     let whereTmp = where;
         //     where = {
         //         receiver: req.team.id,
@@ -116,10 +116,10 @@ class AlertController {
      * @apiUse forbiddenError
      * @apiUse notFoundError
      */
-    static update(req, res) {
+     update(req, res) {
 
         // Check permissions
-        if (!(Team.can(req, 'alert/admin') || Team.can(req, 'alert/restrictedSender') || Team.can(req, 'alert/restrictedReceiver'))) {
+        if (!(req.team.can('alert/admin') || req.team.can('alert/restrictedSender') || req.team.can('alert/restrictedReceiver'))) {
             return res.error(403, 'forbidden', 'You are not authorized to update alerts.');
         }
 
@@ -143,8 +143,8 @@ class AlertController {
 
                 // if the request can only update from his team, check the sender
                 // else, check if the requester is in the receiver team
-                if ((Team.can(req, 'alert/restrictedSender') && (alert.sender !== req.team.id || alert.severity == 'done')) ||
-                (Team.can(req, 'alert/restrictedReceiver') && alert.receiver != req.team.id)) {
+                if ((req.team.can('alert/restrictedSender') && (alert.sender !== req.team.id || alert.severity == 'done')) ||
+                (req.team.can('alert/restrictedReceiver') && alert.receiver != req.team.id)) {
                     return res.error(403, 'forbidden', 'You are not allowed to update this alert.');
                 }
 
@@ -189,10 +189,10 @@ class AlertController {
      * @apiUse forbiddenError
      * @apiUse notFoundError
      */
-    static updateAssignedUsers(req, res) {
+     updateAssignedUsers(req, res) {
 
         // Check permissions
-        if (!(Team.can(req, 'alert/admin') || Team.can(req, 'alert/restrictedReceiver'))) {
+        if (!(req.team.can('alert/admin') || req.team.can('alert/restrictedReceiver'))) {
             return res.error(403, 'forbidden', 'You are not authorized to update alerts.');
         }
 

@@ -1,5 +1,6 @@
 const Sequelize = require('sequelize');
 const Flux = require('../../Flux');
+const inheritBaseModel = require('./baseModel');
 
 const Session = Flux.sequelize.define('session', {
 
@@ -35,83 +36,32 @@ const Session = Flux.sequelize.define('session', {
         type: Sequelize.DATE,
     },
 });
-
-
-/**
- * This function will be called once all models are initialized by Flux Object.
- */
-Session.buildReferences = () => {
-    Session.belongsTo(Flux.User, {
+const Model = Session;
+Model.buildReferences = () => {
+    // This function will be called once all models are initialized by Flux Object.
+    Model.belongsTo(Flux.User, {
         foreignKey: { allowNull: false },
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE',
     });
 };
-
+inheritBaseModel(Session);
 
 
 /**********************************************
- * User groups
+ * Customize User groups
+ *
+ * No one can edit sessions via API
  **********************************************/
-Session.getUserReadGroups = function(team, user) {
-    let groups = [];
-
-    // If you have the right to read all
-    if(team.can('sessio/read') || team.can('sessio/admin')) {
-        groups.push('read:all');
-    }
-
-    return groups;
-};
-Session.getUserCreateGroups = function(team, user) {
+Model.getUserCreateGroups = function(team, user) {
     return [];
 };
-Session.getUserUpdateGroups = function(team, user) {
-    return [];
-};
-Session.getUserDestroyGroups = function(team, user) {
-    return [];
-};
+Model.getUserUpdateGroups = Model.getUserCreateGroups;
+Model.getUserDestroyGroups = Model.getUserCreateGroups;
 
-/**********************************************
- * Filters
- **********************************************/
-Session.getFilters = function(team, user) {
-    let filters = [];
-    let groups = this.getUserReadGroups(team, user);
-    for (let group of groups) {
-        let split = group.split(':');
-        // Can read all
-        if(group == 'read:all') {
-            filters.push(true);
-            return filters;
-        }
-        // Can read only one id
-        else if(split[0] == 'read' && split[1] == 'id') {
-            filters.push({'id': split[2]});
-        }
-    }
-    return filters;
-};
 
-/**********************************************
- * Item group
- **********************************************/
-Session.prototype.getReadGroups = function() {
-    return ['read:all'];
-};
-Session.prototype.getCreateGroups = function() {
-    return ['create:all'];
-};
-Session.prototype.getUpdateGroups = function() {
-    return ['update:all'];
-};
-Session.prototype.getDestroyGroups = function() {
-    return ['destroy:all'];
-};
 
-module.exports = Session;
-
+module.exports = Model;
 
 /*
 module.exports = {

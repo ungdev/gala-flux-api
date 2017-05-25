@@ -14,8 +14,8 @@ class AlertButtonController {
      * @apiGroup AlertButton
      * @apiDescription Subscribe to all new items.
      */
-    static subscribe(req, res) {
-        if(Team.can(req, 'alertButton/read') || Team.can(req, 'alertButton/admin')) {
+     subscribe(req, res) {
+        if(req.team.can('alertButton/read') || req.team.can('alertButton/admin')) {
             AlertButton.watch(req);
             AlertButton.find().exec((error, items) => {
                 if(error) return res.negotiate(error);
@@ -35,7 +35,7 @@ class AlertButtonController {
      * @apiGroup AlertButton
      * @apiDescription Unsubscribe from new items
      */
-    static unsubscribe(req, res) {
+     unsubscribe(req, res) {
         AlertButton.unwatch(req);
         AlertButton.find().exec((error, items) => {
             if(error) return res.negotiate(error);
@@ -55,10 +55,10 @@ class AlertButtonController {
      *
      * @apiUse forbiddenError
      */
-    static find(req, res) {
+     find(req, res) {
 
         // Check permissions
-        if (!(Team.can(req, 'alertButton/read') || (Team.can(req, 'alertButton/admin')))) {
+        if (!(req.team.can('alertButton/read') || (req.team.can('alertButton/admin')))) {
             return res.error(403, 'forbidden', 'You are not authorized to read the Alert buttons.');
         }
 
@@ -100,9 +100,9 @@ class AlertButtonController {
      * @apiUse badRequestError
      * @apiUse forbiddenError
      */
-    static create(req, res) {
+     create(req, res) {
         // Check permissions
-        if (!Team.can(req, 'alertButton/admin')) {
+        if (!req.team.can('alertButton/admin')) {
             return res.error(403, 'forbidden', 'You are not authorized to create an Alert button.');
         }
 
@@ -147,10 +147,10 @@ class AlertButtonController {
      * @apiUse forbiddenError
      * @apiUse notFoundError
      */
-    static update(req, res) {
+     update(req, res) {
 
         // Check permissions
-        if (!Team.can(req, 'alertButton/admin')) {
+        if (!req.team.can('alertButton/admin')) {
             return res.error(403, 'forbidden', 'You are not authorized to update an Alert button.');
         }
 
@@ -205,10 +205,10 @@ class AlertButtonController {
      * @apiUse forbiddenError
      * @apiUse notFoundError
      */
-    static createAlert(req, res) {
+     createAlert(req, res) {
 
         // check permission
-        if (!(Team.can(req, 'alertButton/admin') || Team.can(req, 'alertButton/createAlert'))) {
+        if (!(req.team.can('alertButton/admin') || req.team.can('alertButton/createAlert'))) {
             return res.error(403, 'forbidden', 'You are not authorized to update an Alert button.');
         }
 
@@ -217,7 +217,7 @@ class AlertButtonController {
             return res.error(400, 'BadRequest', "The 'button' field must contains the clicked AlertButton id.");
         }
         const teamId = (req.param('team') !== 'null') && (req.param('team') !== null) ? req.param('team') : req.team.id;
-        if (!(Team.can(req, 'alertButton/admin')) && (teamId !== req.team.id)) {
+        if (!(req.team.can('alertButton/admin')) && (teamId !== req.team.id)) {
             return res.error(403, 'forbidden', 'You are not authorized to create an Alert for another team.');
         }
 
@@ -295,10 +295,10 @@ class AlertButtonController {
      * @apiUse forbiddenError
      * @apiUse notFoundError
      */
-    static destroy(req, res) {
+     destroy(req, res) {
 
         // Check permissions
-        if(!Team.can(req, 'alertButton/admin')) {
+        if(!req.team.can('alertButton/admin')) {
             return res.error(403, 'forbidden', 'You are not authorized to delete an alert button.');
         }
 

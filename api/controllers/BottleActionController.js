@@ -13,8 +13,8 @@ class BottleActionController {
      * @apiGroup BottleAction
      * @apiDescription Subscribe to all new items.
      */
-    static subscribe(req, res) {
-        if(Team.can(req, 'bottleAction/read') || Team.can(req, 'bottleAction/admin')) {
+     subscribe(req, res) {
+        if(req.team.can('bottleAction/read') || req.team.can('bottleAction/admin')) {
             BottleAction.watch(req);
             BottleAction.find().exec((error, items) => {
                 if(error) return res.negotiate(error);
@@ -22,7 +22,7 @@ class BottleActionController {
                 return res.ok();
             });
         }
-        else if(Team.can(req, 'bottleAction/restricted')) {
+        else if(req.team.can('bottleAction/restricted')) {
             // Join only for update of it own bottles
             sails.sockets.join(req, 'bottleAction/' + req.team.id, (error) => {
                 if (error) return res.negotiate(error);
@@ -40,7 +40,7 @@ class BottleActionController {
      * @apiGroup BottleAction
      * @apiDescription Unsubscribe from new items
      */
-    static unsubscribe(req, res) {
+     unsubscribe(req, res) {
         sails.sockets.leave(req, 'bottleAction/' + req.team.id, () => {
             BottleAction.unwatch(req);
             BottleAction.find().exec((error, items) => {
@@ -68,9 +68,9 @@ class BottleActionController {
      * @apiSuccess {string} Array.bottle.operation Operation performed on the bottle (sold or moved)
      */
 
-    static find(req, res) {
+     find(req, res) {
         // Check permissions
-        if (!(Team.can(req, 'bottleAction/admin') || Team.can(req, 'bottleAction/read') || Team.can(req, 'bottleAction/restricted'))) {
+        if (!(req.team.can('bottleAction/admin') || req.team.can('bottleAction/read') || req.team.can('bottleAction/restricted'))) {
             return res.error(403, 'forbidden', 'You are not authorized to view the bottle actions list.');
         }
 
@@ -80,7 +80,7 @@ class BottleActionController {
             where = req.allParams().filters;
         }
         // if the requester is not admin, show only his team's bottleActions
-        if (Team.can(req, 'bottleAction/restricted')) {
+        if (req.team.can('bottleAction/restricted')) {
             // "or and or" is not possibile in waterline, so we ignore other filters
             where = [{ team: req.team.id }, { fromTeam: req.team.id }];
         }
@@ -106,16 +106,16 @@ class BottleActionController {
      * @apiUse forbiddenError
      */
 
-    static count(req, res) {
+     count(req, res) {
         // Check permissions
-        if (!(Team.can(req, 'bottleAction/admin') || Team.can(req, 'bottleAction/read') || Team.can(req, 'bottleAction/restricted'))) {
+        if (!(req.team.can('bottleAction/admin') || req.team.can('bottleAction/read') || req.team.can('bottleAction/restricted'))) {
             return res.error(403, 'forbidden', 'You are not authorized to view the bottle count list.');
         }
 
         // read filters
         let where = {};
         // if the requester is not admin, show only his team's bottleActions
-        if (Team.can(req, 'bottleAction/restricted')) {
+        if (req.team.can('bottleAction/restricted')) {
             where = [{ team: req.team.id }, { fromTeam: req.team.id }];
         }
 
@@ -192,9 +192,9 @@ class BottleActionController {
      * @apiUse forbiddenError
      */
 
-    static create(req, res) {
+     create(req, res) {
         // Check permissions
-        if(Team.can(req, 'bottleAction/restricted') || Team.can(req, 'bottleAction/admin')) {
+        if(req.team.can('bottleAction/restricted') || req.team.can('bottleAction/admin')) {
 
             // find bottleType
             BottleType.findOne({id: req.param('type')}).exec((error, bottleType) => {
@@ -206,7 +206,7 @@ class BottleActionController {
                 }
 
                 // Check restricted permission
-                if(Team.can(req, 'bottleAction/restricted')) {
+                if(req.team.can('bottleAction/restricted')) {
                     if(req.param('team') != req.team.id || req.param('fromTeam') || req.param('operation') != 'purchased') {
                         return res.error(400, 'BadRequest', "You are only allowed to update state of purchased bottle in you team.");
                     }

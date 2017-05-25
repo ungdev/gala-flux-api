@@ -120,6 +120,40 @@ class Flux {
         this._configuration = null;
     }
 
+    /**
+     * Get list of instance of controllers
+     * @return {Array} Instances of controllers
+     */
+    get controllers() {
+        // Load configuration if necessary
+        if (!this._controllers) {
+            this._controllers = {};
+            const controllersPath = this.rootdir + '/api/controllers/';
+            fs.readdirSync(controllersPath).forEach(filename => {
+
+                // ignore base Controller.js and file that doen't finish with Controller.js
+                if (filename == 'Controller.js'
+                    || filename.substr(filename.length-13) != 'Controller.js'
+                    || !fs.lstatSync(controllersPath + filename).isFile()) {
+
+                    // Throw warning if not a dist file
+                    if (filename !== 'Controller.js') {
+                        this.warn('File ignored in the Controller directory: ', filename);
+                    }
+
+                    return;
+                }
+
+                // Instanciate the controller
+                let controller = require(controllersPath + filename);
+                this._controllers[filename.substr(0, filename.length-3)] = new controller();
+            });
+        }
+
+        // Return parsed configuration
+        return Object.assign({}, this._controllers);
+    }
+
     get sequelize() {
         // Connect to db if necessary
         if (!this._sequelize) {

@@ -1,5 +1,6 @@
 const Sequelize = require('sequelize');
 const Flux = require('../../Flux');
+const inheritBaseModel = require('./baseModel');
 
 const Team = Flux.sequelize.define('team', {
 
@@ -7,6 +8,9 @@ const Team = Flux.sequelize.define('team', {
         type: Sequelize.STRING,
         allowNull: false,
         unique: true,
+        validate: {
+            notEmpty: true,
+        }
     },
 
     group: {
@@ -21,8 +25,34 @@ const Team = Flux.sequelize.define('team', {
     role: {
         type: Sequelize.STRING,
         allowNull: false,
+        validate: {
+            roleExist(value) {
+                if(!Object.keys(Flux.config.roles).includes(value)) {
+                    throw new Error('Validation roleExist failed');
+                }
+            },
+            notEmpty: true,
+        }
     },
 });
+const Model = Team;
+inheritBaseModel(Team);
+
+/**********************************************
+ * Customize User groups
+ **********************************************/
+Model.getUserReadGroups = (team, user) => {
+    let groups = [];
+    if(team.can(Model.name + '/read') || team.can(Model.name + '/admin')) {
+        groups.push('all');
+    }
+
+    // You can always read your own team
+    groups.push('id:' + user.id);
+
+    return groups;
+};
+
 
 /**
  * Check team permission
@@ -34,84 +64,7 @@ Team.prototype.can = function(permission) {
 };
 
 
-
-
-/**********************************************
- * User groups
- **********************************************/
-Team.getUserReadGroups = function(team, user) {
-    let groups = [];
-
-    // You can always read your own team
-    groups.push('read:id:' + team.id);
-    // If you have the right to read all
-    if(team.can('team/read') || team.can('team/admin')) {
-        groups.push('read:all');
-    }
-
-    return groups;
-};
-Team.getUserCreateGroups = function(team, user) {
-    // Only admin can update/create/destroy teams
-    if(team.can('team/admin')) {
-        return ['create:all'];
-    }
-    return [];
-};
-Team.getUserUpdateGroups = function(team, user) {
-    // Only admin can update/create/destroy teams
-    if(team.can('team/admin')) {
-        return ['update:all'];
-    }
-    return [];
-};
-Team.getUserDestroyGroups = function(team, user) {
-    // Only admin can update/create/destroy teams
-    if(team.can('team/admin')) {
-        return ['destroy:all'];
-    }
-    return [];
-};
-
-/**********************************************
- * Filters
- **********************************************/
-Team.getFilters = function(team, user) {
-    let filters = [];
-    let groups = this.getUserReadGroups(team, user);
-    for (let group of groups) {
-        let split = group.split(':');
-        // Can read all
-        if(group == 'read:all') {
-            filters.push(true);
-            return filters;
-        }
-        // Can read only one id
-        else if(split[0] == 'read' && split[1] == 'id') {
-            filters.push({'id': split[2]});
-        }
-    }
-    return filters;
-};
-
-/**********************************************
- * Item group
- **********************************************/
-Team.prototype.getReadGroups = function() {
-    return ['read:id:' + this.id, 'read:all'];
-};
-Team.prototype.getCreateGroups = function() {
-    return ['create:all'];
-};
-Team.prototype.getUpdateGroups = function() {
-    return ['update:all'];
-};
-Team.prototype.getDestroyGroups = function() {
-    return ['destroy:all'];
-};
-
-
-module.exports = Team;
+module.exports = Model;
 
 // const Base = require('./Base');
 //

@@ -13,8 +13,8 @@ class BarrelTypeController {
      * @apiGroup BarrelType
      * @apiDescription Subscribe to all new items.
      */
-    static subscribe(req, res) {
-        if(Team.can(req, 'barrelType/read') || Team.can(req, 'barrelType/admin')) {
+     subscribe(req, res) {
+        if(req.team.can('barrelType/read') || req.team.can('barrelType/admin')) {
             BarrelType.watch(req);
             BarrelType.find().exec((error, items) => {
                 if(error) return res.negotiate(error);
@@ -33,7 +33,7 @@ class BarrelTypeController {
      * @apiGroup BarrelType
      * @apiDescription Unsubscribe from new items
      */
-    static unsubscribe(req, res) {
+     unsubscribe(req, res) {
         BarrelType.unwatch(req);
         BarrelType.find().exec((error, items) => {
             if(error) return res.negotiate(error);
@@ -52,10 +52,10 @@ class BarrelTypeController {
      *
      * @apiUse forbiddenError
      */
-    static find(req, res) {
+     find(req, res) {
 
         // Check permissions
-        if (!Team.can(req, 'barrelType/admin') && !Team.can(req, 'barrelType/read')) {
+        if (!req.team.can('barrelType/admin') && !req.team.can('barrelType/read')) {
             return res.error(403, 'forbidden', 'You are not authorized to read the barrel types.');
         }
 
@@ -94,10 +94,10 @@ class BarrelTypeController {
      * @apiUse badRequestError
      * @apiUse forbiddenError
      */
-    static create(req, res) {
+     create(req, res) {
 
         // Check permissions
-        if (!Team.can(req, 'barrelType/admin')) {
+        if (!req.team.can('barrelType/admin')) {
             return res.error(403, 'forbidden', 'You are not authorized to create an Barrel Type.');
         }
 
@@ -135,10 +135,10 @@ class BarrelTypeController {
      * @apiUse forbiddenError
      * @apiUse notFoundError
      */
-    static update(req, res) {
+     update(req, res) {
 
         // Check permissions
-        if (!Team.can(req, 'barrelType/admin')) {
+        if (!req.team.can('barrelType/admin')) {
             return res.error(403, 'forbidden', 'You are not authorized to update a Barrel Type.');
         }
 
@@ -182,10 +182,10 @@ class BarrelTypeController {
      * @apiUse forbiddenError
      * @apiUse notFoundError
      */
-    static destroy(req, res) {
+     destroy(req, res) {
 
         // Check permissions
-        if(!Team.can(req, 'barrelType/admin')) {
+        if(!req.team.can('barrelType/admin')) {
             return res.error(403, 'forbidden', 'You are not authorized to delete a barrel type.');
         }
 
@@ -222,10 +222,10 @@ class BarrelTypeController {
      * @apiUse forbiddenError
      * @apiUse notFoundError
      */
-    static setBarrelNumber(req, res) {
+     setBarrelNumber(req, res) {
 
         // Check permissions
-        if(!Team.can(req, 'barrelType/admin')) {
+        if(!req.team.can('barrelType/admin')) {
             return res.error(403, 'forbidden', 'You are not authorized to create new barrels.');
         }
 

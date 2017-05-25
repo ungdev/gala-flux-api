@@ -6,12 +6,6 @@ const Controller = require('./Controller');
 
 
 /**
- * UserController
- *
- * @description Create, update and delte User object
- */
-
-/**
  * @apiDefine badRequestError
  * @apiError BadRequest Parameters are not valid for this api endpoint
  * @apiErrorExample BadRequest
@@ -57,14 +51,18 @@ const Controller = require('./Controller');
 
 class UserController extends Controller {
 
+    constructor() {
+        super(Flux.User);
+    }
+
     /**
      * @api {post} /user/subscribe Subscribe to new items
      * @apiName subscribe
      * @apiGroup User
      * @apiDescription Subscribe to all new items.
      */
-    static subscribe(req, res) {
-        // if(Team.can(req, 'user/read') || Team.can(req, 'user/admin')) {
+    subscribe(req, res) {
+        // if(req.team.can('user/read') || req.team.can('user/admin')) {
         //     User.watch(req);
         //     User.find().exec((error, items) => {
         //         if(error) return res.negotiate(error);
@@ -86,7 +84,7 @@ class UserController extends Controller {
      * @apiGroup User
      * @apiDescription Unsubscribe from new items
      */
-    static unsubscribe(req, res) {
+    unsubscribe(req, res) {
         // User.unwatch(req);
         // User.find().exec((error, items) => {
         //     if(error) return res.negotiate(error);
@@ -111,9 +109,7 @@ class UserController extends Controller {
      * @apiSuccess {string} Array.user.name Display name of the user
      * @apiSuccess {id} Array.user.team Associated team ID
      */
-    static find(req, res) {
-        Controller.find(Flux.User, req, res);
-    }
+    // find(req, res) {}
 
     /**
      * @api {post} /user/create Create an user
@@ -131,42 +127,7 @@ class UserController extends Controller {
      * @apiUse badRequestError
      * @apiUse forbiddenError
      */
-    static create(req, res) {
-        // Check permissions
-        if(!Team.can(req, 'user/admin') && !(Team.can(req, 'user/team') && req.param('team') == req.team.id)) {
-            return res.error(403, 'forbidden', 'You are not authorized to create another user in this team.');
-        }
-
-        // Check parameters
-        if(!req.param('login') && !req.param('ip')) {
-            return res.error(400, 'BadRequest', 'Either `ip` or `login` field has to be set.');
-        }
-        else if(req.param('login') && req.param('ip')) {
-            return res.error(400, 'BadRequest', 'Either `ip` or `login` has to be empty.');
-        }
-        Team.findOne({id: req.param('team')}).exec((error, team) => {
-            if(!team) {
-                return res.error(400, 'BadRequest', 'Team id is not valid.');
-            }
-
-            // Create user
-            let user = {};
-            if(req.param('login')) user.login = req.param('login');
-            if(req.param('ip')) user.ip = req.param('ip');
-            if(req.param('name')) user.name = req.param('name');
-            if(req.param('team')) user.team = req.param('team');
-
-            User.create(user).exec((error, user) => {
-                if (error) {
-                    return res.negotiate(error);
-                }
-
-
-
-                return res.ok(user);
-            });
-        })
-    }
+    // create(req, res) {}
 
     /**
      * @api {put} /user/:id Update an user
@@ -186,59 +147,7 @@ class UserController extends Controller {
      * @apiUse forbiddenError
      * @apiUse notFoundError
      */
-    static update(req, res) {
-        // Check permissions 1
-        if(!Team.can(req, 'user/admin') && !(Team.can(req, 'user/team'))) {
-            return res.error(403, 'forbidden', 'You are not authorized to update an user.');
-        }
-
-        // Check parameters
-        if(req.param('login') && req.param('ip')) {
-            return res.error(400, 'BadRequest', 'Either `ip` or `login` has to be empty.');
-        }
-
-        // Find user
-        User.findOne({id: req.param('id')})
-        .exec((error, user) => {
-            if (error) {
-                return res.negotiate(error);
-            }
-            if(!user) {
-                return res.error(404, 'notfound', 'The requested user cannot be found');
-            }
-
-            // Check permissions 2
-            if(Team.can(req, 'user/team') && user.team != req.team.id) {
-                return res.error(403, 'forbidden', 'You are not authorized to update an user from this team.');
-            }
-            else if(Team.can(req, 'user/team') && req.param('team') && req.param('team') != req.team.id) {
-                return res.error(403, 'forbidden', 'You are not authorized to change the team of your user.');
-            }
-
-
-            // Update
-            user.login = req.param('login', user.login);
-            user.ip = req.param('ip', user.ip);
-            user.name = req.param('name', user.name);
-            user.team = req.param('team', user.team);
-
-            // Check team
-            Team.findOne({id: user.team}).exec((error, team) => {
-                if(!team && req.param('team')) {
-                    return res.error(400, 'BadRequest', 'Team id is not valid.');
-                }
-
-                user.save((error) => {
-                    if (error) {
-                        return res.negotiate(error);
-                    }
-
-                    return res.ok(user);
-                });
-            });
-        });
-    }
-
+    // update(req, res) {}
 
     /**
      * @api {delete} /user/:id Delete an user
@@ -252,36 +161,7 @@ class UserController extends Controller {
      * @apiUse forbiddenError
      * @apiUse notFoundError
      */
-    static destroy(req, res) {
-        // Check permissions 1
-        if(!Team.can(req, 'user/admin') && !(Team.can(req, 'user/team'))) {
-            return res.error(403, 'forbidden', 'You are not authorized to update an user.');
-        }
-
-        // Find user
-        User.findOne({id: req.param('id')})
-        .exec((error, user) => {
-            if (error) {
-                return res.negotiate(error);
-            }
-            if(!user) {
-                return res.error(404, 'notfound', 'The requested user cannot be found');
-            }
-
-            // Check permissions 2
-            if(Team.can(req, 'user/team') && user.team != req.team.id) {
-                return res.error(403, 'forbidden', 'You are not authorized to delete an user from this team.');
-            }
-
-            User.destroy({id: user.id})
-            .exec((error) => {
-                if (error) return res.negotiate(error);
-                return res.ok();
-            });
-        });
-    }
-
-
+    // destroy(req, res) {}
 
 
     /**
@@ -331,10 +211,10 @@ class UserController extends Controller {
      *
      * @apiUse badRequestError
      */
-    static etuuttFind(req, res) {
-        if (!sails.config.etuutt.id
-            || !sails.config.etuutt.secret
-            || !sails.config.etuutt.baseUri) {
+    etuuttFind(req, res) {
+        if (!Flux.config.etuutt.id
+            || !Flux.config.etuutt.secret
+            || !Flux.config.etuutt.baseUri) {
             return res.error(501, 'EtuUTTNotConfigured', 'The server is not configured for the API of EtuUTT');
         }
 
@@ -354,7 +234,7 @@ class UserController extends Controller {
             if(data.data && Array.isArray(data.data)) {
                 for (let user of data.data) {
                     // find user official image link
-                    let etuuttLink = Url.parse(sails.config.etuutt.baseUri);
+                    let etuuttLink = Url.parse(Flux.config.etuutt.baseUri);
                     etuuttLink = etuuttLink.protocol + '//' + etuuttLink.host;
                     let imageLink = null;
                     if(user._links && Array.isArray(user._links)) {
@@ -399,9 +279,9 @@ class UserController extends Controller {
      * @apiUse badRequestError
      * @apiUse forbiddenError
      */
-    static uploadAvatar(req, res) {
+    uploadAvatar(req, res) {
         // Check permissions
-        if(!Team.can(req, 'user/admin') && !(Team.can(req, 'user/team'))) {
+        if(!req.team.can('user/admin') && !(req.team.can('user/team'))) {
             return res.error(403, 'forbidden', 'You are not authorized to create another user in this team.');
         }
 
@@ -416,7 +296,7 @@ class UserController extends Controller {
             }
 
             // Check permissions 2
-            if(Team.can(req, 'user/team') && user.team != req.team.id) {
+            if(req.team.can('user/team') && user.team != req.team.id) {
                 return res.error(403, 'forbidden', 'You are not authorized to update an user from this team.');
             }
 
@@ -460,35 +340,36 @@ class UserController extends Controller {
      * @apiDescription Get avatar of the given user. No authentication required.
      * If the user or the avatar is not found, a default avatar will be shown
      */
-    static getAvatar(req, res) {
+    getAvatar(req, res) {
         // Find target user
-        User.findOne({id: req.param('id')})
-        .exec((userError, user) => {
-            fs.access(sails.config.appPath + '/assets/uploads/user/avatar/' + req.param('id'), fs.constants.R_OK, (accessError) => {
-                if (userError || !user || accessError) {
-                    res.setHeader("Content-Disposition", "inline; filename=avatar.png");
-                    res.setHeader("Content-Type", "image/png");
-                    fs.createReadStream(sails.config.appPath + '/assets/images/default-avatar.png')
-                    .on('error', (error) => {
-                        sails.log.error('Error while streaming default avatar:', userError, accessError, error);
-                        res.end();
-                    })
-                    .pipe(res);
-                    return;
-                }
+        Flux.User.findById(req.data.id)
+        .then(user => {
+            if(!user) return Promise.reject();
+            fs.access(sails.config.appPath + '/assets/uploads/user/avatar/' + req.data.id, fs.constants.R_OK, (accessError) => {
+                if(accessError) return Promise.reject(accessError);
 
                 res.setHeader("Content-Disposition", "inline; filename=avatar.jpg");
                 res.setHeader("Content-Type", "image/jpeg");
-                fs.createReadStream(sails.config.appPath + '/assets/uploads/user/avatar/' + user.id)
+                fs.createReadStream(Flux.rootdir + '/assets/uploads/user/avatar/' + user.id)
                 .on('error', (error) => {
-                    sails.log.error('Error while streaming user avatar:', error);
-                    res.end();
+                    return Promise.reject(error);
                 })
                 .pipe(res);
-                return;
             });
+        })
+        .catch(error => {
+            if(error) Flux.error('Error while streaming avatar:', error);
+
+            res.setHeader("Content-Disposition", "inline; filename=avatar.png");
+            res.setHeader("Content-Type", "image/png");
+            fs.createReadStream(Flux.rootdir + '/assets/images/default-avatar.png')
+            .on('error', (error) => {
+                Flux.error('Error while streaming fallback avatar:', error);
+                res.end();
+            })
+            .pipe(res);
         });
     }
-};
+}
 
 module.exports = UserController;

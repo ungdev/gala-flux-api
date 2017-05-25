@@ -1,20 +1,19 @@
-/**
- * SessionController
- *
- * @description :: Server-side logic for managing Sessions
- * @help        :: See http://sailsjs.org/#!/documentation/concepts/Controllers
- */
+const Flux = require('../../Flux');
+const Controller = require('./Controller');
 
-class SessionController {
+class SessionController extends Controller {
 
+    constructor() {
+        super(Flux.Session);
+    }
     /**
      * @api {post} /session/subscribe Subscribe to new items
      * @apiName subscribe
      * @apiGroup Session
      * @apiDescription Subscribe to all new items.
      */
-    static subscribe(req, res) {
-        if (Team.can(req, 'session/read')) {
+     subscribe(req, res) {
+        if (req.team.can('session/read')) {
             Session.watch(req);
             Session.find().exec((error, items) => {
                 if (error) return res.negotiate(error);
@@ -33,7 +32,7 @@ class SessionController {
      * @apiGroup Session
      * @apiDescription Unsubscribe from new items
      */
-    static unsubscribe(req, res) {
+     unsubscribe(req, res) {
         Session.unwatch(req);
         Session.find().exec((error, items) => {
             if (error) return res.negotiate(error);
@@ -42,19 +41,7 @@ class SessionController {
         });
     }
 
-    static find(req, res) {
-        // Check permissions
-        if (!(Team.can(req, 'session/read') )) {
-            return res.error(403, 'forbidden', "You are not allowed to read the sessions");
-        }
-
-        Session.find().exec((error, sessions) => {
-            if (error) return res.negotiate(error);
-            return res.ok(sessions);
-        });
-    }
-
-    static open(req, res) {
+     open(req, res) {
 
         // Debug sessions
         /*

@@ -1,9 +1,5 @@
-/**
- * MessageController
- *
- * @description Get and create messages according to your permissions
- */
-
+const Flux = require('../../Flux');
+const Controller = require('./Controller');
 /**
  * @apiDefine badRequestError
  * @apiError BadRequest Parameters are not valid for this api endpoint
@@ -33,8 +29,11 @@
  *
  */
 
-class MessageController {
+class MessageController extends Controller {
 
+    constructor() {
+        super(Flux.Message);
+    }
 
     /**
      * @api {post} /message/subscribe Subscribe to new messages
@@ -42,51 +41,51 @@ class MessageController {
      * @apiGroup Message
      * @apiDescription Subscribe to all new messages.
      */
-    static subscribe(req, res) {
+     subscribe(req, res) {
         // Receive #group:[groupname] and #[teamname] but can send only in #[teamname]
-        if(Team.can(req, 'message/oneChannel')) {
-            sails.sockets.join(req, 'message/' + ('public:'+Message.toChannel(req.team.name)), () => {
-                sails.sockets.join(req, 'message/' + ('group:'+Message.toChannel(req.team.group)), () => {
-                    return res.ok();
-                });
-            });
-        }
-        // Send/read message to/from everywhere also private channels
-        else if(Team.can(req, 'message/admin')) {
-            Message.watch(req);
-            return res.ok();
-        }
-        // Not compatible with `oneChannel`. Can send and receive in any
-        // public #[teamname] channel, can also receive and send in
-        // its own #group:[groupname] channel
-        else if(Team.can(req, 'message/public')) {
-            let join = [];
-            join.push('message/' + 'public:*');
-
-            // Can send and receive in any #group:[groupname] channel
-            if(Team.can(req, 'message/group')) {
-                join.push('message/' + 'group:*');
-            }
-            // Can only send/receive in your own group
-            else {
-                join.push('message/' + ('group:'+Message.toChannel(req.team.group)));
-            }
-
-            // Can send and receive in its own #private:[teamname] channel
-            if(Team.can(req, 'message/private')) {
-                join.push('message/' + ('private:'+Message.toChannel(req.team.name)));
-            }
-
-            // Process joins
-            async.each(join, (join, cb) => {
-                sails.sockets.join(req, join, cb);
-            }, (error) => {
-                if (error) {
-                    return res.negotiate(error);
-                }
-                return res.ok();
-            });
-        }
+        // if(req.team.can('message/oneChannel')) {
+        //     sails.sockets.join(req, 'message/' + ('public:'+Message.toChannel(req.team.name)), () => {
+        //         sails.sockets.join(req, 'message/' + ('group:'+Message.toChannel(req.team.group)), () => {
+        //             return res.ok();
+        //         });
+        //     });
+        // }
+        // // Send/read message to/from everywhere also private channels
+        // else if(req.team.can('message/admin')) {
+        //     Message.watch(req);
+        //     return res.ok();
+        // }
+        // // Not compatible with `oneChannel`. Can send and receive in any
+        // // public #[teamname] channel, can also receive and send in
+        // // its own #group:[groupname] channel
+        // else if(req.team.can('message/public')) {
+        //     let join = [];
+        //     join.push('message/' + 'public:*');
+        //
+        //     // Can send and receive in any #group:[groupname] channel
+        //     if(req.team.can('message/group')) {
+        //         join.push('message/' + 'group:*');
+        //     }
+        //     // Can only send/receive in your own group
+        //     else {
+        //         join.push('message/' + ('group:'+Message.toChannel(req.team.group)));
+        //     }
+        //
+        //     // Can send and receive in its own #private:[teamname] channel
+        //     if(req.team.can('message/private')) {
+        //         join.push('message/' + ('private:'+Message.toChannel(req.team.name)));
+        //     }
+        //
+        //     // Process joins
+        //     async.each(join, (join, cb) => {
+        //         sails.sockets.join(req, join, cb);
+        //     }, (error) => {
+        //         if (error) {
+        //             return res.negotiate(error);
+        //         }
+        //         return res.ok();
+        //     });
+        // }
 
     }
 
@@ -96,29 +95,29 @@ class MessageController {
      * @apiGroup Message
      * @apiDescription Unsubscribe from new messages
      */
-    static unsubscribe(req, res) {
-        Message.unwatch(req);
-        sails.sockets.leave(req, 'message/' + 'public:*', () => {
-            sails.sockets.leave(req, 'message/' + 'group:*', () => {
-                Team.find().exec((error, teams) => {
-                    if (error) {
-                        return res.negotiate(error);
-                    }
-                    async.each(teams, (team, cb) => {
-                        async.series([
-                            cb => sails.sockets.leave(req, 'message/' + ('group:'+Message.toChannel(team.group)), cb),
-                            cb => sails.sockets.leave(req, 'message/' + ('private:'+Message.toChannel(team.name)), cb),
-                            cb => sails.sockets.leave(req, 'message/' + ('public:'+Message.toChannel(team.name)), cb),
-                        ], cb);
-                    }, (error) => {
-                        if (error) {
-                            return res.negotiate(error);
-                        }
-                        return res.ok();
-                    });
-                });
-            });
-        });
+     unsubscribe(req, res) {
+        // Message.unwatch(req);
+        // sails.sockets.leave(req, 'message/' + 'public:*', () => {
+        //     sails.sockets.leave(req, 'message/' + 'group:*', () => {
+        //         Team.find().exec((error, teams) => {
+        //             if (error) {
+        //                 return res.negotiate(error);
+        //             }
+        //             async.each(teams, (team, cb) => {
+        //                 async.series([
+        //                     cb => sails.sockets.leave(req, 'message/' + ('group:'+Message.toChannel(team.group)), cb),
+        //                     cb => sails.sockets.leave(req, 'message/' + ('private:'+Message.toChannel(team.name)), cb),
+        //                     cb => sails.sockets.leave(req, 'message/' + ('public:'+Message.toChannel(team.name)), cb),
+        //                 ], cb);
+        //             }, (error) => {
+        //                 if (error) {
+        //                     return res.negotiate(error);
+        //                 }
+        //                 return res.ok();
+        //             });
+        //         });
+        //     });
+        // });
     }
 
     /**
@@ -135,56 +134,56 @@ class MessageController {
      * * `private:[teamname]` : For internal private messages inside the team
      * * `group:[groupname]` : For group discutions according to the `group` field in team
      */
-    static find(req, res) {
-        let where = false;
-
-        // Receive #group:[groupname] and #[teamname] but can send only in #[teamname]
-        if(Team.can(req, 'message/oneChannel')) {
-            where = {
-                or: [
-                    {'channel': 'public:'+Message.toChannel(req.team.name)},
-                    {'channel': 'group:'+Message.toChannel(req.team.group)},
-                ]
-            };
-        }
-
-        // Send/read message to/from everywhere also private channels
-        else if(Team.can(req, 'message/admin')) {
-            where = {};
-        }
-
-        // Not compatible with `oneChannel`. Can send and receive in any
-        // public #[teamname] channel, can also receive and send in
-        // its own #group:[groupname] channel
-        else if(Team.can(req, 'message/public')) {
-            where = {
-                or: [
-                    {'channel': {'like': 'public:%'}},
-                    {'channel': 'group:'+Message.toChannel(req.team.group)},
-                ]
-            };
-
-            // Can send and receive in any #group:[groupname] channel
-            if(Team.can(req, 'message/group')) {
-                where.or.push({'channel': {'like': 'group:%'}});
-            }
-
-            // Can send and receive in its own #private:[teamname] channel
-            if(Team.can(req, 'message/private')) {
-                where.or.push({'channel': 'private:'+Message.toChannel(req.team.name)});
-            }
-        }
-
-        Message.find(where).sort('createdAt ASC')
-        .exec((error, messages) => {
-            if (error) {
-                return res.negotiate(error);
-            }
-
-            // Return message list
-            return res.ok(messages);
-        });
-    }
+    //  find(req, res) {
+    //     let where = false;
+    //
+    //     // Receive #group:[groupname] and #[teamname] but can send only in #[teamname]
+    //     if(req.team.can('message/oneChannel')) {
+    //         where = {
+    //             or: [
+    //                 {'channel': 'public:'+Message.toChannel(req.team.name)},
+    //                 {'channel': 'group:'+Message.toChannel(req.team.group)},
+    //             ]
+    //         };
+    //     }
+    //
+    //     // Send/read message to/from everywhere also private channels
+    //     else if(req.team.can('message/admin')) {
+    //         where = {};
+    //     }
+    //
+    //     // Not compatible with `oneChannel`. Can send and receive in any
+    //     // public #[teamname] channel, can also receive and send in
+    //     // its own #group:[groupname] channel
+    //     else if(req.team.can('message/public')) {
+    //         where = {
+    //             or: [
+    //                 {'channel': {'like': 'public:%'}},
+    //                 {'channel': 'group:'+Message.toChannel(req.team.group)},
+    //             ]
+    //         };
+    //
+    //         // Can send and receive in any #group:[groupname] channel
+    //         if(req.team.can('message/group')) {
+    //             where.or.push({'channel': {'like': 'group:%'}});
+    //         }
+    //
+    //         // Can send and receive in its own #private:[teamname] channel
+    //         if(req.team.can('message/private')) {
+    //             where.or.push({'channel': 'private:'+Message.toChannel(req.team.name)});
+    //         }
+    //     }
+    //
+    //     Message.find(where).sort('createdAt ASC')
+    //     .exec((error, messages) => {
+    //         if (error) {
+    //             return res.negotiate(error);
+    //         }
+    //
+    //         // Return message list
+    //         return res.ok(messages);
+    //     });
+    // }
 
 
     /**
@@ -201,7 +200,7 @@ class MessageController {
      * @apiUse badRequestError
      * @apiUse forbiddenError
      */
-    static create(req, res) {
+     create(req, res) {
         // Default values
         let channel = req.param('channel');
         if(!channel) {
@@ -210,7 +209,7 @@ class MessageController {
 
         // Check permissions
         // Receive #group:[groupname] and #[teamname] but can send only in #[teamname]
-        if(Team.can(req, 'message/oneChannel')
+        if(req.team.can('message/oneChannel')
             && channel != 'public:'+Message.toChannel(req.team.name)) {
 
             return res.error(403, 'forbidden', 'You cannot send message in another channel than ' + 'public:'+Message.toChannel(req.team.name));
@@ -219,16 +218,16 @@ class MessageController {
         // Not compatible with `oneChannel`. Can send and receive in any
         // public #[teamname] channel, can also receive and send in
         // its own #group:[groupname] channel
-        else if(Team.can(req, 'message/public')) {
+        else if(req.team.can('message/public')) {
             let authorized = [
                 '^public\:.+$',
                 '^group\:' + Message.toChannel(req.team.group) + '$',
             ];
 
-            if(Team.can(req, 'message/group')) {
+            if(req.team.can('message/group')) {
                 authorized.push('^group\:.+$');
             }
-            if(Team.can(req, 'message/private')) {
+            if(req.team.can('message/private')) {
                 authorized.push('^private\:' + Message.toChannel(req.team.name) + '$');
             }
 
@@ -240,7 +239,7 @@ class MessageController {
             }
         }
         // No permission
-        else if(!Team.can(req, 'message/admin') && !Team.can(req, 'message/public') && !Team.can(req, 'message/oneChannel')) {
+        else if(!req.team.can('message/admin') && !req.team.can('message/public') && !req.team.can('message/oneChannel')) {
             return res.error(403, 'forbidden', 'You are not authorized to send any messages');
         }
 
@@ -277,41 +276,42 @@ class MessageController {
      * @apiDescription Get the list of channels according to read permissions
      * @apiSuccess {Array} list An array of channel name (without #)
      */
-    static getChannels(req, res) {
+     getChannels(req, res) {
         let list = new Set();
 
         // Receive #group:[groupname] and #[teamname] but can send only in #[teamname]
-        if(Team.can(req, 'message/oneChannel')) {
-            list.add('public:'+Message.toChannel(req.team.name));
-            list.add('group:'+Message.toChannel(req.team.group));
+        if(req.team.can('message/oneChannel')) {
+            list.add('public:'+Flux.Message.toChannel(req.team.name));
+            list.add('group:'+Flux.Message.toChannel(req.team.group));
             return res.ok([...list]);
         }
-        else if(Team.can(req, 'message/admin') || Team.can(req, 'message/public')) {
+        else if(req.team.can('message/admin') || req.team.can('message/public')) {
             list.add('public:General');
-            Team.find().exec((error, teams) => {
+            Flux.Team.findAll()
+            .then(teams => {
                 // Public
                 for (let team of teams) {
-                    list.add('public:'+Message.toChannel(team.name));
+                    list.add('public:'+Flux.Message.toChannel(team.name));
                 }
 
                 // Group
-                if(Team.can(req, 'message/group') || Team.can(req, 'message/admin')) {
+                if(req.team.can('message/group') || req.team.can('message/admin')) {
                     for (let team of teams) {
-                        list.add('group:'+Message.toChannel(team.group));
+                        list.add('group:'+Flux.Message.toChannel(team.group));
                     }
                 }
                 else {
-                    list.add('group:'+Message.toChannel(req.team.group));
+                    list.add('group:'+Flux.Message.toChannel(req.team.group));
                 }
 
                 // Private
-                if(Team.can(req, 'message/private')) {
-                    list.add('private:'+Message.toChannel(req.team.name));
+                if(req.team.can('message/private')) {
+                    list.add('private:'+Flux.Message.toChannel(req.team.name));
                 }
-                else if(Team.can(req, 'message/admin')){
+                else if(req.team.can('message/admin')){
                     for (let team of teams) {
-                        if(Team.can(team, 'message/private') || Team.can(team, 'message/admin')) {
-                            list.add('private:'+Message.toChannel(team.name));
+                        if(team.can('message/private') || team.can('message/admin')) {
+                            list.add('private:'+Flux.Message.toChannel(team.name));
                         }
                     }
                 }
@@ -320,6 +320,7 @@ class MessageController {
                 out.sort();
                 return res.ok(out);
             })
+            .catch(res.error);
         }
         else {
             return res.error(403, 'forbidden', 'You are not authorized to read any channel');

@@ -5,7 +5,7 @@
  * @help        :: See http://sailsjs.org/#!/documentation/concepts/Controllers
  */
 
-class BottleActionController {
+class ErrorLogController {
 
     /**
      * @api {post} /errorlog/subscribe Subscribe to new items
@@ -13,8 +13,8 @@ class BottleActionController {
      * @apiGroup ErrorLog
      * @apiDescription Subscribe to all new items.
      */
-    static subscribe(req, res) {
-        if(Team.can(req, 'errorLog/read')) {
+     subscribe(req, res) {
+        if(req.team.can('errorLog/read')) {
             ErrorLog.watch(req);
             ErrorLog.find().exec((error, items) => {
                 if(error) return res.negotiate(error);
@@ -31,7 +31,7 @@ class BottleActionController {
      * @apiGroup ErrorLog
      * @apiDescription Unsubscribe from new items
      */
-    static unsubscribe(req, res) {
+     unsubscribe(req, res) {
         ErrorLog.unwatch(req);
         ErrorLog.find().exec((error, items) => {
             if(error) return res.negotiate(error);
@@ -49,10 +49,10 @@ class BottleActionController {
      *
      * @apiUse forbiddenError
      */
-    static find(req, res) {
+     find(req, res) {
 
         // check permissions
-        if (!(Team.can(req, 'errorLog/read'))) {
+        if (!(req.team.can('errorLog/read'))) {
             return res.error(403, 'forbidden', 'You are not authorized read error logs');
         }
 
@@ -82,7 +82,7 @@ class BottleActionController {
      * @apiUse badRequestError
      * @apiUse forbiddenError
      */
-    static create(req, res) {
+     create(req, res) {
         let ip = (req.ip ? req.ip : req.socket.handshake.address);
         ErrorLog.count({ip: ip}).exec((error, count) => {
             if(error) {

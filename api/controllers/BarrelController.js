@@ -13,8 +13,8 @@ class BarrelController {
      * @apiGroup Barrel
      * @apiDescription Subscribe to all new items.
      */
-    static subscribe(req, res) {
-        if(Team.can(req, 'barrel/read') || Team.can(req, 'barrel/admin')) {
+     subscribe(req, res) {
+        if(req.team.can('barrel/read') || req.team.can('barrel/admin')) {
             Barrel.watch(req);
             Barrel.find().exec((error, items) => {
                 if(error) return res.negotiate(error);
@@ -22,7 +22,7 @@ class BarrelController {
                 return res.ok();
             });
         }
-        else if(Team.can(req, 'barrel/restricted')) {
+        else if(req.team.can('barrel/restricted')) {
             // Join only for update of it own bottles
             sails.sockets.join(req, 'barrel/' + req.team.id, (error) => {
                 if (error) return res.negotiate(error);
@@ -40,7 +40,7 @@ class BarrelController {
      * @apiGroup Barrel
      * @apiDescription Unsubscribe from new items
      */
-    static unsubscribe(req, res) {
+     unsubscribe(req, res) {
         sails.sockets.leave(req, 'barrel/' + req.team.id, () => {
             Barrel.unwatch(req);
             Barrel.find().exec((error, items) => {
@@ -61,10 +61,10 @@ class BarrelController {
      *
      * @apiUse forbiddenError
      */
-    static find(req, res) {
+     find(req, res) {
 
         // Check permissions
-        if (!(Team.can(req, 'barrel/admin') || Team.can(req, 'barrel/read') || Team.can(req, 'barrel/restricted'))) {
+        if (!(req.team.can('barrel/admin') || req.team.can('barrel/read') || req.team.can('barrel/restricted'))) {
             return res.error(403, 'forbidden', 'You are not authorized to read barrels.');
         }
 
@@ -74,7 +74,7 @@ class BarrelController {
             where = req.allParams().filters;
         }
         // if the requester is not admin, show only his team's barrels
-        if (Team.can(req, 'barrel/restricted')) {
+        if (req.team.can('barrel/restricted')) {
             let whereTmp = where;
             where = { place: req.team.id};
             if(whereTmp && Object.keys(whereTmp).length) where.or = whereTmp;
@@ -106,22 +106,22 @@ class BarrelController {
      * @apiUse forbiddenError
      * @apiUse notFoundError
      */
-    static update(req, res) {
+     update(req, res) {
 
         let checkState = false;
 
         // check permissions and parameters
-        if (Team.can(req, 'barrel/admin')) {
+        if (req.team.can('barrel/admin')) {
             // an admin can update both place and state
             if (req.param('state') === undefined && req.param('place') === undefined) {
                 return res.error(400, 'BadRequest', "You must send attributes to update.");
             }
-        } else if (Team.can(req, 'barrel/restricted')) {
+        } else if (req.team.can('barrel/restricted')) {
             // can only update the barrel's state
             if (req.param('state') === undefined) {
                 return res.error(400, 'BadRequest', "Missing barrel's state.");
             }
-        } else if (!Team.can(req, 'barrel/admin')) {
+        } else if (!req.team.can('barrel/admin')) {
             return res.error(403, 'forbidden', 'You are not authorized to update barrels.');
         }
 
@@ -135,7 +135,7 @@ class BarrelController {
                 }
 
                 // if the requester is not admin, check if the barrel belongs to his team
-                if (!Team.can(req, 'barrel/admin') && (req.team.id !== barrel.place)) {
+                if (!req.team.can('barrel/admin') && (req.team.id !== barrel.place)) {
                     return res.error(403, 'forbidden', 'You are not authorized to update this barrel.');
                 }
 
@@ -155,7 +155,7 @@ class BarrelController {
                 }
 
                 // if admin and send a new value for the 'place' attribute
-                if (req.param('place') !== undefined && Team.can(req, 'barrel/admin')) {
+                if (req.param('place') !== undefined && req.team.can('barrel/admin')) {
                     // the place can be null
                     if (req.param('place') === "null" || req.param('place') === null) {
                         barrel.place = null;
@@ -195,10 +195,10 @@ class BarrelController {
      * @apiUse forbiddenError
      * @apiUse notFoundError
      */
-    static setLocation(req, res) {
+     setLocation(req, res) {
 
         // check permissions
-        if (!(Team.can(req, 'barrel/admin'))) {
+        if (!(req.team.can('barrel/admin'))) {
             return res.error(403, 'forbidden', "You are not authorized to update barrels's location.");
         }
 

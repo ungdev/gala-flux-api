@@ -2,12 +2,6 @@ const Flux = require('../../Flux');
 const Controller = require('./Controller');
 
 /**
- * TeamController
- *
- * @description Create, update and delete Team object
- */
-
-/**
  * @apiDefine badRequestError
  * @apiError BadRequest Parameters are not valid for this api endpoint
  * @apiErrorExample BadRequest
@@ -50,19 +44,20 @@ const Controller = require('./Controller');
  *
  */
 
-let test = 'true';
-
 
 class TeamController extends Controller {
 
+    constructor() {
+        super(Flux.Team);
+    }
     /**
      * @api {post} /team/subscribe Subscribe to new items
      * @apiName subscribe
      * @apiGroup Team
      * @apiDescription Subscribe to all new items.
      */
-    static subscribe(req, res) {
-        // if(Team.can(req, 'team/read') || Team.can(req, 'team/admin')) {
+     subscribe(req, res) {
+        // if(req.team.can('team/read') || req.team.can('team/admin')) {
         //     Team.watch(req);
         //     Team.find().exec((error, items) => {
         //         if(error) return res.negotiate(error);
@@ -84,7 +79,7 @@ class TeamController extends Controller {
      * @apiGroup Team
      * @apiDescription Unsubscribe from new items
      */
-    static unsubscribe(req, res) {
+     unsubscribe(req, res) {
         // Team.unwatch(req);
         // Team.find().exec((error, items) => {
         //     if(error) return res.negotiate(error);
@@ -110,9 +105,7 @@ class TeamController extends Controller {
      * @apiSuccess {string} Array.team.location Location of the team in the buildings
      * @apiSuccess {string} Array.team.role Role of the team
      */
-    static find(req, res) {
-        Controller.find(Flux.Team, req, res);
-    }
+    // find(req, res) {}
 
 
     /**
@@ -131,30 +124,7 @@ class TeamController extends Controller {
      * @apiUse badRequestError
      * @apiUse forbiddenError
      */
-    static create(req, res) {
-        // Check permissions
-        if(!Team.can(req, 'team/admin')) {
-            return res.error(403, 'forbidden', 'You are not authorized to create a team.');
-        }
-
-        // Check parameters
-        if(!req.param('role') || !Array.isArray(sails.config.roles[req.param('role')])) {
-            return res.error(400, 'UnknownRole', 'Unknown role.');
-        }
-
-        // Create team
-        let team = {};
-        if(req.param('name')) team.name = req.param('name');
-        if(req.param('group')) team.group = req.param('group');
-        if(req.param('location')) team.location = req.param('location');
-        if(req.param('role')) team.role = req.param('role');
-        Team.create(team).exec((error, team) => {
-            if (error) {
-                return res.negotiate(error);
-            }
-            return res.ok(team);
-        });
-    }
+    // create(req, res) {}
 
     /**
      * @api {put} /team/:id Update a team
@@ -174,41 +144,7 @@ class TeamController extends Controller {
      * @apiUse forbiddenError
      * @apiUse notFoundError
      */
-    static update(req, res) {
-        // Check permissions
-        if(!Team.can(req, 'team/admin')) {
-            return res.error(403, 'forbidden', 'You are not authorized to update a team.');
-        }
-
-        // Check parameters
-        if(req.param('role') && !Array.isArray(sails.config.roles[req.param('role')])) {
-            return res.error(400, 'BadRequest', 'Unknown role.');
-        }
-
-        // Find team
-        Team.findOne({id: req.param('id')})
-        .exec((error, team) => {
-            if (error) {
-                return res.negotiate(error);
-            }
-            if(!team) {
-                return res.error(404, 'notfound', 'The requested team cannot be found');
-            }
-
-            // Update
-            team.name = req.param('name', team.name);
-            team.group = req.param('group', team.group);
-            team.location = req.param('location', team.location);
-            team.role = req.param('role', team.role);
-
-            team.save((error) => {
-                if (error) {
-                    return res.negotiate(error);
-                }
-                return res.ok(team);
-            });
-        });
-    }
+    // update(req, res) {}
 
 
     /**
@@ -223,32 +159,7 @@ class TeamController extends Controller {
      * @apiUse forbiddenError
      * @apiUse notFoundError
      */
-    static destroy(req, res) {
-
-        // Check permissions
-        if(!Team.can(req, 'team/admin')) {
-            return res.error(403, 'forbidden', 'You are not authorized to delete a team.');
-        }
-
-        // Find team
-        Team.findOne({id: req.param('id')})
-        .exec((error, team) => {
-            if (error) {
-                return res.negotiate(error);
-            }
-            if(!team) {
-                return res.error(404, 'notfound', 'The requested team cannot be found');
-            }
-
-            Team.destroy({id: team.id}).exec((error) => {
-                if (error) {
-                    return res.negotiate(error);
-                }
-
-                return res.ok();
-            });
-        });
-    }
-};
+    // destroy(req, res) {}
+}
 
 module.exports = TeamController;

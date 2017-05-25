@@ -61,7 +61,7 @@ class AuthController {
      *     }
      *
      */
-    static ipLogin(req, res) {
+     ipLogin(req, res) {
         Flux.User.find({ where: {ip: req.ip} })
         .then(user => {
             if (!user) {
@@ -75,7 +75,7 @@ class AuthController {
             res.ok({jwt});
         })
         .catch((error) => {
-            res.error500(error);
+            res.error(error);
         });
     }
 
@@ -108,7 +108,7 @@ class AuthController {
      *         }
      *     }
      */
-    static oauthLogin(req, res) {
+     oauthLogin(req, res) {
         if (!Flux.config.etuutt.id
             || !Flux.config.etuutt.secret
             || !Flux.config.etuutt.baseUri) {
@@ -170,7 +170,7 @@ class AuthController {
      *
      * @apiUse badRequestError
      */
-    static oauthLoginSubmit(req, res) {
+     oauthLoginSubmit(req, res) {
         if (!Flux.config.etuutt.id
             || !Flux.config.etuutt.secret
             || !Flux.config.etuutt.baseUri) {
@@ -255,7 +255,7 @@ class AuthController {
      *     }
      *
      */
-    static jwtLogin(req, res) {
+     jwtLogin(req, res) {
         if(!req.data.jwt) {
             return res.error(400, 'BadRequest', 'The parameter `jwt` cannot be found.');
         }
@@ -269,7 +269,7 @@ class AuthController {
             res.ok({jwt});
         })
         .catch((error) => {
-            res.error500(error);
+            res.error(error);
         });
     }
 
@@ -297,9 +297,9 @@ class AuthController {
      *     }
      *
      */
-    static loginAs(req, res) {
+     loginAs(req, res) {
         // Check permissions
-        if(!Team.can(req, 'auth/as')) {
+        if(!req.team.can('auth/as')) {
             return res.error(403, 'forbidden', 'You are not authorized to log in as someone else.');
         }
 
@@ -341,7 +341,7 @@ class AuthController {
      *     }
      *
      */
-    static getRoles(req, res) {
+     getRoles(req, res) {
         return res.ok(Flux.config.roles);
     }
 
@@ -351,7 +351,7 @@ class AuthController {
      * @apiGroup Authentication
      * @apiDescription Will give the disconnected user
      */
-    static logout(req, res) {
+     logout(req, res) {
         const err = Session.handleLogout(req.socket.id, true);
         return err ? res.negotiate(err) : res.ok();
     }

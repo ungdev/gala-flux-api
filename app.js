@@ -7,14 +7,12 @@ const FluxWebSocket = require('./lib/FluxWebSocket');
 const Flux = require('./Flux');
 Flux.initModels();
 
-
 // Configure express
 express.set('trust proxy', Flux.config.server.trustProxy);
-express.use(bodyParser.json());
 
 // Add required middlewares
 express.use(require(Flux.rootdir + '/api/middlewares/extendRes'));
-express.all('*', require(Flux.rootdir + '/api/middlewares/dataParser'));
+express.use(bodyParser.json());
 
 // Init routes and middlewares
 let routes = Flux.config.routes;
@@ -29,6 +27,9 @@ for (let route in routes) {
         // Remove trailing spaces
         path = route.substr(split[0].length + 1).replace(/^\s+|\s+$/gm, '');
     }
+
+    // Init data perser middleware
+    express[method](path, require(Flux.rootdir + '/api/middlewares/dataParser'));
 
     // Init global middlewares
     let middlewares = Flux.config.server.middlewares;
@@ -50,9 +51,10 @@ for (let route in routes) {
     if(routes[route].action || routes[route].action.split('.') != 2) {
         let controller = routes[route].action.split('.')[0];
         let action = routes[route].action.split('.')[1];
-        let func = require(Flux.rootdir + '/api/controllers/' + controller)[action];
-        if(typeof func === 'function') {
-            express[method](path, require(Flux.rootdir + '/api/controllers/' + controller)[action]);
+        if(typeof Flux.controllers[controller][action] === 'function') {
+            express[method](path, (req, res) => {
+                Flux.controllers[controller][action](req, res);
+            });
         }
         else {
             throw new Error('Action from route `' + route + '` cannot be found or is not a function.');

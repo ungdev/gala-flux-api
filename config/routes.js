@@ -37,6 +37,7 @@ module.exports = {
 
     'post /developer/refresh': { action: 'DeveloperController.refresh', middlewares: ['auth', 'requireAuth'] },
 
+    'get /message': { action: 'MessageController.find', middlewares: ['auth', 'requireAuth'] },
     'get /message/channels': { action: 'MessageController.getChannels', middlewares: ['auth', 'requireAuth'] },
     'post /message/subscribe': { action: 'MessageController.subscribe', middlewares: ['auth', 'requireAuth'] },
     'post /message/unsubscribe': { action: 'MessageController.unsubscribe', middlewares: ['auth', 'requireAuth'] },
@@ -44,14 +45,14 @@ module.exports = {
     'get /team': { action: 'TeamController.find', middlewares: ['auth', 'requireAuth'] },
     'put /team/:id': { action: 'TeamController.update', middlewares: ['auth', 'requireAuth'] },
     'post /team': { action: 'TeamController.create', middlewares: ['auth', 'requireAuth'] },
-    'delete /team/:id': { action: 'TeamController.update', middlewares: ['auth', 'requireAuth'] },
+    'delete /team/:id': { action: 'TeamController.destroy', middlewares: ['auth', 'requireAuth'] },
     'post /team/subscribe': { action: 'TeamController.subscribe', middlewares: ['auth', 'requireAuth'] },
     'post /team/unsubscribe': { action: 'TeamController.unsubscribe', middlewares: ['auth', 'requireAuth'] },
 
     'get /user': { action: 'UserController.find', middlewares: ['auth', 'requireAuth'] },
     'put /user/:id': { action: 'UserController.update', middlewares: ['auth', 'requireAuth'] },
     'post /user': { action: 'UserController.create', middlewares: ['auth', 'requireAuth'] },
-    'delete /user/:id': { action: 'UserController.update', middlewares: ['auth', 'requireAuth'] },
+    'delete /user/:id': { action: 'UserController.destroy', middlewares: ['auth', 'requireAuth'] },
     'get /user/etuutt': { action: 'UserController.etuuttFind', middlewares: ['auth', 'requireAuth'] },
     'get /user/avatar/:id': { action: 'UserController.getAvatar' },
     'post /user/avatar/:id': { action: 'UserController.uploadAvatar', middlewares: ['auth', 'requireAuth'] },

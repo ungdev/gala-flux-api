@@ -1,5 +1,6 @@
 const Sequelize = require('sequelize');
 const Flux = require('../../Flux');
+const inheritBaseModel = require('./baseModel');
 
 const User = Flux.sequelize.define('user', {
     login: {
@@ -18,6 +19,9 @@ const User = Flux.sequelize.define('user', {
     name: {
         type: Sequelize.STRING,
         allowNull: false,
+        validate: {
+            notEmpty: true,
+        }
     },
 
     accessToken: {
@@ -27,104 +31,103 @@ const User = Flux.sequelize.define('user', {
     renewToken: {
         type: Sequelize.STRING,
     },
+},
+{
+    validate: {
+        eitherIpOrLogin() {
+            if(Boolean(this.login) == Boolean(this.ip)) {
+                throw new Error('Either `login` or `ip` should be present');
+            }
+        },
+    },
 });
-
-
-/**
- * This function will be called once all models are initialized by Flux Object.
- */
-User.buildReferences = () => {
-    User.belongsTo(Flux.Team, {
+const Model = User;
+Model.buildReferences = () => {
+    // This function will be called once all models are initialized by Flux Object.
+    Model.belongsTo(Flux.Team, {
         foreignKey: { allowNull: false },
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE',
     });
 };
-
-
-
+inheritBaseModel(User);
 
 /**********************************************
- * User groups
+ * Customize User groups
  **********************************************/
-User.getUserReadGroups = function(team, user) {
+Model.getUserReadGroups = (team, user) => {
     let groups = [];
+    if(team.can(Model.name + '/read') || team.can(Model.name + '/admin')) {
+        groups.push('all');
+    }
 
     // You can always read your own team
-    groups.push('read:id:' + user.id);
-    // If you have the right to read all
-    if(team.can('user/read') || team.can('user/admin')) {
-        groups.push('read:all');
+    groups.push('id:' + user.id);
+
+    // If you can only edit member of your team
+    if(team.can(Model.name + '/team')) {
+        groups.push('team:' + team.id);
     }
 
     return groups;
 };
-
-
-User.getUserCreateGroups = function(team, user) {
-    // Only admin can update/create/destroy teams
-    if(team.can('user/admin')) {
-        return ['create:all'];
+Model.getUserCreateGroups = function(team, user) {
+    let groups = [];
+    if(team.can(Model.name + '/admin')) {
+        groups.push('all');
     }
-    return [];
-};
 
-
-User.getUserUpdateGroups = function(team, user) {
-    // Only admin can update/create/destroy teams
-    if(team.can('user/admin')) {
-        return ['update:all'];
+    // If you can only edit member of your team
+    if(team.can(Model.name + '/team')) {
+        groups.push('team:' + team.id);
     }
-    return [];
-};
 
-
-User.getUserDestroyGroups = function(team, user) {
-    // Only admin can update/create/destroy teams
-    if(team.can('user/admin')) {
-        return ['destroy:all'];
-    }
-    return [];
+    return groups;
 };
+Model.getUserUpdateGroups = Model.getUserCreateGroups;
+Model.getUserDestroyGroups = Model.getUserCreateGroups;
 
 /**********************************************
- * Filters
+ * Customize Item groups
  **********************************************/
-User.getFilters = function(team, user) {
+Model.prototype.getReadGroups = function() {
+    return ['id:' + this.id, 'all', 'team:'+this.teamId];
+};
+Model.prototype.getCreateGroups = Model.prototype.getReadGroups;
+Model.prototype.getUpdateGroups = Model.prototype.getReadGroups;
+Model.prototype.getDestroyGroups = Model.prototype.getReadGroups;
+
+/**********************************************
+ * Customize Filters
+ **********************************************/
+Model.getReadFilters = function(team, user) {
     let filters = [];
     let groups = this.getUserReadGroups(team, user);
     for (let group of groups) {
         let split = group.split(':');
         // Can read all
-        if(group == 'read:all') {
-            filters.push(true);
-            return filters;
+        if(group == 'all') {
+            return [{true: true}];
         }
         // Can read only one id
-        else if(split[0] == 'read' && split[1] == 'id') {
-            filters.push({'id': split[2]});
+        else if(split.length == 2 && split[0] == 'id') {
+            filters.push({'id': split[1]});
+        }
+        // Can read only one team
+        else if(split.length == 2 && split[0] == 'team') {
+            filters.push({'teamId': split[1]});
         }
     }
     return filters;
 };
 
-/**********************************************
- * Item group
- **********************************************/
-User.prototype.getReadGroups = function() {
-    return ['read:id:' + this.id, 'read:all'];
-};
-User.prototype.getCreateGroups = function() {
-    return ['create:all'];
-};
-User.prototype.getUpdateGroups = function() {
-    return ['update:all'];
-};
-User.prototype.getDestroyGroups = function() {
-    return ['destroy:all'];
-};
 
-module.exports = User;
+
+
+
+
+
+module.exports = Model;
 
 
 // const faker = require('faker');

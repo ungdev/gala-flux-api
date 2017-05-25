@@ -145,7 +145,7 @@ module.exports = {
         // 'bottleAction/admin',
         // 'bottleType/admin',
         // 'message/private',
-        // 'message/admin',
+        'message/admin',
         'team/admin',
         'ui/admin',
         'user/admin',
