@@ -64,18 +64,19 @@ class UserController extends Controller {
      * @apiDescription Subscribe to all new items.
      */
     static subscribe(req, res) {
-        if(Team.can(req, 'user/read') || Team.can(req, 'user/admin')) {
-            User.watch(req);
-            User.find().exec((error, items) => {
-                if(error) return res.negotiate(error);
-                User.subscribe(req, _.pluck(items, 'id'));
-                return res.ok();
-            });
-        }
-        else {
-            User.subscribe(req, [req.user.id]);
-            return res.ok();
-        }
+        // if(Team.can(req, 'user/read') || Team.can(req, 'user/admin')) {
+        //     User.watch(req);
+        //     User.find().exec((error, items) => {
+        //         if(error) return res.negotiate(error);
+        //         User.subscribe(req, _.pluck(items, 'id'));
+        //         return res.ok();
+        //     });
+        // }
+        // else {
+        //     User.subscribe(req, [req.user.id]);
+        //     return res.ok();
+        // }
+        return res.ok();
     }
 
 
@@ -86,12 +87,13 @@ class UserController extends Controller {
      * @apiDescription Unsubscribe from new items
      */
     static unsubscribe(req, res) {
-        User.unwatch(req);
-        User.find().exec((error, items) => {
-            if(error) return res.negotiate(error);
-            User.unsubscribe(req, _.pluck(items, 'id'));
-            return res.ok();
-        });
+        // User.unwatch(req);
+        // User.find().exec((error, items) => {
+        //     if(error) return res.negotiate(error);
+        //     User.unsubscribe(req, _.pluck(items, 'id'));
+        //     return res.ok();
+        // });
+        return res.ok();
     }
 
     /**

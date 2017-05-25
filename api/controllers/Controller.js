@@ -13,14 +13,16 @@ class Controller {
         if (req.query.filter) {
             where = {
                 $or: where,
-                $and: { $or: JSON.parse(unescape(req.query.filter)) || {} }
+                $and: { $or: req.data || {} }
             };
         }
 
         model.findAll({where})
         .then(res.ok)
-        .catch(res.error500);
+        .catch((error) => {
+            res.error500(error);
+        });
     }
-};
+}
 
 module.exports = Controller;

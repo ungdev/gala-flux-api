@@ -2,12 +2,12 @@ const Sequelize = require('sequelize');
 const Flux = require('../../Flux');
 
 const User = Flux.sequelize.define('user', {
-    login : {
+    login: {
         type: Sequelize.STRING,
         unique: true,
     },
 
-    ip : {
+    ip: {
         type: Sequelize.STRING,
         unique: true,
         validate: {
@@ -15,16 +15,16 @@ const User = Flux.sequelize.define('user', {
         },
     },
 
-    name : {
+    name: {
         type: Sequelize.STRING,
         allowNull: false,
     },
 
-    accessToken : {
+    accessToken: {
         type: Sequelize.STRING,
     },
 
-    renewToken : {
+    renewToken: {
         type: Sequelize.STRING,
     },
 });
@@ -44,6 +44,9 @@ User.buildReferences = () => {
 
 
 
+/**********************************************
+ * User groups
+ **********************************************/
 User.getUserReadGroups = function(team, user) {
     let groups = [];
 
@@ -84,6 +87,9 @@ User.getUserDestroyGroups = function(team, user) {
     return [];
 };
 
+/**********************************************
+ * Filters
+ **********************************************/
 User.getFilters = function(team, user) {
     let filters = [];
     let groups = this.getUserReadGroups(team, user);
@@ -102,18 +108,18 @@ User.getFilters = function(team, user) {
     return filters;
 };
 
+/**********************************************
+ * Item group
+ **********************************************/
 User.prototype.getReadGroups = function() {
     return ['read:id:' + this.id, 'read:all'];
 };
-
 User.prototype.getCreateGroups = function() {
     return ['create:all'];
 };
-
 User.prototype.getUpdateGroups = function() {
     return ['update:all'];
 };
-
 User.prototype.getDestroyGroups = function() {
     return ['destroy:all'];
 };

@@ -1,4 +1,3 @@
-const JWTService = require('../services/JWTService');
 const Flux = require('../../Flux');
 
 /**
@@ -12,11 +11,11 @@ module.exports = function (req, res, next) {
      * @param  {Object} data faculative data object
      */
     res.ok = function(data) {
-        if(typeof data === 'undefined') {
+        if(!data) {
             data = {};
         }
-        if(typeof data !== 'object') {
-            Flux.error('res.ok(data) : `data` should be an object, `' + (typeof data) + '` given');
+        if(typeof data !== 'object' && !Array.isArray(data)) {
+            Flux.error('res.ok(data) : `data` should be an object or an array, `' + (typeof data) + '` given');
             data = {};
         }
 
@@ -30,30 +29,24 @@ module.exports = function (req, res, next) {
      * return res.error(404, 'UserNotFound', 'There is no User with this ID');
      *
      */
-    res.error = function(code, status, message, data) {
-        if(typeof data === 'undefined') {
-            data = {};
-        }
-        if(typeof data !== 'object') {
-            Flux.error('res.error(data) : `data` should be an object, `' + (typeof data) + '` given');
-            data = {};
-        }
-
-        data._error = {
-            code: code,
-            status: status,
-            message: message,
-            req: {
-                method: req.method,
-                uri: req.url,
-                headers: req.headers,
-                params: req.params,
-                query: req.query,
-                body: req.body,
-                user: req.user ? req.user.id : null,
-                team: req.team ? req.team.id : null,
+    res.error = function(code, status, message) {
+        let data = {
+            _error: {
+                code: code,
+                status: status,
+                message: message,
+                req: {
+                    method: req.method,
+                    uri: req.url,
+                    headers: req.headers,
+                    params: req.params,
+                    query: req.query,
+                    body: req.body,
+                    user: req.user ? req.user.id : null,
+                    team: req.team ? req.team.id : null,
+                }
             }
-        };
+        }
 
         return res.status(code).json(data);
     };
@@ -63,12 +56,24 @@ module.exports = function (req, res, next) {
      * Unexpected error. Will throw an error 500
      *
      * Usage:
-     * return res.error(404, 'UserNotFound', 'There is no User with this ID');
+     * return res.error500(new Error('Fatal error'));
      *
      */
     res.error500 = function(error) {
+        Flux.error('Error 500');
         Flux.error(error);
         return res.error(500, 'UnexpectedError', 'Unexpected server error');
+    };
+
+
+    /**
+     * Work like default express json() method excecpt that it will store also
+     * store object in the res object to let websocket access the answer.
+     */
+    res._json = res.json;
+    res.json = function(data) {
+        res.storedJson = data;
+        return res._json(data);
     };
 
     return next();

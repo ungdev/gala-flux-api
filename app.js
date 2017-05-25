@@ -1,9 +1,10 @@
 const express = require('express')();
+const server = require('http').Server(express);
 const bodyParser = require('body-parser');
-// const passport = require('passport');
+const FluxWebSocket = require('./lib/FluxWebSocket');
 
 // Load Flux object
-const Flux = require('./Flux.js');
+const Flux = require('./Flux');
 Flux.initModels();
 
 
@@ -11,21 +12,22 @@ Flux.initModels();
 express.set('trust proxy', Flux.config.server.trustProxy);
 express.use(bodyParser.json());
 
-
-// Add required extend middlewares
+// Add required middlewares
 express.use(require(Flux.rootdir + '/api/middlewares/extendRes'));
+express.all('*', require(Flux.rootdir + '/api/middlewares/dataParser'));
 
 // Init routes and middlewares
 let routes = Flux.config.routes;
 for (let route in routes) {
-    let split = route.split(' ');
+    let split = route.split(/\s+/g);
 
     // Generate method and path
     let method = 'all';
     let path = route;
     if(split.length >= 2) {
         method = split[0];
-        path = route.substr(split[0].length + 1);
+        // Remove trailing spaces
+        path = route.substr(split[0].length + 1).replace(/^\s+|\s+$/gm, '');
     }
 
     // Init global middlewares
@@ -48,7 +50,7 @@ for (let route in routes) {
     if(routes[route].action || routes[route].action.split('.') != 2) {
         let controller = routes[route].action.split('.')[0];
         let action = routes[route].action.split('.')[1];
-        let func = ((req, res) => require(Flux.rootdir + '/api/controllers/' + controller)[action](req, res));
+        let func = require(Flux.rootdir + '/api/controllers/' + controller)[action];
         if(typeof func === 'function') {
             express[method](path, require(Flux.rootdir + '/api/controllers/' + controller)[action]);
         }
@@ -61,7 +63,7 @@ for (let route in routes) {
     }
 }
 
-// Init global middlewares for 404
+// Init global middlewares when 404
 let middlewares = Flux.config.server.middlewares;
 if(middlewares) {
     for (let middleware of middlewares) {
@@ -74,9 +76,13 @@ express.use(require(Flux.rootdir + '/api/middlewares/notFoundHandler'));
 express.use(require(Flux.rootdir + '/api/middlewares/errorHandler'));
 
 // Init express
-express.listen(Flux.config.server.port, Flux.config.server.address, () => {
-    Flux.info('Flux server listening on', Flux.config.server.address, 'port' , Flux.config.server.port);
+server.listen(Flux.config.server.port, Flux.config.server.address, () => {
+    Flux.info('Flux HTTP server listening on', Flux.config.server.address, 'port' , Flux.config.server.port);
 });
+
+// Init web socket
+let websocket = new FluxWebSocket(server);
+
 
 /**
  * app.js

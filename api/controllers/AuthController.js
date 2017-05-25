@@ -1,5 +1,5 @@
 const Flux = require('../../Flux');
-const JWTService = require('../services/JWTService');
+const SessionService = require('../services/SessionService');
 
 /**
  * AuthController
@@ -38,11 +38,14 @@ const JWTService = require('../services/JWTService');
 class AuthController {
 
     /**
-     * @api {post} /login/ip Authenticate user by IP
+     * @api {post} /auth/ip Authenticate user by IP
      * @apiName ipLogin
      * @apiGroup Authentication
      * @apiDescription Will try to authenticate with the IP used by the client
      * that send the request.
+     *
+     * @apiParam {string} deviceId If smartphone app, deviceId is required
+     * @apiParam {string} firebaseToken If smartphone app, firebaseToken is required
      *
      * @apiUse jwtSuccess
      *
@@ -59,27 +62,26 @@ class AuthController {
      *
      */
     static ipLogin(req, res) {
-        Flux.User.findOne({ where: {ip: req.ip} })
+        Flux.User.find({ where: {ip: req.ip} })
         .then(user => {
             if (!user) {
                 return res.error(401, 'IPNotFound', 'There is no User associated with this IP');
             }
 
-            let jwt = JWTService.sign(user);
-
-            if(req.socket) {
-                // TODO save in the session table
-                req.socket.jwt = jwt;
-            }
-
-            return res.ok({jwt});
+            // Create session
+            return SessionService.create(user, req.ip, req.socket.id, req.data.deviceId, req.data.firebaseToken);
         })
-        .catch(res.error500);
+        .then(jwt => {
+            res.ok({jwt});
+        })
+        .catch((error) => {
+            res.error500(error);
+        });
     }
 
 
     /**
-     * @api {get} /login/oauth Initiate OAuth log in
+     * @api {get} /auth/oauth Initiate OAuth log in
      * @apiName oauthLogin
      * @apiGroup Authentication
      *
@@ -107,9 +109,9 @@ class AuthController {
      *     }
      */
     static oauthLogin(req, res) {
-        if (!sails.config.etuutt.id
-            || !sails.config.etuutt.secret
-            || !sails.config.etuutt.baseUri) {
+        if (!Flux.config.etuutt.id
+            || !Flux.config.etuutt.secret
+            || !Flux.config.etuutt.baseUri) {
             return res.error(501, 'EtuUTTNotConfigured', 'The server is not configured for the API of EtuUTT');
         }
 
@@ -120,7 +122,7 @@ class AuthController {
 
 
     /**
-     * @api {post} /login/oauth/submit Submit OAuth log in
+     * @api {post} /auth/oauth/submit Submit OAuth log in
      * @apiName oauthLoginSubmit
      * @apiGroup Authentication
      *
@@ -169,9 +171,9 @@ class AuthController {
      * @apiUse badRequestError
      */
     static oauthLoginSubmit(req, res) {
-        if (!sails.config.etuutt.id
-            || !sails.config.etuutt.secret
-            || !sails.config.etuutt.baseUri) {
+        if (!Flux.config.etuutt.id
+            || !Flux.config.etuutt.secret
+            || !Flux.config.etuutt.baseUri) {
             return res.error(501, 'EtuUTTNotConfigured', 'The server is not configured for the API of EtuUTT');
         }
 
@@ -213,7 +215,7 @@ class AuthController {
                 });
 
 
-                let jwt = JwtService.sign(user);
+                let jwt = JWTService.sign(user);
                 if(req.socket) {
                     req.socket.jwt = jwt;
                 }
@@ -227,7 +229,7 @@ class AuthController {
     }
 
     /**
-     * @api {post} /login/jwt Authenticate user by JWT
+     * @api {post} /auth/jwt Authenticate user by JWT
      * @apiName jwtLogin
      * @apiGroup Authentication
      * @apiDescription This endpoint can be used to renew
@@ -235,6 +237,8 @@ class AuthController {
      * can also be used once to authenticate the whole socket connection.
      *
      * @apiParam {string} jwt A still valid JWT that you've taken from other auth method
+     * @apiParam {string} deviceId If smartphone app, deviceId is required
+     * @apiParam {string} firebaseToken If smartphone app, firebaseToken is required
      *
      * @apiUse jwtSuccess
      * @apiUse badRequestError
@@ -251,28 +255,26 @@ class AuthController {
      *     }
      *
      */
-     static jwtLogin(req, res) {
-         if(!req.param('jwt')) {
-             return res.error(400, 'BadRequest', 'The parameter `jwt` cannot be found.');
-         }
+    static jwtLogin(req, res) {
+        if(!req.data.jwt) {
+            return res.error(400, 'BadRequest', 'The parameter `jwt` cannot be found.');
+        }
 
-        JwtService.verify(req.param('jwt'))
-        .then((user) => {
-            let jwt = JwtService.sign(user);
-            if(req.socket) {
-                req.socket.jwt = jwt;
-            }
-
-            return res.ok({jwt});
+        SessionService.check(req.data.jwt)
+        .then(({session, user}) => {
+            // Create session
+            return SessionService.create(user, req.ip, req.socket.id, req.data.deviceId, req.data.firebaseToken);
+        })
+        .then(jwt => {
+            res.ok({jwt});
         })
         .catch((error) => {
-            console.log(res.error)
-            return res.error(500, 'InvalidJwt', 'The given JWT is not valid : ' + error);
-        })
+            res.error500(error);
+        });
     }
 
     /**
-     * @api {post} /login/as/:id Auth as another user
+     * @api {post} /auth/as/:id Auth as another user
      * @apiName loginAs
      * @apiGroup Authentication
      * @apiDescription Will generate and authenticate with JWT token as another
@@ -311,7 +313,7 @@ class AuthController {
             if (!user) {
                 return res.error(401, 'IdNotFound', 'There is no User associated with this id');
             }
-            let jwt = JwtService.sign(user);
+            let jwt = JWTService.sign(user);
             if(req.socket) {
                 req.socket.jwt = jwt;
             }
@@ -320,7 +322,7 @@ class AuthController {
     }
 
     /**
-     * @api {get} /login/roles Get roles config
+     * @api {get} /auth/roles Get roles config
      * @apiName getRoles
      * @apiGroup Authentication
      * @apiDescription Will give the roles list associated with permissions
@@ -340,7 +342,7 @@ class AuthController {
      *
      */
     static getRoles(req, res) {
-        return res.ok(sails.config.roles);
+        return res.ok(Flux.config.roles);
     }
 
     /**

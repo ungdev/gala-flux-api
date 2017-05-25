@@ -3,18 +3,18 @@ const Flux = require('../../Flux');
 
 const Team = Flux.sequelize.define('team', {
 
-    name : {
+    name: {
         type: Sequelize.STRING,
         allowNull: false,
         unique: true,
     },
 
-    group : {
+    group: {
         type: Sequelize.STRING,
         allowNull: false,
     },
 
-    location : {
+    location: {
         type: Sequelize.STRING,
     },
 
@@ -36,6 +36,9 @@ Team.prototype.can = function(permission) {
 
 
 
+/**********************************************
+ * User groups
+ **********************************************/
 Team.getUserReadGroups = function(team, user) {
     let groups = [];
 
@@ -48,8 +51,6 @@ Team.getUserReadGroups = function(team, user) {
 
     return groups;
 };
-
-
 Team.getUserCreateGroups = function(team, user) {
     // Only admin can update/create/destroy teams
     if(team.can('team/admin')) {
@@ -57,8 +58,6 @@ Team.getUserCreateGroups = function(team, user) {
     }
     return [];
 };
-
-
 Team.getUserUpdateGroups = function(team, user) {
     // Only admin can update/create/destroy teams
     if(team.can('team/admin')) {
@@ -66,8 +65,6 @@ Team.getUserUpdateGroups = function(team, user) {
     }
     return [];
 };
-
-
 Team.getUserDestroyGroups = function(team, user) {
     // Only admin can update/create/destroy teams
     if(team.can('team/admin')) {
@@ -76,6 +73,9 @@ Team.getUserDestroyGroups = function(team, user) {
     return [];
 };
 
+/**********************************************
+ * Filters
+ **********************************************/
 Team.getFilters = function(team, user) {
     let filters = [];
     let groups = this.getUserReadGroups(team, user);
@@ -94,21 +94,22 @@ Team.getFilters = function(team, user) {
     return filters;
 };
 
+/**********************************************
+ * Item group
+ **********************************************/
 Team.prototype.getReadGroups = function() {
     return ['read:id:' + this.id, 'read:all'];
 };
-
 Team.prototype.getCreateGroups = function() {
     return ['create:all'];
 };
-
 Team.prototype.getUpdateGroups = function() {
     return ['update:all'];
 };
-
 Team.prototype.getDestroyGroups = function() {
     return ['destroy:all'];
 };
+
 
 module.exports = Team;
 
