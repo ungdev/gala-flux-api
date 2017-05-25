@@ -35,90 +35,24 @@ class MessageController extends Controller {
         super(Flux.Message);
     }
 
-    /**
-     * @api {post} /message/subscribe Subscribe to new messages
-     * @apiName subscribe
-     * @apiGroup Message
-     * @apiDescription Subscribe to all new messages.
-     */
-     subscribe(req, res) {
-        // Receive #group:[groupname] and #[teamname] but can send only in #[teamname]
-        // if(req.team.can('message/oneChannel')) {
-        //     sails.sockets.join(req, 'message/' + ('public:'+Message.toChannel(req.team.name)), () => {
-        //         sails.sockets.join(req, 'message/' + ('group:'+Message.toChannel(req.team.group)), () => {
-        //             return res.ok();
-        //         });
-        //     });
-        // }
-        // // Send/read message to/from everywhere also private channels
-        // else if(req.team.can('message/admin')) {
-        //     Message.watch(req);
-        //     return res.ok();
-        // }
-        // // Not compatible with `oneChannel`. Can send and receive in any
-        // // public #[teamname] channel, can also receive and send in
-        // // its own #group:[groupname] channel
-        // else if(req.team.can('message/public')) {
-        //     let join = [];
-        //     join.push('message/' + 'public:*');
-        //
-        //     // Can send and receive in any #group:[groupname] channel
-        //     if(req.team.can('message/group')) {
-        //         join.push('message/' + 'group:*');
-        //     }
-        //     // Can only send/receive in your own group
-        //     else {
-        //         join.push('message/' + ('group:'+Message.toChannel(req.team.group)));
-        //     }
-        //
-        //     // Can send and receive in its own #private:[teamname] channel
-        //     if(req.team.can('message/private')) {
-        //         join.push('message/' + ('private:'+Message.toChannel(req.team.name)));
-        //     }
-        //
-        //     // Process joins
-        //     async.each(join, (join, cb) => {
-        //         sails.sockets.join(req, join, cb);
-        //     }, (error) => {
-        //         if (error) {
-        //             return res.negotiate(error);
-        //         }
-        //         return res.ok();
-        //     });
-        // }
 
-    }
 
     /**
-     * @api {post} /message/unsubscribe Unsubscribe from new messages
+     * @api {post} /user/subscribe Subscribe to new items
      * @apiName subscribe
-     * @apiGroup Message
-     * @apiDescription Unsubscribe from new messages
+     * @apiGroup User
+     * @apiDescription Subscribe to all new items.
      */
-     unsubscribe(req, res) {
-        // Message.unwatch(req);
-        // sails.sockets.leave(req, 'message/' + 'public:*', () => {
-        //     sails.sockets.leave(req, 'message/' + 'group:*', () => {
-        //         Team.find().exec((error, teams) => {
-        //             if (error) {
-        //                 return res.negotiate(error);
-        //             }
-        //             async.each(teams, (team, cb) => {
-        //                 async.series([
-        //                     cb => sails.sockets.leave(req, 'message/' + ('group:'+Message.toChannel(team.group)), cb),
-        //                     cb => sails.sockets.leave(req, 'message/' + ('private:'+Message.toChannel(team.name)), cb),
-        //                     cb => sails.sockets.leave(req, 'message/' + ('public:'+Message.toChannel(team.name)), cb),
-        //                 ], cb);
-        //             }, (error) => {
-        //                 if (error) {
-        //                     return res.negotiate(error);
-        //                 }
-        //                 return res.ok();
-        //             });
-        //         });
-        //     });
-        // });
-    }
+    // subscribe(req, res) {}
+
+
+    /**
+     * @api {post} /user/unsubscribe Unsubscribe from new items
+     * @apiName subscribe
+     * @apiGroup User
+     * @apiDescription Unsubscribe from new items
+     */
+    // unsubscribe(req, res) {}
 
     /**
      * @api {get} /message/find Get all messages

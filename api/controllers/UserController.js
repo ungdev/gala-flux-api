@@ -56,115 +56,6 @@ class UserController extends Controller {
     }
 
     /**
-     * @api {post} /user/subscribe Subscribe to new items
-     * @apiName subscribe
-     * @apiGroup User
-     * @apiDescription Subscribe to all new items.
-     */
-    subscribe(req, res) {
-        // if(req.team.can('user/read') || req.team.can('user/admin')) {
-        //     User.watch(req);
-        //     User.find().exec((error, items) => {
-        //         if(error) return res.negotiate(error);
-        //         User.subscribe(req, _.pluck(items, 'id'));
-        //         return res.ok();
-        //     });
-        // }
-        // else {
-        //     User.subscribe(req, [req.user.id]);
-        //     return res.ok();
-        // }
-        return res.ok();
-    }
-
-
-    /**
-     * @api {post} /user/unsubscribe Unsubscribe from new items
-     * @apiName subscribe
-     * @apiGroup User
-     * @apiDescription Unsubscribe from new items
-     */
-    unsubscribe(req, res) {
-        // User.unwatch(req);
-        // User.find().exec((error, items) => {
-        //     if(error) return res.negotiate(error);
-        //     User.unsubscribe(req, _.pluck(items, 'id'));
-        //     return res.ok();
-        // });
-        return res.ok();
-    }
-
-    /**
-     * @api {get} /user/find Find all users and subscribe to them
-     * @apiName find
-     * @apiGroup User
-     * @apiDescription Get the list of all users.
-     *
-     * @apiUse forbiddenError
-     *
-     * @apiSuccess {Array} Array An array of user
-     * @apiSuccess {User} Array.user An user object
-     * @apiSuccess {string} Array.user.login Login of EtuUTT user
-     * @apiSuccess {string} Array.user.ip IP of IP user
-     * @apiSuccess {string} Array.user.name Display name of the user
-     * @apiSuccess {id} Array.user.team Associated team ID
-     */
-    // find(req, res) {}
-
-    /**
-     * @api {post} /user/create Create an user
-     * @apiName create
-     * @apiGroup User
-     * @apiDescription Create an user
-     *
-     * @apiParam {string} login Login of EtuUTT user (required if `ip` empty, but has to be empty if `ip` is filled)
-     * @apiParam {string} ip IP of IP user (required if `login` empty, but has to be empty if `login` is filled)
-     * @apiParam {string} name Display name of the user (required)
-     * @apiParam {id} team Associated team ID (required)
-     *
-     * @apiSuccess {User} user The user that you've juste created
-     *
-     * @apiUse badRequestError
-     * @apiUse forbiddenError
-     */
-    // create(req, res) {}
-
-    /**
-     * @api {put} /user/:id Update an user
-     * @apiName update
-     * @apiGroup User
-     * @apiDescription Update the given user
-     *
-     * @apiParam {id} id Id of the user you want to edit
-     * @apiParam {string} login Login of EtuUTT user (required if `ip` empty, but has to be empty if `ip` is filled)
-     * @apiParam {string} ip IP of IP user (required if `login` empty, but has to be empty if `login` is filled)
-     * @apiParam {string} name Display name of the user (required)
-     * @apiParam {id} team Associated team ID (required)
-     *
-     * @apiSuccess {User} user The user that you've just updated
-     *
-     * @apiUse badRequestError
-     * @apiUse forbiddenError
-     * @apiUse notFoundError
-     */
-    // update(req, res) {}
-
-    /**
-     * @api {delete} /user/:id Delete an user
-     * @apiName destroy
-     * @apiGroup User
-     * @apiDescription Delete the given user
-     *
-     * @apiParam {id} id Id of the user you want to delete
-     *
-     * @apiUse badRequestError
-     * @apiUse forbiddenError
-     * @apiUse notFoundError
-     */
-    // destroy(req, res) {}
-
-
-    /**
      * @api {get} /user/etuutt Search for an user from the etuutt database
      * @apiName etuuttFind
      * @apiGroup User
@@ -302,7 +193,7 @@ class UserController extends Controller {
 
             req.file('avatar').upload({
                 maxBytes: 10000000,
-                dirname: sails.config.appPath + '/assets/uploads/user/avatar/',
+                dirname: Flux.rootdir + '/assets/uploads/user/avatar/',
                 saveAs: user.id,
             },
             (error, uploadedFiles) => {
@@ -315,15 +206,15 @@ class UserController extends Controller {
                 }
 
                 // Resize and move avatar file
-                gm(sails.config.appPath + '/assets/uploads/user/avatar/' + user.id)
+                gm(Flux.rootdir + '/assets/uploads/user/avatar/' + user.id)
                 .resize(200, 200)
                 .noProfile()
                 .setFormat('jpg')
                 .compress('JPEG')
-                .write(sails.config.appPath + '/assets/uploads/user/avatar/' + user.id, (err) => {
+                .write(Flux.rootdir + '/assets/uploads/user/avatar/' + user.id, (err) => {
                     if(error) {
                         // Delete file on error
-                        fs.unlink(sails.config.appPath + '/assets/uploads/user/avatar/' + user.id);
+                        fs.unlink(Flux.rootdir + '/assets/uploads/user/avatar/' + user.id);
                         return res.negotiate(err);
                     }
                     return res.ok();
@@ -345,7 +236,7 @@ class UserController extends Controller {
         Flux.User.findById(req.data.id)
         .then(user => {
             if(!user) return Promise.reject();
-            fs.access(sails.config.appPath + '/assets/uploads/user/avatar/' + req.data.id, fs.constants.R_OK, (accessError) => {
+            fs.access(Flux.rootdir + '/assets/uploads/user/avatar/' + req.data.id, fs.constants.R_OK, (accessError) => {
                 if(accessError) return Promise.reject(accessError);
 
                 res.setHeader("Content-Disposition", "inline; filename=avatar.jpg");
@@ -370,6 +261,96 @@ class UserController extends Controller {
             .pipe(res);
         });
     }
+
+
+
+    /**
+     * @api {post} /user/subscribe Subscribe to new items
+     * @apiName subscribe
+     * @apiGroup User
+     * @apiDescription Subscribe to all new items.
+     */
+    // subscribe(req, res) {}
+
+
+    /**
+     * @api {post} /user/unsubscribe Unsubscribe from new items
+     * @apiName subscribe
+     * @apiGroup User
+     * @apiDescription Unsubscribe from new items
+     */
+    // unsubscribe(req, res) {}
+
+    /**
+     * @api {get} /user/find Find all users and subscribe to them
+     * @apiName find
+     * @apiGroup User
+     * @apiDescription Get the list of all users.
+     *
+     * @apiUse forbiddenError
+     *
+     * @apiSuccess {Array} Array An array of user
+     * @apiSuccess {User} Array.user An user object
+     * @apiSuccess {string} Array.user.login Login of EtuUTT user
+     * @apiSuccess {string} Array.user.ip IP of IP user
+     * @apiSuccess {string} Array.user.name Display name of the user
+     * @apiSuccess {id} Array.user.team Associated team ID
+     */
+    // find(req, res) {}
+
+    /**
+     * @api {post} /user/create Create an user
+     * @apiName create
+     * @apiGroup User
+     * @apiDescription Create an user
+     *
+     * @apiParam {string} login Login of EtuUTT user (required if `ip` empty, but has to be empty if `ip` is filled)
+     * @apiParam {string} ip IP of IP user (required if `login` empty, but has to be empty if `login` is filled)
+     * @apiParam {string} name Display name of the user (required)
+     * @apiParam {id} team Associated team ID (required)
+     *
+     * @apiSuccess {User} user The user that you've juste created
+     *
+     * @apiUse badRequestError
+     * @apiUse forbiddenError
+     */
+    // create(req, res) {}
+
+    /**
+     * @api {put} /user/:id Update an user
+     * @apiName update
+     * @apiGroup User
+     * @apiDescription Update the given user
+     *
+     * @apiParam {id} id Id of the user you want to edit
+     * @apiParam {string} login Login of EtuUTT user (required if `ip` empty, but has to be empty if `ip` is filled)
+     * @apiParam {string} ip IP of IP user (required if `login` empty, but has to be empty if `login` is filled)
+     * @apiParam {string} name Display name of the user (required)
+     * @apiParam {id} team Associated team ID (required)
+     *
+     * @apiSuccess {User} user The user that you've just updated
+     *
+     * @apiUse badRequestError
+     * @apiUse forbiddenError
+     * @apiUse notFoundError
+     */
+    // update(req, res) {}
+
+    /**
+     * @api {delete} /user/:id Delete an user
+     * @apiName destroy
+     * @apiGroup User
+     * @apiDescription Delete the given user
+     *
+     * @apiParam {id} id Id of the user you want to delete
+     *
+     * @apiUse badRequestError
+     * @apiUse forbiddenError
+     * @apiUse notFoundError
+     */
+    // destroy(req, res) {}
+
+
 }
 
 module.exports = UserController;

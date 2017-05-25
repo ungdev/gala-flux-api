@@ -6,40 +6,23 @@ class SessionController extends Controller {
     constructor() {
         super(Flux.Session);
     }
-    /**
-     * @api {post} /session/subscribe Subscribe to new items
-     * @apiName subscribe
-     * @apiGroup Session
-     * @apiDescription Subscribe to all new items.
-     */
-     subscribe(req, res) {
-        if (req.team.can('session/read')) {
-            Session.watch(req);
-            Session.find().exec((error, items) => {
-                if (error) return res.negotiate(error);
-                Session.subscribe(req, _.pluck(items, 'id'));
-                return res.ok();
-            });
-        }
-        else {
-            return res.ok();
-        }
-    }
 
     /**
-     * @api {post} /session/unsubscribe Unsubscribe from new items
+     * @api {post} /user/subscribe Subscribe to new items
      * @apiName subscribe
-     * @apiGroup Session
+     * @apiGroup User
+     * @apiDescription Subscribe to all new items.
+     */
+    // subscribe(req, res) {}
+
+
+    /**
+     * @api {post} /user/unsubscribe Unsubscribe from new items
+     * @apiName subscribe
+     * @apiGroup User
      * @apiDescription Unsubscribe from new items
      */
-     unsubscribe(req, res) {
-        Session.unwatch(req);
-        Session.find().exec((error, items) => {
-            if (error) return res.negotiate(error);
-            Session.unsubscribe(req, _.pluck(items, 'id'));
-            return res.ok();
-        });
-    }
+    // unsubscribe(req, res) {}
 
      open(req, res) {
 

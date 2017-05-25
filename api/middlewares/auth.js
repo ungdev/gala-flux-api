@@ -12,95 +12,78 @@ const Flux = require('../../Flux');
  * TODO update last activity in session even for http
  */
 module.exports = function (req, res, next) {
+    // Find session entry
+    new Promise((resolve, reject) => {
 
-    // If socket session
-    if (req.socket && req.socket.id) {
-        let tmpSession = null;
-
-        // Try to see if there is already a session for this socket
-        Flux.Session.findOne({ where: { socketId: req.socket.id }})
-        .then(session => {
-            if(session) {
-                tmpSession = session;
-
-                // find user
-                return Flux.User.findById(session.userId);
-            }
-            else {
-                // No session found
-                return Promise.reject();
-            }
-        })
-        .then((user) => {
-            console.log('not executed');
-            if(!user) {
-                Flux.warn('User has been deleted.');
-                req.user = null;
-                return Promise.reject();
-            }
-            req.user = user;
-
-            // Find team
-            return Flux.Team.findById(user.teamId)
-        })
-        .then(team => {
-            if(!team) {
-                Flux.warn('We didn\'t find the team associated with the logged in user');
-                req.user = null;
-                return Promise.reject();
-            }
-
-            // Success
-            req.team = team;
-
-            // Update session
-            return SessionService.update(tmpSession, tmpSession.userId, req.ip, req.socket.id, req.data.deviceId, req.data.firebaseToken);
-        })
-        .then(() => next())
-        .catch((error) => {
-            Flux.warn('Error while looking for session', error);
-            return next();
-        });
-    }
-
-    // Http Bearer
-    else if (req.headers && req.headers.authorization) {
-        let parts = req.headers.authorization.split(/\s+/g);
-        if (parts.length === 2 && parts[0].toLowerCase() === 'bearer') {
-            let jwt = parts[1];
-            let tmpSession = null;
-
-            SessionService.check(jwt)
-            .then(({session, user}) => {
-                tmpSession = session;
-                req.user = user;
-                return Flux.Team.findById(user.teamId)
+        // If socket session
+        if (req.socket && req.socket.id) {
+            // Try to find a session by session id
+            Flux.Session.findOne({
+                where: { socketId: req.socket.id },
+                include: [{
+                    model: Flux.User,
+                    include: Flux.Team,
+                }]
             })
-            .then(team => {
-                if(!team) {
-                    Flux.warn('We didn\'t find the team associated with the logged in user');
-                    req.user = null;
-                    return next();
-                }
-
-                // Success
-                req.team = team;
-
-                // Update session
-                return SessionService.update(tmpSession, tmpSession.userId, req.ip, req.socket.id, req.data.deviceId, req.data.firebaseToken);
-            })
-            .then(() => next())
-            .catch((error) => {
-                Flux.warn('The given JWT is not valid', error);
-                return next();
-            });
-
-        } else {
-            Flux.warn('Authentication header found but not in the expected bearer format. Exepected `Authorization: Bearer [token]`');
-            return next();
+            .then(resolve)
+            .then(reject);
         }
-    }
-    else {
+        // If Http Bearer
+        else if (req.headers && req.headers.authorization){
+            // Try read jwt
+            let parts = req.headers.authorization.split(/\s+/g);
+            if (parts.length !== 2 || parts[0].toLowerCase() !== 'bearer') {
+                return reject();
+            }
+            let jwt = parts[1];
+
+            // Try to decode jwt
+            return SessionService.check(jwt)
+            .then((decoded) => {
+                if(decoded && decoded.sessionId) {
+
+                    // Try to find a session by sessionId found in jwt
+                    return Flux.Session.findOne({
+                        where: { id: decoded.sessionId },
+                        include: [{
+                            model: Flux.User,
+                            include: Flux.Team,
+                        }]
+                    })
+                    .then(resolve)
+                    .then(reject);
+                }
+                else {
+                    return reject();
+                }
+            })
+        }
+    })
+    .then(session => {
+        if(session && session.user && session.user.team) {
+            // Save user data to req
+            req.user = session.user;
+            req.team = session.user.team;
+
+            // Pass to the next middleware
+            next();
+
+            // Update session asyncronously
+            // (We don't have to wait for session update before printing ouput)
+            SessionService.update(session, session.userId, req.ip, req.socket.id, req.data.deviceId, req.data.firebaseToken);
+
+        }
+        else {
+            // No session found
+            next();
+        }
+    })
+    .catch((error) => {
+        // Print error only if there is something to print (not just an empty reject)
+        // Anyway, the error will be ignored
+        if(error) {
+            Flux.warn('Error while looking for session', error);
+        }
         return next();
-    }
+    });
 };

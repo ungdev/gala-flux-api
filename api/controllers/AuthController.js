@@ -260,10 +260,19 @@ class AuthController {
             return res.error(400, 'BadRequest', 'The parameter `jwt` cannot be found.');
         }
 
+        let sessionId = null;
         SessionService.check(req.data.jwt)
-        .then(({session, user}) => {
+        .then((decoded) => {
+            sessionId = decoded.sessionId;
+
+            // Find user
+            return Flux.User.findOne({
+                where: { id: decoded.userId },
+            })
+        })
+        .then((user) => {
             // Create session
-            return SessionService.create(user, req.ip, req.socket.id, req.data.deviceId, req.data.firebaseToken);
+            return SessionService.create(user, req.ip, req.socket.id, req.data.deviceId, req.data.firebaseToken, sessionId);
         })
         .then(jwt => {
             res.ok({jwt});

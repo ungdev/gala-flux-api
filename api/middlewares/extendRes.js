@@ -1,6 +1,6 @@
 const Flux = require('../../Flux');
 const Sequelize = require('sequelize');
-const {NotFoundError, ForbiddenError} = require('../../lib/Errors');
+const {NotFoundError, ForbiddenError, BadRequestError} = require('../../lib/Errors');
 
 /**
  * This middleware will extend the res object with some helpers to format response.
@@ -59,13 +59,19 @@ module.exports = function (req, res, next) {
             data._error.message = code.message || 'Not Found';
             return res.status(404).json(data);
         }
-        if(code instanceof ForbiddenError) {
+        else if(code instanceof ForbiddenError) {
             data._error.code = 403;
             data._error.status = 'ForbiddenError';
             data._error.message = code.message || 'Forbidden';
             return res.status(403).json(data);
         }
-        if(code instanceof Sequelize.ValidationError && code.errors) {
+        else if(code instanceof BadRequestError) {
+            data._error.code = 400;
+            data._error.status = 'BadRequestError';
+            data._error.message = code.message || 'Bad Request';
+            return res.status(400).json(data);
+        }
+        else if(code instanceof Sequelize.ValidationError && code.errors) {
             data._error.code = 400;
             data._error.status = 'ValidationError';
             data._error.message = 'Validation error';

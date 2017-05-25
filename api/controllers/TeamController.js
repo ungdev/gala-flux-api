@@ -50,44 +50,24 @@ class TeamController extends Controller {
     constructor() {
         super(Flux.Team);
     }
+
+
     /**
-     * @api {post} /team/subscribe Subscribe to new items
+     * @api {post} /user/subscribe Subscribe to new items
      * @apiName subscribe
-     * @apiGroup Team
+     * @apiGroup User
      * @apiDescription Subscribe to all new items.
      */
-     subscribe(req, res) {
-        // if(req.team.can('team/read') || req.team.can('team/admin')) {
-        //     Team.watch(req);
-        //     Team.find().exec((error, items) => {
-        //         if(error) return res.negotiate(error);
-        //         Team.subscribe(req, _.pluck(items, 'id'));
-        //         return res.ok();
-        //     });
-        // }
-        // else {
-        //     Team.subscribe(req, [req.team.id]);
-        //     return res.ok();
-        // }
-        return res.ok();
-    }
+    // subscribe(req, res) {}
 
 
     /**
-     * @api {post} /team/unsubscribe Unsubscribe from new items
+     * @api {post} /user/unsubscribe Unsubscribe from new items
      * @apiName subscribe
-     * @apiGroup Team
+     * @apiGroup User
      * @apiDescription Unsubscribe from new items
      */
-     unsubscribe(req, res) {
-        // Team.unwatch(req);
-        // Team.find().exec((error, items) => {
-        //     if(error) return res.negotiate(error);
-        //     Team.unsubscribe(req, _.pluck(items, 'id'));
-        //     return res.ok();
-        // });
-        return res.ok();
-    }
+    // unsubscribe(req, res) {}
 
     /**
      * @api {get} /team/find Find all teams and subscribe to them

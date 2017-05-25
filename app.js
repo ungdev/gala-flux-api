@@ -84,6 +84,7 @@ server.listen(Flux.config.server.port, Flux.config.server.address, () => {
 
 // Init web socket
 let websocket = new FluxWebSocket(server);
+Flux.io = websocket.io;
 
 
 /**

@@ -215,6 +215,20 @@ class Flux {
     get env() {
         return (process.env.NODE_ENV ? process.env.NODE_ENV : 'development');
     }
+
+    /**
+     * Set socket io instance
+     */
+    set io(io) {
+        this._io = io;
+    }
+
+    /**
+     * Get socket io instance
+     */
+    get io() {
+        return this._io;
+    }
 }
 
 module.exports = new Flux();

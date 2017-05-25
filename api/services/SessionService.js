@@ -17,14 +17,18 @@ class SessionService {
      * @param  {string} socketId Socket id if its a socket connection
      * @param  {string} deviceId device id if its a smartphone
      * @param  {string} firebaseToken firebaseToken if its a smartphone
+     * @param  {int} oldSessionId facultative session to be replaced
      * @return {Promise} A promise to the generated JWT
      */
-    static create(user, ip, socketId, deviceId, firebaseToken) {
+    static create(user, ip, socketId, deviceId, firebaseToken, oldSessionId) {
+        Flux.info('Oldsession id to delete', oldSessionId)
+
         // Delete session to be replaced
         let or = [];
         if(socketId) or.push({socketId: socketId});
         if(deviceId) or.push({deviceId: deviceId});
         if(firebaseToken) or.push({firebaseToken: firebaseToken});
+        if(oldSessionId) or.push({id: oldSessionId});
         let where = {};
 
         if(or.length) {
@@ -42,13 +46,9 @@ class SessionService {
                 deviceId,
                 firebaseToken,
             });
-            console.log('----------------------- 1 error ', user.id);
             return session.save();
         })
         .then(session => {
-            console.log('----------------------- 2 error ');
-
-                        console.log('New session:', session.id, user.id);
             // Generate jwt with the new session
             let jwt = Jwt.sign(
                 {
@@ -59,10 +59,8 @@ class SessionService {
                 { expiresIn: Flux.config.jwt.expiresIn }
             );
 
-            console.log(user.id);
-
             return Promise.resolve(jwt);
-        })
+        });
     }
 
     /**
@@ -78,24 +76,7 @@ class SessionService {
                 if(error) {
                     return reject(error);
                 }
-
-                let user = null;
-
-                // Check if user and session exists
-                Flux.User.findById(decoded.userId)
-                .then((foundUser) => {
-                    user = foundUser;
-
-                    return Flux.Session.findById(decoded.sessionId);
-                })
-                .then((session) => {
-                    if(!user || !session) {
-                        return reject(new Error('User or session not found.'));
-                    }
-
-                    resolve({session, user});
-                })
-                .catch(reject);
+                resolve(decoded);
             });
         });
     }
@@ -112,6 +93,7 @@ class SessionService {
      * @return {Promise} A promise to the generated JWT
      */
     static update(session, userId, ip, socketId, deviceId, firebaseToken) {
+        Flux.debug('Update session');
         session.userId = userId;
         session.ip = ip;
         session.socketId = socketId;

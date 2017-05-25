@@ -1,3 +1,5 @@
+const Flux = require('../../Flux');
+
 /**
  * Will add default methods and attributes to model before customisation
  */
@@ -74,6 +76,50 @@ function inheritBaseModel(Model) {
         return filters;
     };
 
+
+    /**********************************************
+     * Lifecycle hook
+     * - Send event to sockets that subscribed to this model and can read it
+     **********************************************/
+    let afterHookMacro = function(verb) {
+        return (instance, options) => {
+            let rooms = instance.getReadGroups().map(room => ('model:' + Model.name + ':' + room));
+            Flux.debug('Emit '+verb+' for ' + Model.name + ' id:' + instance.id + ' to', 'model:' + Model.name, rooms);
+            for (let room of rooms) {
+                Flux.io.to(room).emit('model:' + Model.name, {
+                    verb: verb,
+                    id: instance.id,
+                    data: instance,
+                });
+            }
+        };
+    };
+    Model.afterCreate(afterHookMacro('created'));
+    Model.afterUpdate(afterHookMacro('updated'));
+    Model.afterDestroy(afterHookMacro('destroyed'));
+
+    /**********************************************
+     * Bulk hooks
+     * - This will tell sequelize to trigger normal
+     * lifecycle hooks even if it's a bulk action
+     **********************************************/
+    Model.beforeBulkCreate((instances, options) => {
+        options.individualHooks = true;
+    });
+    Model.beforeBulkDestroy((options) => {
+        options.individualHooks = true;
+    });
+    Model.beforeBulkUpdate((options) => {
+        options.individualHooks = true;
+    });
+
+    // TODO test
+    // - bulk update
+    // - bulk create
+    // - bulk delete
+    // - cascade delete
+    // - cascade update
+
     // /**
     //  * Before removing an item from the database
     //  *
@@ -81,7 +127,7 @@ function inheritBaseModel(Model) {
     //  * @param {function} cb the callback
     //  */
     // this.beforeDestroy = function(criteria, cb) {
-    //     global[this._Model.tableName].find(criteria).exec((error, items) => {
+    //     global[Model.tableName].find(criteria).exec((error, items) => {
     //         // Publish destroy event
     //         for (let item of items) {
     //             this._publishDestroy(item.id);
@@ -95,7 +141,7 @@ function inheritBaseModel(Model) {
     //  * @param {id} id id of the destroyed element
     //  */
     // this._publishDestroy = function(id) {
-    //     global[this._Model.tableName].publishDestroy(id);
+    //     global[Model.tableName].publishDestroy(id);
     // }
     //
     //
@@ -112,7 +158,7 @@ function inheritBaseModel(Model) {
     //     }
     //
     //     // Publish
-    //     global[this._Model.tableName]._publishCreate(newlyInsertedRecord);
+    //     global[Model.tableName]._publishCreate(newlyInsertedRecord);
     //
     //     return cb();
     // };
@@ -123,7 +169,7 @@ function inheritBaseModel(Model) {
     //  * @param {object} newlyInsertedRecord New item
     //  */
     // this._publishCreate = function(newlyInsertedRecord) {
-    //     global[this._Model.tableName].publishCreate(newlyInsertedRecord);
+    //     global[Model.tableName].publishCreate(newlyInsertedRecord);
     // };
     //
     //
@@ -134,7 +180,7 @@ function inheritBaseModel(Model) {
     //  * @param {function} cb the callback
     //  */
     // this.beforeUpdate = function(valuesToUpdate, cb) {
-    //     global[this._Model.tableName].findOne({id: valuesToUpdate.id}).exec((error, currentRecord) => {
+    //     global[Model.tableName].findOne({id: valuesToUpdate.id}).exec((error, currentRecord) => {
     //         // Ignore change of some fields to avoid flood
     //         let publish = false;
     //         let keys = [...new Set([...Object.keys(valuesToUpdate), ...Object.keys(currentRecord)])];
@@ -155,7 +201,7 @@ function inheritBaseModel(Model) {
     //             for (let attr of User.hiddenAttr) {
     //                 delete publishValue[attr];
     //             }
-    //             global[this._Model.tableName]._publishUpdate(publishValue.id, publishValue, currentRecord);
+    //             global[Model.tableName]._publishUpdate(publishValue.id, publishValue, currentRecord);
     //         }
     //
     //         return cb();
@@ -170,7 +216,7 @@ function inheritBaseModel(Model) {
     //  * @param {object} currentRecord Current value
     //  */
     // this._publishUpdate = function(id, valuesToUpdate, currentRecord) {
-    //     global[this._Model.tableName].publishUpdate(valuesToUpdate.id, valuesToUpdate);
+    //     global[Model.tableName].publishUpdate(valuesToUpdate.id, valuesToUpdate);
     // }
     //
     //
@@ -187,7 +233,7 @@ function inheritBaseModel(Model) {
     // this.update2 = function(filter, update) {
     //     return {
     //         exec: (cb) => {
-    //             global[this._Model.tableName].find(filter).exec((error, items) => {
+    //             global[Model.tableName].find(filter).exec((error, items) => {
     //                 if(error) return cb(error);
     //
     //                 for (let item of items) {
