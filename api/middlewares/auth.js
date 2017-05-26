@@ -62,6 +62,7 @@ module.exports = function (req, res, next) {
     .then(session => {
         if(session && session.user && session.user.team) {
             // Save user data to req
+            req.session = session;
             req.user = session.user;
             req.team = session.user.team;
 

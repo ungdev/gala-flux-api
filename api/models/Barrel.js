@@ -28,6 +28,7 @@ Model.buildReferences = () => {
     // This function will be called once all models are initialized by Flux Object.
     Model.belongsTo(Flux.BarrelType, {
         hooks: true,
+        as: 'type',
     });
 
     // Place where the barrel is currently
@@ -54,7 +55,7 @@ Barrel.setCount = function(typeId, count) {
 
     // Get current list of barrel
     return Barrel.findAll({ where: {
-        barrelTypeId: typeId,
+        typeId: typeId,
     }})
     .then(barrels => {
         // Insert if the barrel doesn't exists
@@ -72,7 +73,7 @@ Barrel.setCount = function(typeId, count) {
             // If not found, add to insert list
             if(!found) {
                 toInsert.push({
-                    barrelTypeId: typeId,
+                    typeId: typeId,
                     num: i,
                 });
             }

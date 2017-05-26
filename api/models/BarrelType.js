@@ -50,6 +50,7 @@ Model.buildReferences = () => {
         hooks: true,
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE',
+        foreignKey: 'typeId',
     });
 };
 inheritBaseModel(BarrelType);

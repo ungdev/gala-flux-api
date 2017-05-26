@@ -1,11 +1,17 @@
 const express = require('express')();
 const server = require('http').Server(express);
 const bodyParser = require('body-parser');
+const multer = require('multer');
+const cors = require('cors');
 const FluxWebSocket = require('./lib/FluxWebSocket');
 
 // Load Flux object
 const Flux = require('./Flux');
 Flux.initModels();
+
+// Configure multer for file upload into /tmp directory
+let storage = multer.diskStorage({});
+let upload = multer({ storage: storage });
 
 // Configure express
 express.set('trust proxy', Flux.config.server.trustProxy);
@@ -13,6 +19,7 @@ express.set('trust proxy', Flux.config.server.trustProxy);
 // Add required middlewares
 express.use(require(Flux.rootdir + '/api/middlewares/extendRes'));
 express.use(bodyParser.json());
+express.use(cors());
 
 // Init routes and middlewares
 let routes = Flux.config.routes;
@@ -51,6 +58,13 @@ for (let route in routes) {
     if(routes[route].action || routes[route].action.split('.') != 2) {
         let controller = routes[route].action.split('.')[0];
         let action = routes[route].action.split('.')[1];
+
+        // Add file upload middleware via multer
+        if(routes[route].file) {
+            express[method](path, upload.single(routes[route].file));
+        }
+
+        // Add action
         if(typeof Flux.controllers[controller][action] === 'function') {
             express[method](path, (req, res) => {
                 Flux.controllers[controller][action](req, res);

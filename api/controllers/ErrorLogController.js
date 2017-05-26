@@ -48,9 +48,10 @@ class ErrorLogController extends ModelController {
     create(req, res) {
         // User can only create message from himself
         req.data.ip = req.ip;
+        req.data.userId = (req.user ? req.user.id : null);
 
         // Anti flood
-        Flux.ErrorLog.count({where: {ip: ip}})
+        Flux.ErrorLog.count({where: {ip: req.ip}})
         .then(count => {
             if(count >= 100) {
                 throw new Error('IP', ip, 'reach 100 errors. Next errors will not be logged into db');

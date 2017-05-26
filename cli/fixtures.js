@@ -186,12 +186,18 @@ inquirer.prompt({
     Flux.info('Barrel found:', data.length);
     barrels = data;
 
-    // Update randomly 30 barrels
+    // Take only team that can receive barrels
+    barrelTeams = teams.filter(team => {
+        return team.can('ui/receiveStock');
+    });
+
+
+    // Update randomly 50 barrels
     let promises = [];
-    for (var i = 0; i < 30; i++) {
+    for (var i = 0; i < 80; i++) {
         let barrel = faker.random.arrayElement(barrels);
         barrel.state = faker.random.arrayElement(['new', 'opened', 'empty']);
-        barrel.teamId = faker.random.arrayElement(teams).id;
+        barrel.teamId = faker.random.arrayElement(barrelTeams).id;
         promises.push(barrel.save());
     }
 

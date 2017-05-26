@@ -2,6 +2,8 @@ const Url = require('url');
 const fs = require('fs');
 const gm = require('gm');
 const Flux = require('../../Flux');
+const EtuUTTService = require('../services/EtuUTTService');
+const { ExpectedError, BadRequestError, ForbiddenError, NotFoundError } = require('../../lib/Errors');
 const ModelController = require('../../lib/ModelController');
 
 
@@ -103,58 +105,57 @@ class UserController extends ModelController {
      * @apiUse badRequestError
      */
     etuuttFind(req, res) {
-        if (!Flux.config.etuutt.id
-            || !Flux.config.etuutt.secret
-            || !Flux.config.etuutt.baseUri) {
-            return res.error(501, 'EtuUTTNotConfigured', 'The server is not configured for the API of EtuUTT');
-        }
+       if (!Flux.config.etuutt.id
+           || !Flux.config.etuutt.secret
+           || !Flux.config.etuutt.baseUri) {
+           throw new ExpectedError(501, 'EtuUTTNotConfigured', 'The server is not configured for the API of EtuUTT');
+       }
 
         if(!req.user.accessToken || !req.user.refreshToken || !req.user.login) {
-            return res.error(403, 'NotEtuuttUser', 'Authenticated user is not logged in via EtuUTT.');
+            throw new ExpectedError(501, 'NotEtuuttUser', 'Authenticated user is not logged in via EtuUTT');
         }
 
-        if(!req.param('query')) {
-            return res.error(400, 'BadRequest', 'query parameter is missing.');
+        if(!req.data.query) {
+            throw new BadRequestError('`query` parameter is missing.');
         }
 
         let EtuUTT = EtuUTTService(req.user);
         let out = [];
-        EtuUTT.publicUsers({multifield: req.param('query')})
+        EtuUTT.publicUsers({multifield: req.data.query})
         .then((data) => {
-            // Filter user informations
-            if(data.data && Array.isArray(data.data)) {
-                for (let user of data.data) {
-                    // find user official image link
-                    let etuuttLink = Url.parse(Flux.config.etuutt.baseUri);
-                    etuuttLink = etuuttLink.protocol + '//' + etuuttLink.host;
-                    let imageLink = null;
-                    if(user._links && Array.isArray(user._links)) {
-                        for (let link of user._links) {
-                            if(link.rel == 'user.image') {
-                                imageLink = etuuttLink + link.uri;
-                            }
-                            else if(link.rel == 'user.official_image') {
-                                imageLink = etuuttLink + link.uri;
-                                break;
-                            }
-                        }
-                    }
-
-                    // Add to output
-                    out.push({
-                        login: user.login,
-                        name: user.fullName,
-                        avatar: imageLink,
-                    });
-                }
-                return res.ok(out);
+            if(!data.data || !Array.isArray(data.data)) {
+                throw new ExpectedError(500, 'EtuUTTError', 'Unexpected EtuUTT answer format');
             }
 
-            return res.error(500, 'EtuUTTError', 'Unexpected EtuUTT answer format');
+            // Filter user informations
+            for (let user of data.data) {
+                // find user official image link
+                let etuuttLink = Url.parse(Flux.config.etuutt.baseUri);
+                etuuttLink = etuuttLink.protocol + '//' + etuuttLink.host;
+                let imageLink = null;
+                if(user._links && Array.isArray(user._links)) {
+                    for (let link of user._links) {
+                        if(link.rel == 'user.image') {
+                            imageLink = etuuttLink + link.uri;
+                        }
+                        else if(link.rel == 'user.official_image') {
+                            imageLink = etuuttLink + link.uri;
+                            break;
+                        }
+                    }
+                }
+
+                // Add to output
+                out.push({
+                    login: user.login,
+                    name: user.fullName,
+                    avatar: imageLink,
+                });
+            }
+            res.ok(out);
+
         })
-        .catch((error) => {
-            return res.error(500, 'EtuUTTError', 'An error occurs during communications with the api of EtuUTT: ' + error);
-        });
+        .catch(res.error);
     }
 
     /**
@@ -173,54 +174,52 @@ class UserController extends ModelController {
     uploadAvatar(req, res) {
         // Check permissions
         if(!req.team.can('user/admin') && !(req.team.can('user/team'))) {
-            return res.error(403, 'forbidden', 'You are not authorized to create another user in this team.');
+            throw new ForbiddenError('You are not authorized to create another user in this team');
+        }
+
+        if(!req.file || req.file.fieldname != 'avatar') {
+            throw new BadRequestError('`avatar` field is missing or there is more than one file sent.');
         }
 
         // Find target user
-        User.findOne({id: req.param('id')})
-        .exec((error, user) => {
-            if (error) {
-                return res.negotiate(error);
-            }
+        let user;
+        Flux.User.findOne({where: {id: req.data.id}})
+        .then(data => {
+            user = data;
             if(!user) {
-                return res.error(404, 'notfound', 'The requested user cannot be found');
+                throw new NotFoundError('The requested user cannot be found');
             }
 
             // Check permissions 2
             if(req.team.can('user/team') && user.team != req.team.id) {
-                return res.error(403, 'forbidden', 'You are not authorized to update an user from this team.');
+                throw new ForbiddenError('You are not authorized to create another user in this team');
             }
 
-            req.file('avatar').upload({
-                maxBytes: 10000000,
-                dirname: Flux.rootdir + '/assets/uploads/user/avatar/',
-                saveAs: user.id,
-            },
-            (error, uploadedFiles) => {
-                if(error) {
-                    return res.negotiate(err);
-                }
-
-                if (uploadedFiles.length === 0){
-                    return res.error(400, 'BadRequest', 'Missing avatar file');
-                }
-
-                // Resize and move avatar file
-                gm(Flux.rootdir + '/assets/uploads/user/avatar/' + user.id)
+            // Resize and move avatar file
+            return new Promise((resolve, reject) => {
+                gm(req.file.path)
                 .resize(200, 200)
                 .noProfile()
                 .setFormat('jpg')
                 .compress('JPEG')
-                .write(Flux.rootdir + '/assets/uploads/user/avatar/' + user.id, (err) => {
+                .write(Flux.rootdir + '/assets/uploads/user/avatar/' + user.id, (error) => {
                     if(error) {
                         // Delete file on error
-                        fs.unlink(Flux.rootdir + '/assets/uploads/user/avatar/' + user.id);
-                        return res.negotiate(err);
+                        fs.unlink(req.file.path);
+                        throw new Error(error);
                     }
-                    return res.ok();
+                    resolve();
                 });
             });
-        });
+        })
+        .then(() => {
+            // On success update user `updatedAt` field
+            return user.save();
+        })
+        .then(() => {
+            res.ok();
+        })
+        .catch(res.error);
     }
 
     /**
@@ -235,21 +234,24 @@ class UserController extends ModelController {
         // Find target user
         Flux.User.findById(req.data.id)
         .then(user => {
-            if(!user) return Promise.reject();
-            fs.access(Flux.rootdir + '/assets/uploads/user/avatar/' + req.data.id, fs.constants.R_OK, (accessError) => {
-                if(accessError) return Promise.reject(accessError);
+            return new Promise((resolve, reject) => {
+                if(!user) return reject();
+                fs.access(Flux.rootdir + '/assets/uploads/user/avatar/' + req.data.id, fs.constants.R_OK, (accessError) => {
+                    if(accessError) return reject(accessError);
 
-                res.setHeader("Content-Disposition", "inline; filename=avatar.jpg");
-                res.setHeader("Content-Type", "image/jpeg");
-                fs.createReadStream(Flux.rootdir + '/assets/uploads/user/avatar/' + user.id)
-                .on('error', (error) => {
-                    return Promise.reject(error);
-                })
-                .pipe(res);
+                    res.setHeader("Content-Disposition", "inline; filename=avatar.jpg");
+                    res.setHeader("Content-Type", "image/jpeg");
+                    fs.createReadStream(Flux.rootdir + '/assets/uploads/user/avatar/' + user.id)
+                    .on('error', (error) => {
+                        return reject(error);
+                    })
+                    .pipe(res);
+                });
             });
         })
         .catch(error => {
-            if(error) Flux.error('Error while streaming avatar:', error);
+            // Ignore error because it can be normal to have no file
+            // Just replace the image with default avatar
 
             res.setHeader("Content-Disposition", "inline; filename=avatar.png");
             res.setHeader("Content-Type", "image/png");

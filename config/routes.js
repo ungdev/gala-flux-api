@@ -50,6 +50,8 @@ module.exports = {
 
     'post /developer/refresh': { action: 'DeveloperController.refresh', middlewares: ['auth', 'requireAuth'] },
 
+    'post /errorlog': { action: 'ErrorLogController.create', middlewares: ['auth'] },
+
     'get /message': { action: 'MessageController.find', middlewares: ['auth', 'requireAuth'] },
     'post /message': { action: 'MessageController.create', middlewares: ['auth', 'requireAuth'] },
     'get /message/channels': { action: 'MessageController.getChannels', middlewares: ['auth', 'requireAuth'] },
@@ -69,12 +71,11 @@ module.exports = {
     'delete /user/:id': { action: 'UserController.destroy', middlewares: ['auth', 'requireAuth'] },
     'get /user/etuutt': { action: 'UserController.etuuttFind', middlewares: ['auth', 'requireAuth'] },
     'get /user/avatar/:id': { action: 'UserController.getAvatar' },
-    'post /user/avatar/:id': { action: 'UserController.uploadAvatar', middlewares: ['auth', 'requireAuth'] },
+    'post /user/avatar/:id': { action: 'UserController.uploadAvatar', middlewares: ['auth', 'requireAuth'], file: 'avatar' },
     'post /user/subscribe': { action: 'UserController.subscribe', middlewares: ['auth', 'requireAuth'] },
     'post /user/unsubscribe': { action: 'UserController.unsubscribe', middlewares: ['auth', 'requireAuth'] },
 
     'get /session': { action: 'SessionController.find', middlewares: ['auth', 'requireAuth'] },
-    'post /session/open': { action: 'SessionController.open', middlewares: ['auth', 'requireAuth'] },
     'post /session/subscribe': { action: 'SessionController.subscribe', middlewares: ['auth', 'requireAuth'] },
     'post /session/unsubscribe': { action: 'SessionController.unsubscribe', middlewares: ['auth', 'requireAuth'] },
 };

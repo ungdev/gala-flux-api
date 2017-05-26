@@ -28,6 +28,7 @@ Model.buildReferences = () => {
     // This function will be called once all models are initialized by Flux Object.
     Model.belongsTo(Flux.BarrelType, {
         hooks: true,
+        as: 'type',
     });
     // Place where the barrel is currently
     Model.belongsTo(Flux.Team, {

@@ -28,8 +28,12 @@ const User = Flux.sequelize.define('user', {
         type: Sequelize.STRING,
     },
 
-    renewToken: {
+    refreshToken: {
         type: Sequelize.STRING,
+    },
+
+    tokenExpiration: {
+        type: Sequelize.DATE,
     },
 },
 {
@@ -68,6 +72,16 @@ Model.buildReferences = () => {
     });
 };
 inheritBaseModel(User);
+
+/**********************************************
+ * Configure attributes
+ **********************************************/
+
+// Update will be emitted to client only if another attribute has been updated
+Model.ignoredAttrUpdate = ['updatedAt', 'accessToken', 'refreshToken', 'tokenExpiration'];
+
+// Attribute hidden on when sending to client
+Model.hiddenAttr = ['accessToken', 'refreshToken', 'tokenExpiration'];
 
 /**********************************************
  * Customize User groups
@@ -138,17 +152,4 @@ Model.getReadFilters = function(team, user) {
     return filters;
 };
 
-
-
-
-
-
-
 module.exports = Model;
-
-//     // Attribute hidden on when sending to client
-//     this.hiddenAttr = ['accessToken', 'refreshToken', 'tokenExpiration', 'alerts'];
-//
-//     // Update will be emitted to client only if another attribute has been updated
-//     this.ignoredAttrUpdate = ['lastConnection', 'lastDisconnection', 'updatedAt', 'accessToken', 'renewToken', 'alerts'];
-//

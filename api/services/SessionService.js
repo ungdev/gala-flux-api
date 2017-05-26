@@ -97,13 +97,22 @@ class SessionService {
      * @return {Promise} A promise to the generated JWT
      */
     static update(session, userId, ip, socketId, deviceId, firebaseToken) {
-        Flux.debug('Update session');
         session.userId = userId;
         session.ip = ip;
         session.socketId = socketId;
         session.deviceId = deviceId;
         session.firebaseToken = firebaseToken;
 
+        return session.save();
+    }
+
+    /**
+     * disconnect : Called when connexion is lost or when user ask to log out
+     *
+     * @param  {Session} session Session to disconnect
+     */
+    static disconnect(session) {
+        session.disconnectedAt = Sequelize.NOW;
         return session.save();
     }
 

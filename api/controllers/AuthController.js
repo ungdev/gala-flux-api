@@ -1,6 +1,7 @@
 const Flux = require('../../Flux');
 const SessionService = require('../services/SessionService');
-const { ExpectedError } = require('../../lib/Errors');
+const { ExpectedError, BadRequestError, ForbiddenError, NotFoundError } = require('../../lib/Errors');
+const EtuUTTService = require('../services/EtuUTTService');
 
 /**
  * AuthController
@@ -62,7 +63,7 @@ class AuthController {
      *     }
      *
      */
-     ipLogin(req, res) {
+    ipLogin(req, res) {
         Flux.User.find({ where: {ip: req.ip} })
         .then(user => {
             if (!user) {
@@ -111,7 +112,7 @@ class AuthController {
         if (!Flux.config.etuutt.id
             || !Flux.config.etuutt.secret
             || !Flux.config.etuutt.baseUri) {
-            return res.error(501, 'EtuUTTNotConfigured', 'The server is not configured for the API of EtuUTT');
+            throw new ExpectedError(501, 'EtuUTTNotConfigured', 'The server is not configured for the API of EtuUTT');
         }
 
         let redirectUri = EtuUTTService().oauthAuthorize();
@@ -173,58 +174,46 @@ class AuthController {
         if (!Flux.config.etuutt.id
             || !Flux.config.etuutt.secret
             || !Flux.config.etuutt.baseUri) {
-            return res.error(501, 'EtuUTTNotConfigured', 'The server is not configured for the API of EtuUTT');
+            throw new ExpectedError(501, 'EtuUTTNotConfigured', 'The server is not configured for the API of EtuUTT');
         }
 
-        if(!req.param('authorizationCode')) {
-            return res.error(400, 'BadRequest', 'The parameter `authorizationCode` cannot be found.');
+        if(!req.data.authorizationCode) {
+            throw new BadRequestError('The parameter `authorizationCode` cannot be found.');
         }
 
         let EtuUTT = EtuUTTService();
         let tokenObj;
 
-        EtuUTT.oauthTokenByAuthCode(req.param('authorizationCode'))
+        EtuUTT.oauthTokenByAuthCode(req.data.authorizationCode)
         .then((data) => {
             tokenObj = data;
             return EtuUTT.publicUserAccount();
         })
-        .then((etuUTTUser) => {
-            User.attemptLoginAuth(etuUTTUser.data.login, function (err, user) {
-                if (err) {
-                    return res.negotiate(err);
-                }
-                if (!user) {
-                    return res.error(401, 'LoginNotFound', 'There is no User associated with this login');
-                }
-
-                // Update user data
-                user.accessToken = tokenObj.access_token;
-                user.refreshToken = tokenObj.refresh_token;
-                user.tokenExpiration = tokenObj.expires_at;
-                user.login = etuUTTUser.data.login;
-                user.lastConnection = Date.now();
-                if (!user.name) {
-                    user.name = etuUTTUser.data.fullName;
-                }
-
-                user.save((error) => {
-                    if (error) return res.negotiate(error);
-
-                    AlertService.checkTeamActivity(user.team);
-                });
-
-
-                let jwt = JWTService.sign(user);
-                if(req.socket) {
-                    req.socket.jwt = jwt;
-                }
-
-                return res.ok({jwt});
-            });
+        .then((etuttUser) => {
+            // Find user associated witht this login
+            return Flux.User.findOne({ where: {
+                login: etuttUser.data.login,
+            }});
         })
-        .catch((error) => {
-            return res.error(500, 'EtuUTTError', 'An error occurs during communications with the api of EtuUTT: ' + error);
+        .then((user) => {
+            if (!user) {
+                throw new ExpectedError(401, 'LoginNotFound', 'There is no User associated with this login');
+            }
+
+            // Update user data
+            user.accessToken = tokenObj.access_token;
+            user.refreshToken = tokenObj.refresh_token;
+            user.tokenExpiration = tokenObj.expires_at;
+            return user.save();
         })
+        .then((user) => {
+            // Create session
+            return SessionService.create(user, req.ip, req.socket.id, req.data.deviceId, req.data.firebaseToken);
+        })
+        .then(jwt => {
+            res.ok({jwt});
+        })
+        .catch(res.error);
     }
 
     /**
@@ -256,7 +245,7 @@ class AuthController {
      */
      jwtLogin(req, res) {
         if(!req.data.jwt) {
-            return res.error(400, 'BadRequest', 'The parameter `jwt` cannot be found.');
+            throw new BadRequestError('The parameter `jwt` cannot be found.');
         }
 
         let sessionId = null;
@@ -267,7 +256,7 @@ class AuthController {
             // Find user
             return Flux.User.findOne({
                 where: { id: decoded.userId },
-            })
+            });
         })
         .then((user) => {
             // Create session
@@ -306,25 +295,22 @@ class AuthController {
      loginAs(req, res) {
         // Check permissions
         if(!req.team.can('auth/as')) {
-            return res.error(403, 'forbidden', 'You are not authorized to log in as someone else.');
+            throw new ForbiddenError('You are not authorized to log in as someone else.');
         }
 
-        User.findOne({
-            id: req.param('id'),
-        })
-        .exec((error, user) => {
-            if (error) {
-                return res.negotiate(error);
-            }
+        Flux.User.findById(req.data.id)
+        .then((user) => {
             if (!user) {
-                return res.error(401, 'IdNotFound', 'There is no User associated with this id');
+                throw new NotFoundError(401, 'LoginNotFound', 'There is no User associated with this id');
             }
-            let jwt = JWTService.sign(user);
-            if(req.socket) {
-                req.socket.jwt = jwt;
-            }
-            return res.ok({jwt});
-        });
+
+            // Create session
+            return SessionService.create(user, req.ip, req.socket.id, req.data.deviceId, req.data.firebaseToken);
+        })
+        .then(jwt => {
+            res.ok({jwt});
+        })
+        .catch(res.error);
     }
 
     /**
@@ -337,17 +323,17 @@ class AuthController {
      * @apiSuccessExample Success
      *     HTTP/1.1 200 OK
      *     {
-                bar: [
-                    'message/oneChannel',
-                ],
-                log: [
-                    'message/public',
-                    'message/group',
-                ]
+     *           bar: [
+     *               'message/oneChannel',
+     *           ],
+     *           log: [
+     *               'message/public',
+     *               'message/group',
+     *           ]
      *     }
      *
      */
-     getRoles(req, res) {
+    getRoles(req, res) {
         return res.ok(Flux.config.roles);
     }
 
@@ -357,9 +343,12 @@ class AuthController {
      * @apiGroup Authentication
      * @apiDescription Will give the disconnected user
      */
-     logout(req, res) {
-        const err = Session.handleLogout(req.socket.id, true);
-        return err ? res.negotiate(err) : res.ok();
+    logout(req, res) {
+        SessionService.disconnect(req.session)
+        .then(() => {
+            res.ok();
+        })
+        .catch(res.error);
     }
 };
 

@@ -56,4 +56,13 @@ Model.buildReferences = () => {
 inheritBaseModel(ErrorLog);
 
 
+/**********************************************
+ * Customize User groups
+ **********************************************/
+Model.getUserCreateGroups = function(team, user) {
+    // Everyone can create a log, even when not logged in
+    return ['all'];
+};
+
+
 module.exports = Model;

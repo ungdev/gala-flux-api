@@ -32,7 +32,7 @@ const Session = Flux.sequelize.define('session', {
         allowNull: false,
     },
 
-    connectionLost: {
+    disconnectedAt: {
         type: Sequelize.DATE,
     },
 });
@@ -46,6 +46,15 @@ Model.buildReferences = () => {
 };
 inheritBaseModel(Session);
 
+/**********************************************
+ * Configure attributes
+ **********************************************/
+
+// Update will be emitted to client only if another attribute has been updated
+Model.ignoredAttrUpdate = ['updatedAt', 'lastAction', 'firebaseToken', 'deviceId', 'socketId'];
+
+// Attribute hidden on when sending to client
+Model.hiddenAttr = ['firebaseToken', 'deviceId', 'socketId'];
 
 /**********************************************
  * Customize User groups
@@ -58,60 +67,4 @@ Model.getUserCreateGroups = function(team, user) {
 Model.getUserUpdateGroups = Model.getUserCreateGroups;
 Model.getUserDestroyGroups = Model.getUserCreateGroups;
 
-
-
 module.exports = Model;
-
-/*
-    // Attribute hidden on when sending to client
-    hiddenAttr: ['firebaseToken', 'androidId', 'socketId'],
-
-    // Update will be emitted to client only if another attribute has been updated
-    ignoredAttrUpdate: ['firebaseToken', 'androidId', 'socketId', 'createdAt', 'user'],
-
-    /**
-     * When a socket is closed or a user clicked on the logout button, update the session
-     * @param {string} socketId
-     * @param {boolean} requested if the logout is requested by user, we can even delete android sessions
-     * @return {boolean} update success
-     *
-    handleLogout: function(socketId, requested) {
-
-        // get the session with this socket id
-        Session.findOne({socketId}).exec((err, session) => {
-            if (err) return err;
-
-            // session already destroyed (disconnected and then close the browser tab for example)
-            if (!session) return null;
-
-            // if the session has a firebase token, update the disconnectedAt value
-            if (session.firebaseToken && !requested) {
-                session.disconnectedAt = Date.now();
-                session.save(err => {
-                    if (err) return err;
-
-                    callCheckTeamActivity(session.user);
-                    return null;
-                });
-            } else {
-                // the device doesn't have a firebase token, so delete the session because this one will not be opened again
-                Session.destroy({id: session.id}).exec(err => {
-                    if (err) return err;
-
-                    callCheckTeamActivity(session.user);
-                    return null;
-                });
-            }
-        });
-    }
-
-};
-
-function callCheckTeamActivity(userId) {
-    User.findOne({id: userId}).exec((err, user) => {
-        if (!err && user) {
-            AlertService.checkTeamActivity(user.team);
-        }
-    });
-}
-*/
