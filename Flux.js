@@ -157,10 +157,11 @@ class Flux {
     get sequelize() {
         // Connect to db if necessary
         if (!this._sequelize) {
-            // TODO use configuration
+            // TODO use configuration file
             this._sequelize = new Sequelize('flux', 'root', '', {
                 host: 'localhost',
                 dialect: 'mysql',
+                logging: false,
             });
             this._sequelize.sync();
         }

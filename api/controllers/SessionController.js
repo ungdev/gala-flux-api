@@ -1,7 +1,7 @@
 const Flux = require('../../Flux');
-const Controller = require('./Controller');
+const ModelController = require('../../lib/ModelController');
 
-class SessionController extends Controller {
+class SessionController extends ModelController {
 
     constructor() {
         super(Flux.Session);

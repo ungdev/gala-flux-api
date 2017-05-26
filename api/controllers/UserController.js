@@ -2,7 +2,7 @@ const Url = require('url');
 const fs = require('fs');
 const gm = require('gm');
 const Flux = require('../../Flux');
-const Controller = require('./Controller');
+const ModelController = require('../../lib/ModelController');
 
 
 /**
@@ -49,7 +49,7 @@ const Controller = require('./Controller');
  */
 
 
-class UserController extends Controller {
+class UserController extends ModelController {
 
     constructor() {
         super(Flux.User);

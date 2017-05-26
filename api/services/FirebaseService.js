@@ -112,7 +112,7 @@ class FirebaseService {
                         let team = teams[session.user.team][0];
                         if(Team.can(team, 'alert/read') || Team.can(team, 'alert/admin') ||
                         (Team.can(team, 'alert/restrictedReceiver') && alert.receiver == team.id) ||
-                        (Team.can(team, 'ui/receiveDefaultAlerts') && !alert.receiver)) {
+                        (Team.can(team, 'alert/nullReceiver') && !alert.receiver)) {
                             receivers.push(session.firebaseToken);
                         }
                     }

@@ -21,7 +21,9 @@ class SessionService {
      * @return {Promise} A promise to the generated JWT
      */
     static create(user, ip, socketId, deviceId, firebaseToken, oldSessionId) {
-        Flux.info('Oldsession id to delete', oldSessionId)
+        if(!user) {
+            return Promise.reject(new Error('User is null'));
+        }
 
         // Delete session to be replaced
         let or = [];
@@ -58,6 +60,8 @@ class SessionService {
                 Flux.config.jwt.secret,
                 { expiresIn: Flux.config.jwt.expiresIn }
             );
+
+            console.log('jwt', jwt)
 
             return Promise.resolve(jwt);
         });

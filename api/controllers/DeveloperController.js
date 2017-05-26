@@ -1,21 +1,17 @@
-/**
- * SessionController
- *
- * @description :: Server-side logic for managing Sessions
- * @help        :: See http://sailsjs.org/#!/documentation/concepts/Controllers
- */
+const Flux = require('../../Flux');
+const { ForbiddenError } = require('../../lib/Errors');
 
 class DeveloperController {
 
      refresh(req, res) {
         if (!(req.team.can('developer/refresh') )) {
-            return res.error(403, 'forbidden', "You are not allowed to start a global refresh");
+            throw new ForbiddenError('You are not allowed to start a global refresh');
         }
 
-        sails.sockets.blast('refresh');
+        Flux.io.emit('refresh');
 
         return res.ok();
     }
-};
+}
 
 module.exports = DeveloperController;

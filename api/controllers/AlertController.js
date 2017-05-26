@@ -1,39 +1,19 @@
-/**
- * AlertController
- *
- * @description :: Server-side logic for managing alerts
- * @help        :: See http://sailsjs.org/#!/documentation/concepts/Controllers
- *
- */
+const Flux = require('../../Flux');
+const { ExpectedError } = require('../../lib/Errors');
+const ModelController = require('../../lib/ModelController');
 
-class AlertController {
+class AlertController extends ModelController {
 
+    constructor() {
+        super(Flux.Alert);
+    }
     /**
      * @api {post} /alert/subscribe Subscribe to new items
      * @apiName subscribe
      * @apiGroup Alert
      * @apiDescription Subscribe to all new items.
      */
-     subscribe(req, res) {
-        // if(req.team.can('alert/read') || req.team.can('alert/admin')) {
-        //     Alert.watch(req);
-        //     Alert.find().exec((error, items) => {
-        //         if(error) return res.negotiate(error);
-        //         Alert.subscribe(req, _.pluck(items, 'id'));
-        //         return res.ok();
-        //     });
-        // }
-        // else if(req.team.can('alert/restrictedSender') || req.team.can('alert/restrictedReceiver')) {
-        //     // Join only for update of it own bottles
-        //     sails.sockets.join(req, 'alert/' + req.team.id, (error) => {
-        //         if (error) return res.negotiate(error);
-        //         return res.ok();
-        //     });
-        // }
-        // else {
-        //     return res.ok();
-        // }
-    }
+    //  subscribe(req, res) {}
 
     /**
      * @api {post} /alert/unsubscribe Unsubscribe from new items
@@ -41,16 +21,7 @@ class AlertController {
      * @apiGroup Alert
      * @apiDescription Unsubscribe from new items
      */
-     unsubscribe(req, res) {
-        // sails.sockets.leave(req, 'alert/' + req.team.id, () => {
-        //     Alert.unwatch(req);
-        //     Alert.find().exec((error, items) => {
-        //         if(error) return res.negotiate(error);
-        //         Alert.unsubscribe(req, _.pluck(items, 'id'));
-        //         return res.ok();
-        //     });
-        // });
-    }
+    //  unsubscribe(req, res) {}
 
     /**
      * @api {get} /alert
@@ -62,44 +33,7 @@ class AlertController {
      *
      * @apiUse forbiddenError
      */
-     find(req, res) {
-        // Check permissions
-        // if (!(req.team.can('alert/admin') || req.team.can('alert/read') || req.team.can('alert/restrictedSender') || req.team.can('alert/restrictedReceiver'))) {
-        //     return res.error(403, 'forbidden', 'You are not authorized to read alerts.');
-        // }
-        //
-        // // read filters
-        // let where = {};
-        // if (req.allParams().filters) {
-        //     where = req.allParams().filters;
-        // }
-        // // if the requester is not admin, show only his team's alert
-        // if (req.team.can('alert/restrictedSender')) {
-        //     let whereTmp = where;
-        //     where = {
-        //         severity: {'!': 'done'},
-        //         sender: req.team.id,
-        //     };
-        //     if(whereTmp && Object.keys(whereTmp).length) where.or = whereTmp;
-        // }
-        // else if (req.team.can('alert/restrictedReceiver')) {
-        //     let whereTmp = where;
-        //     where = {
-        //         receiver: req.team.id,
-        //     };
-        //     if(whereTmp && Object.keys(whereTmp).length) where.or = whereTmp;
-        // }
-        //
-        // // Find alerts
-        // Alert.find(where)
-        // .exec((error, alerts) => {
-        //     if (error) {
-        //         return res.negotiate(error);
-        //     }
-
-            return res.ok({alerts: 'bite'});
-        // });
-    }
+    //  find(req, res) {}
 
     /**
      * @api {put} /alert/:id
@@ -116,63 +50,7 @@ class AlertController {
      * @apiUse forbiddenError
      * @apiUse notFoundError
      */
-     update(req, res) {
-
-        // Check permissions
-        if (!(req.team.can('alert/admin') || req.team.can('alert/restrictedSender') || req.team.can('alert/restrictedReceiver'))) {
-            return res.error(403, 'forbidden', 'You are not authorized to update alerts.');
-        }
-
-        // Check parameters
-        if (!req.param('id')) {
-            return res.error(400, 'BadRequest', "Missing 'id' parameter.");
-        }
-        if (!req.param('severity') && req.param('message') === undefined) {
-            return res.error(400, 'BadRequest', "Nothing to update.");
-        }
-
-        // get the Alert to update
-        Alert.findOne({id: req.param('id')})
-            .exec((error, alert) => {
-                if (error) {
-                    return res.negotiate(error);
-                }
-                if (!alert) {
-                    return res.error(404, 'notFound', 'The requested alert cannot be found');
-                }
-
-                // if the request can only update from his team, check the sender
-                // else, check if the requester is in the receiver team
-                if ((req.team.can('alert/restrictedSender') && (alert.sender !== req.team.id || alert.severity == 'done')) ||
-                (req.team.can('alert/restrictedReceiver') && alert.receiver != req.team.id)) {
-                    return res.error(403, 'forbidden', 'You are not allowed to update this alert.');
-                }
-
-                if (req.param('severity')) {
-                    alert.severity = req.param('severity');
-                }
-
-                if (req.param('message') !== undefined) {
-                    alert.message = req.param('message');
-                }
-
-                alert.save((error) => {
-                    if (error) {
-                        return res.negotiate(error);
-                    }
-
-                    // push this modification in the alert history
-                    AlertHistory.pushToHistory(alert, (error, result) => {
-                        if (error) {
-                            return res.negotiate(error);
-                        }
-
-                        return res.ok(alert);
-                    });
-                });
-            });
-
-    }
+    //  update(req, res) {}
 
     /**
      * @api {put} /alert/:id/users

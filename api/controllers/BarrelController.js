@@ -1,11 +1,12 @@
-/**
- * BarrelController
- *
- * @description :: Server-side logic for managing Barrels
- * @help        :: See http://sailsjs.org/#!/documentation/concepts/Controllers
- */
+const Flux = require('../../Flux');
+const { ExpectedError } = require('../../lib/Errors');
+const ModelController = require('../../lib/ModelController');
 
-class BarrelController {
+class BarrelController extends ModelController {
+
+    constructor() {
+        super(Flux.Barrel);
+    }
 
     /**
      * @api {post} /barrel/subscribe Subscribe to new items
@@ -13,26 +14,7 @@ class BarrelController {
      * @apiGroup Barrel
      * @apiDescription Subscribe to all new items.
      */
-     subscribe(req, res) {
-        if(req.team.can('barrel/read') || req.team.can('barrel/admin')) {
-            Barrel.watch(req);
-            Barrel.find().exec((error, items) => {
-                if(error) return res.negotiate(error);
-                Barrel.subscribe(req, _.pluck(items, 'id'));
-                return res.ok();
-            });
-        }
-        else if(req.team.can('barrel/restricted')) {
-            // Join only for update of it own bottles
-            sails.sockets.join(req, 'barrel/' + req.team.id, (error) => {
-                if (error) return res.negotiate(error);
-                return res.ok();
-            });
-        }
-        else {
-            return res.ok();
-        }
-    }
+    //  subscribe(req, res) {}
 
     /**
      * @api {post} /barrel/unsubscribe Unsubscribe from new items
@@ -40,16 +22,7 @@ class BarrelController {
      * @apiGroup Barrel
      * @apiDescription Unsubscribe from new items
      */
-     unsubscribe(req, res) {
-        sails.sockets.leave(req, 'barrel/' + req.team.id, () => {
-            Barrel.unwatch(req);
-            Barrel.find().exec((error, items) => {
-                if(error) return res.negotiate(error);
-                Barrel.unsubscribe(req, _.pluck(items, 'id'));
-                return res.ok();
-            });
-        });
-    }
+    //  unsubscribe(req, res) {}
 
     /**
      * @api {get} /barrel
@@ -61,36 +34,7 @@ class BarrelController {
      *
      * @apiUse forbiddenError
      */
-     find(req, res) {
-
-        // Check permissions
-        if (!(req.team.can('barrel/admin') || req.team.can('barrel/read') || req.team.can('barrel/restricted'))) {
-            return res.error(403, 'forbidden', 'You are not authorized to read barrels.');
-        }
-
-        // read filters
-        let where = null;
-        if (req.allParams().filters) {
-            where = req.allParams().filters;
-        }
-        // if the requester is not admin, show only his team's barrels
-        if (req.team.can('barrel/restricted')) {
-            let whereTmp = where;
-            where = { place: req.team.id};
-            if(whereTmp && Object.keys(whereTmp).length) where.or = whereTmp;
-        }
-
-        // Find barrels
-        Barrel.find(where)
-        .exec((error, barrels) => {
-            if (error) {
-                return res.negotiate(error);
-            }
-
-            return res.ok(barrels);
-        });
-
-    }
+    //  find(req, res) {}
 
     /**
      * @api {put} /barrel/:id
@@ -106,82 +50,7 @@ class BarrelController {
      * @apiUse forbiddenError
      * @apiUse notFoundError
      */
-     update(req, res) {
-
-        let checkState = false;
-
-        // check permissions and parameters
-        if (req.team.can('barrel/admin')) {
-            // an admin can update both place and state
-            if (req.param('state') === undefined && req.param('place') === undefined) {
-                return res.error(400, 'BadRequest', "You must send attributes to update.");
-            }
-        } else if (req.team.can('barrel/restricted')) {
-            // can only update the barrel's state
-            if (req.param('state') === undefined) {
-                return res.error(400, 'BadRequest', "Missing barrel's state.");
-            }
-        } else if (!req.team.can('barrel/admin')) {
-            return res.error(403, 'forbidden', 'You are not authorized to update barrels.');
-        }
-
-        Barrel.findOne({id: req.param('id')})
-            .exec((error, barrel) => {
-                if (error) {
-                    return res.negotiate(error);
-                }
-                if (!barrel) {
-                    return res.error(404, 'notFound', 'The requested barrel cannot be found');
-                }
-
-                // if the requester is not admin, check if the barrel belongs to his team
-                if (!req.team.can('barrel/admin') && (req.team.id !== barrel.place)) {
-                    return res.error(403, 'forbidden', 'You are not authorized to update this barrel.');
-                }
-
-                // if the requester sent a new value for the 'state' attribute
-                if (req.param('state') !== undefined) {
-                    // check if the state can be set with this new value (next or previous state).
-                    // because it's not allowed to move from new to empty for example
-                    if (!isStateValid(req.param('state'), barrel.state)) {
-                        return res.error(400, 'BadRequest', "You are not allowed to set the state with this value.");
-                    }
-                    // check if an alert has to be sent or removed
-                    if ((barrel.state === "new" && req.param("state") === "opened") || (barrel.state === "opened" && req.param("state") === "new")) {
-                        checkState = true;
-                    }
-                    // set the state
-                    barrel.state = req.param('state');
-                }
-
-                // if admin and send a new value for the 'place' attribute
-                if (req.param('place') !== undefined && req.team.can('barrel/admin')) {
-                    // the place can be null
-                    if (req.param('place') === "null" || req.param('place') === null) {
-                        barrel.place = null;
-                        return updateBarrel(barrel, req, res, checkState);
-                    }
-                    // if not null, check if the team exists
-                    Team.findOne({id: req.param('place')})
-                        .exec((error, team) => {
-                            if (error) {
-                                return res.negotiate(error);
-                            }
-                            if(!team) {
-                                return res.error(404, 'notfound', 'The requested team cannot be found');
-                            }
-
-                            // the team exists, save the barrel with this new place
-                            barrel.place = team;
-                            return updateBarrel(barrel, req, res, checkState);
-                        });
-                } else {
-                    return updateBarrel(barrel, req, res, checkState);
-                }
-
-            });
-
-    }
+     update(req, res) {}
 
     /**
      * @api {put} /barrel/location
@@ -224,7 +93,7 @@ class BarrelController {
                                 if (error) return reject(error);
 
                                 // log the barrel state
-                                BarrelHistory.pushToHistory(barrel, (error, barrelHistory) => {
+                                BarrelLog.pushToHistory(barrel, (error, barrelHistory) => {
                                     if (error) return reject(error);
 
 
@@ -300,7 +169,7 @@ function checkTeamStocks(barrel) {
                             if (error) return;
 
                             // push this modification in the alert history
-                            AlertHistory.pushToHistory(alert, (error, result) => {
+                            AlertLog.pushToHistory(alert, (error, result) => {
                                 if (error) return;
                             });
 
@@ -329,7 +198,7 @@ function updateBarrel(barrel, req, res, checkState) {
         }
 
         // log the new barrel state
-        BarrelHistory.pushToHistory(barrel, (error, barrelHistory) => {
+        BarrelLog.pushToHistory(barrel, (error, barrelHistory) => {
             if (error) {
                 return res.negotiate(error);
             }
@@ -342,35 +211,6 @@ function updateBarrel(barrel, req, res, checkState) {
 
         });
     });
-}
-
-/**
- * If only the state is passed in parameter, check if
- * the value of state is valid (in the states array)
- *
- * If currentState too is set, check if it's allowed to move
- * from currentState to state.
- *
- * @param {string} state
- * @param {string|null} currentState
- * @returns {boolean}
- */
-function isStateValid(state, currentState) {
-    const states = ["new", "opened", "empty"];
-
-    // if no current state, only check if state is in the array
-    if (!currentState) {
-        return states.indexOf(state) !== -1;
-    } else {
-        // return false if the state is wrong
-        if (states.indexOf(state) === -1) {
-            return false;
-        }
-    }
-
-    // check if it's allowed to set the barrel state with this value (same or neighbor)
-    const d = Math.abs(states.indexOf(currentState) - states.indexOf(state))
-    return d === 1 || d === 0;
 }
 
 module.exports = BarrelController;

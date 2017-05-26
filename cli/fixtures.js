@@ -3,119 +3,248 @@
  *
  * This file will load fixtures into your database.
  *
- * See https://github.com/ungdev/flux2-server/wiki/Fixtures for more information
+ * A part of thoses fixtures is from Gala 2017, a part is randomly generated
  */
 
-const Sails = require('sails');
 const fs = require('fs');
 const inquirer = require('inquirer');
+const faker = require('faker');
 
-Sails.lift({port: 1338}, (error) => {
-    sails.config.firebase = {};
+// Load Flux object and init DB
+const Flux = require('../Flux.js');
+Flux.initModels();
 
-    sails.log.info();
-    sails.log.info();
-    sails.log.info('=========== Fixture generation ===========');
-    sails.log.info('This command will generate fixtures in your database. ' +
-        'It\'s recommended to clear the database before starting this command. ' +
-        'The server has to be stopped before this command starts.');
-    inquirer.prompt({
-        type: 'confirm',
-        message: 'Do you want to continue ?',
-        default: false,
-        name: 'continue',
-    }).then(function (answers) {
-        if(answers.continue) {
-            if (error) {
-                return console.log('Error: Sails server failed to start: ', error);
+// vars
+let teams = [];
+let users = [];
+let barrels = [];
+
+const options = {
+    hooks: false,
+    individualHooks: false,
+};
+
+
+// CLI form
+Flux.info();
+Flux.info();
+Flux.info('=========== Fixture generation ===========');
+Flux.info('This command will generate fixtures in your database. ');
+Flux.info();
+Flux.warn('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+Flux.warn('!!!!! DATABASE WILL BE CLEARED !!!!!')
+Flux.warn('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+Flux.info();
+inquirer.prompt({
+    type: 'confirm',
+    message: 'Do you want to continue ?',
+    default: false,
+    name: 'continue',
+}).then(function (answers) {
+    if(!answers.continue) {
+        return Promise.reject();
+    }
+
+    // Clear db
+    return Flux.sequelize.sync({ force : true });
+})
+.then(() => {
+    Flux.info('DB cleared');
+
+    // Create teams (Gala 2017)
+    return Flux.Team.bulkCreate([
+        { name: 'Informatique', group: '', location: '', role: 'Développeur' },
+        { name: 'Logistique', group: '', location: 'Foyer', role: 'Logistique' },
+        { name: 'SecUTT', group: '', location: 'Snack', role: 'SecUTT' },
+        { name: 'Tréso', group: '', location: '', role: 'Coord' },
+        { name: 'Coord', group: '', location: '', role: 'Coord' },
+        { name: 'Bar PMOM', group: 'Bar', location: 'B101', role: 'Bar' },
+        { name: 'Bar RUTT', group: 'Bar', location: 'C104', role: 'Bar' },
+        { name: 'Bar EPF', group: 'Bar', location: 'B105', role: 'Bar' },
+        { name: 'Bar Asanutt/Campus3', group: 'Bar', location: 'B106', role: 'Bar' },
+        { name: 'Bar Falutt', group: 'Bar', location: 'C102', role: 'Bar' },
+        { name: 'Bar ATECAP', group: 'Bar', location: 'C105', role: 'Bar' },
+        { name: 'Bar Revivre', group: 'Bar', location: 'Couloir A0', role: 'Bar' },
+        { name: 'Bar MAC2', group: 'Bar', location: 'M104', role: 'Bar' },
+        { name: 'Bar UNG', group: 'Bar', location: 'Hall M', role: 'Bar' },
+        { name: 'Bar BDE/ISM', group: 'Bar', location: 'Amphi Ext', role: 'Bar' },
+        { name: 'Bar DEFI', group: 'Bar', location: 'Chapiteau', role: 'Bar' },
+        { name: 'PDV Etu', group: 'PDV', location: 'Hall Etu', role: 'Point de vente' },
+        { name: 'PDV Entrée', group: 'PDV', location: 'Entrée', role: 'Point de vente' },
+        { name: 'PDV Accueil', group: 'PDV', location: 'Accueil UTT', role: 'Point de vente' },
+        { name: 'Vestiaire', group: '', location: 'Cafet', role: 'Point de vente' },
+        { name: 'Entrée', group: '', location: 'Entre H et M', role: 'Point de vente' },
+        { name: 'Son & Lumière', group: '', location: '', role: 'Orga' },
+        { name: 'Orgas', group: '', location: '', role: 'Orga' },
+    ], options);
+})
+.then((data) => {
+    Flux.info('Teams created:', data.length);
+    teams = data;
+
+    // Create fixed users for dev
+    return Flux.User.bulkCreate([
+        { login: 'labateau', ip: null, name: 'Aurelien LABATE', teamId: 1 },
+        { login: 'prudhom1', ip: null, name: 'Antoine PRUDHOMME', teamId: 1 },
+        { login: '', ip: '127.0.0.1', name: 'PC Localhost', teamId: 1 },
+    ], options);
+})
+.then((data) => {
+    Flux.info('Dev users created:', data.length);
+
+    users = data;
+
+    let bulkData = [];
+
+    // create 5-15 users in each team
+    let j = 0;
+    for (let team of teams) {
+        let max = faker.random.number({min:5, max:15});
+        for (let i = 0; i < max; i++) {
+            if(faker.random.boolean()) {
+                // IP user
+                bulkData.push({ login: null, ip: '100.0.'+j+'.'+i, name: faker.name.findName(), teamId: team.id });
             }
-
-            let finalResult = {};
-
-            // Generate the list of models
-            let models = [];
-            sails.log.info('Models found in config/fixtures.js:', sails.config.fixtures.order);
-            if(Array.isArray(sails.config.fixtures.order)) {
-                models = sails.config.fixtures.order;
+            else {
+                // EtuUTT user
+                let name = faker.name.findName();
+                let login = name.replace(/[^A-z]/g, '').toLowerCase().substr(0,8) + j + i;
+                bulkData.push({ login: login, ip: null, name: name, teamId: team.id });
             }
-            let files = fs.readdirSync(__dirname + '/../api/models');
-            files.forEach(file => {
-                if(/^[A-z-0-9_]+\.js$/.test(file) && models.indexOf(file.substr(0,file.length-3)) === -1) {
-                    models.push(file.substr(0,file.length-3));
-                }
-            });
-            sails.log.info('Generated Model list:', models);
-
-            async.eachSeries(models, (model, cb) => {
-                sails.log.info();
-                sails.log.info();
-                sails.log.info('## ' + model);
-                finalResult[model] = {
-                    success: 0,
-                    error: 0,
-                };
-
-                // Generate final fixture list for this model
-                let fixtures = require('../api/models/' + model).fixtures;
-                if (!fixtures) {
-                    sails.log.warn('Model ' + model + ' doesn\'t have any fixtures.')
-                    cb();
-                } else if(typeof fixtures !== 'object') {
-                    sails.log.error('Model ' + model + ' as a `fixtures` attributes but is not an object.')
-                    cb();
-                } else {
-                    async.eachOfSeries(fixtures, (item, key, cb) => {
-                        if(typeof item === 'function') {
-                            sails.log.debug('Execution of', key);
-                            item((error, result) => {
-                                if(error || typeof fixtures !== 'object') {
-                                    sails.log.error('Error during execution of function ' + key + ':', error);
-                                }
-                                else {
-                                    delete fixtures[key];
-                                    Object.assign(fixtures, result);
-                                }
-                                cb();
-                            });
-                        }
-                        else {
-                            cb();
-                        }
-                    }, () => {
-                        // Items creation
-                        sails.log.info(Object.keys(fixtures).length, 'element(s) will be created');
-                        async.eachOfSeries(fixtures, (item, key, cb) => {
-                            global[model].create(item).exec((error, result) => {
-                                if(error) {
-                                    sails.log.error(key + ':', error.reason);
-                                    if(error.invalidAttributes) {
-                                        sails.log.debug(key + ' invalid attributes:', error.invalidAttributes);
-                                    }
-                                    else {
-                                        sails.log.debug(key + ' error details:', error);
-                                    }
-                                    finalResult[model].error++;
-                                }
-                                else {
-                                    finalResult[model].success++;
-                                }
-                                cb();
-                            });
-
-                        }, cb);
-                    });
-                }
-            }, (error) => {
-                sails.log.info('')
-                sails.log.info('')
-                sails.log.info('### Done')
-                for (let model in finalResult) {
-                    sails.log.info(model + ': ' + finalResult[model].success + ' success, ' + finalResult[model].error + ' error');
-                }
-                sails.lower();
-            });
-        } else {
-            sails.lower();
         }
-    });
+        j++;
+    }
+
+    // Get team list
+    return Flux.User.bulkCreate(bulkData, options);
+})
+.then((data) => {
+    users = users.concat(data);
+    Flux.info('Random users created:', data.length);
+
+
+    let bulkData = [];
+
+    // Public channels
+    let channels = new Set(['public:General']);
+    for (let team of teams) {
+        channels.add('public:'+team.name);
+    }
+    channels = [...channels];
+
+    // create 5 messages per users in random public channels
+    for (let user of users) {
+        for (let i = 0; i < 2; i++) {
+            bulkData.push({ text: faker.hacker.phrase(), channel: faker.random.arrayElement(channels), userId: user.id, createdAt: faker.date.recent()});
+        }
+
+    }
+
+    // Get team list
+    return Flux.Message.bulkCreate(bulkData, options);
+})
+.then((data) => {
+
+    Flux.info('Random message sent:', data.length);
+
+    // Create barrelTypes
+    return Flux.BarrelType.bulkCreate([
+        { name: 'Comète Pils', shortName: 'COM', supplierPrice: 53.46, sellPrice: 210, liters: 30 },
+        { name: 'Queue de Charrue', shortName: 'CHA', supplierPrice: 90.46, sellPrice: 240, liters: 20 },
+        { name: 'Cidre Raison brut', shortName: 'CID', supplierPrice: 79.67, sellPrice: 180, liters: 30 },
+        { name: 'Floris kriek', shortName: 'KRI', supplierPrice: 112.8, sellPrice: 240, liters: 30 },
+        { name: 'Barbar Bok', shortName: 'BAR', supplierPrice: 65.88, sellPrice: 180, liters: 15 },
+        { name: 'La Chouffe', shortName: 'CHF', supplierPrice: 86.23, sellPrice: 240, liters: 20 },
+        { name: 'Cuvée des Trolls', shortName: 'TRO', supplierPrice: 120.92, sellPrice: 360, liters: 30 },
+        { name: 'St Feuillien', shortName: 'FEU', supplierPrice: 87.82, sellPrice: 240, liters: 20 },
+        { name: 'Choue', shortName: 'CHO', supplierPrice: 0, sellPrice: 0, liters: 30 },
+    ], options);
+})
+.then((data) => {
+    Flux.info('BarrelType created:', data.length);
+
+    // set barrel counts
+    return Promise.all([
+        Flux.Barrel.setCount(1, 30),
+        Flux.Barrel.setCount(2, 9),
+        Flux.Barrel.setCount(3, 8),
+        Flux.Barrel.setCount(4, 8),
+        Flux.Barrel.setCount(5, 15),
+        Flux.Barrel.setCount(6, 20),
+        Flux.Barrel.setCount(7, 8),
+        Flux.Barrel.setCount(8, 5),
+        Flux.Barrel.setCount(9, 8),
+    ]);
+})
+.then(() => {
+    Flux.info('Barrels created');
+
+    // Find barrels
+    return Flux.Barrel.findAll();
+})
+.then((data) => {
+    Flux.info('Barrel found:', data.length);
+    barrels = data;
+
+    // Update randomly 30 barrels
+    let promises = [];
+    for (var i = 0; i < 30; i++) {
+        let barrel = faker.random.arrayElement(barrels);
+        barrel.state = faker.random.arrayElement(['new', 'opened', 'empty']);
+        barrel.teamId = faker.random.arrayElement(teams).id;
+        promises.push(barrel.save());
+    }
+
+    return Promise.all(promises);
+})
+.then((data) => {
+    Flux.info('Barrel updated:', data.length);
+
+    // Create bottletypes
+    return Flux.BottleType.bulkCreate([
+        { name: 'Champagne', shortName: 'CHP', supplierPrice: 11.35, sellPrice: 21, quantityPerBox: 30, originalStock: 1464 },
+        { name: 'Vin blanc', shortName: 'VB', supplierPrice: 10.01, sellPrice: 17, quantityPerBox: 20, originalStock: 42 },
+        { name: 'Vin rosé', shortName: 'VRS', supplierPrice: 6.67, sellPrice: 15, quantityPerBox: 30, originalStock: 42 },
+        { name: 'Vin rouge', shortName: 'VRO', supplierPrice: 6.67, sellPrice: 15, quantityPerBox: 30, originalStock: 42 },
+    ], options);
+})
+.then((data) => {
+    Flux.info('BottleType created:', data.length);
+
+    // Create alert buttons
+    return Flux.AlertButton.bulkCreate([
+        { title: 'Demande de délestage', category: 'Argent', senderGroup: 'PDV', messageRequired: false, messagePrompt: null, messageDefault: null, receiverTeamId: 4 },
+        { title: 'Autre', category: 'Autre', senderGroup: null, messageRequired: true, messagePrompt: null, messageDefault: null, receiverTeamId: 2 },
+        { title: 'Problème Cashless', category: 'Cashless', senderGroup: null, messageRequired: false, messagePrompt: null, messageDefault: null, receiverTeamId: 2 },
+        { title: 'Cashless : Bracelet cassé', category: 'Cashless', senderGroup: null, messageRequired: false, messagePrompt: null, messageDefault: null, receiverTeamId: 2 },
+        { title: 'Gobelets pour softs', category: 'Manques', senderGroup: 'Bar', messageRequired: false, messagePrompt: null, messageDefault: null, receiverTeamId: 2 },
+        { title: 'Gobelets pour bières', category: 'Manques', senderGroup: 'Bar', messageRequired: false, messagePrompt: null, messageDefault: null, receiverTeamId: 2 },
+        { title: 'Ingrédients coktail', category: 'Manques', senderGroup: 'Bar', messageRequired: true, messagePrompt: 'Quels ingrédients manquent ?', messageDefault: null, receiverTeamId: 2 },
+        { title: 'Sacs poubelles', category: 'Manques', senderGroup: null, messageRequired: false, messagePrompt: null, messageDefault: null, receiverTeamId: 2 },
+        { title: 'Flûte champagne', category: 'Manques', senderGroup: 'Bar', messageRequired: false, messagePrompt: null, messageDefault: null, receiverTeamId: 2 },
+        { title: 'Besoin de secours', category: 'Sécurité', senderGroup: null, messageRequired: true, messagePrompt: null, messageDefault: '-Nombre de victimes: (1 ou >1)\n-La victime peut parler: (Oui/Non)\n-La victime respire: (Oui/Non/Ne sais pas)\n-Situation: (Alcool/Bagarre/Malaise/...)\n-Autre infos:', receiverTeamId: 3 },
+        { title: 'Besoin agent de sécurité', category: 'Sécurité', senderGroup: null, messageRequired: true, messagePrompt: 'Quel est le problème ?', messageDefault: null, receiverTeamId: 5 },
+        { title: 'Problème au niveau d\'un fût', category: 'Technique', senderGroup: 'PDV', messageRequired: false, messagePrompt: null, messageDefault: null, receiverTeamId: 2 },
+        { title: 'Problème au niveau de la tireuse', category: 'Technique', senderGroup: 'PDV', messageRequired: false, messagePrompt: null, messageDefault: null, receiverTeamId: 2 },
+        { title: 'Son et lumière', category: 'Technique', senderGroup: 'PDV', messageRequired: false, messagePrompt: null, messageDefault: null, receiverTeamId: 2 },
+    ], options);
+})
+.then((data) => {
+    Flux.info('Alert buttons created:', data.length);
+
+    // Create alerts
+    return Flux.Alert.bulkCreate([
+        { title: 'Demande de délestage', severity: 'serious', message: '', users: '[]', senderTeamId: 18, receiverTeamId: 4, AlertButtonId: 1 },
+        { title: 'Gobelets pour softs', severity: 'warning', message: '', users: '[]', senderTeamId: 8, receiverTeamId: 2, AlertButtonId: 1 },
+        { title: 'Problème au niveau de la tireuse', severity: 'serious', message: 'Ça mousse trop !', users: '[]', senderTeamId: 10, receiverTeamId: 2, AlertButtonId: 1 },
+    ], options);
+
+
+})
+.then((data) => {
+    Flux.info('Alerts created:', data.length);
+    Flux.sequelize.close();
+})
+.catch((error) => {
+    Flux.error(error);
 });

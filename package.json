@@ -26,7 +26,7 @@
   "scripts": {
     "start": "NODE_ENV=production node app",
     "test": "NODE_ENV=production node cli/test",
-    "dev": "nodemon app.js"
+    "dev": "nodemon app"
   },
   "main": "app.js",
   "repository": {

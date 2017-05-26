@@ -1,13 +1,14 @@
 module.exports = {
     'get /alert': { action: 'AlertController.find', middlewares: ['auth', 'requireAuth'] },
     'put /alert/:id': { action: 'AlertController.update', middlewares: ['auth', 'requireAuth'] },
-    // 'post /alert': { action: 'AlertController.create', middlewares: ['auth', 'requireAuth'] },
-    'delete /alert/:id': { action: 'AlertController.update', middlewares: ['auth', 'requireAuth'] },
-
     'put /alert/:id/users': { action: 'AlertController.updateAssignedUsers', middlewares: ['auth', 'requireAuth'] },
     'post /alert/subscribe': { action: 'AlertController.subscribe', middlewares: ['auth', 'requireAuth'] },
     'post /alert/unsubscribe': { action: 'AlertController.unsubscribe', middlewares: ['auth', 'requireAuth'] },
 
+    'get /alertbutton': { action: 'AlertButtonController.find', middlewares: ['auth', 'requireAuth'] },
+    'put /alertbutton/:id': { action: 'AlertButtonController.update', middlewares: ['auth', 'requireAuth'] },
+    'post /alertbutton': { action: 'AlertButtonController.create', middlewares: ['auth', 'requireAuth'] },
+    'delete /alertbutton/:id': { action: 'AlertButtonController.destroy', middlewares: ['auth', 'requireAuth'] },
     'post /alertbutton/alert': { action: 'AlertButtonController.createAlert', middlewares: ['auth', 'requireAuth'] },
     'post /alertbutton/subscribe': { action: 'AlertButtonController.subscribe', middlewares: ['auth', 'requireAuth'] },
     'post /alertbutton/unsubscribe': { action: 'AlertButtonController.unsubscribe', middlewares: ['auth', 'requireAuth'] },
@@ -20,24 +21,37 @@ module.exports = {
     'post /auth/as/:id': { action: 'AuthController.loginAs', middlewares: ['auth', 'requireAuth'] },
     'post /auth/logout': { action: 'AuthController.logout', middlewares: ['auth', 'requireAuth'] },
 
+    'get /barrel': { action: 'BarrelController.find', middlewares: ['auth', 'requireAuth'] },
+    'put /barrel/:id': { action: 'BarrelController.update', middlewares: ['auth', 'requireAuth'] },
     'put /barrel/location': { action: 'BarrelController.setLocation', middlewares: ['auth', 'requireAuth'] },
     'post /barrel/subscribe': { action: 'BarrelController.subscribe', middlewares: ['auth', 'requireAuth'] },
     'post /barrel/unsubscribe': { action: 'BarrelController.unsubscribe', middlewares: ['auth', 'requireAuth'] },
 
+    'get /barreltype': { action: 'BarrelTypeController.find', middlewares: ['auth', 'requireAuth'] },
+    'put /barreltype/:id': { action: 'BarrelTypeController.update', middlewares: ['auth', 'requireAuth'] },
+    'post /barreltype': { action: 'BarrelTypeController.create', middlewares: ['auth', 'requireAuth'] },
+    'delete /barreltype/:id': { action: 'BarrelTypeController.destroy', middlewares: ['auth', 'requireAuth'] },
     'post /barreltype/barrel': { action: 'BarrelTypeController.setBarrelNumber', middlewares: ['auth', 'requireAuth'] },
     'post /barreltype/subscribe': { action: 'BarrelTypeController.subscribe', middlewares: ['auth', 'requireAuth'] },
     'post /barreltype/unsubscribe': { action: 'BarrelTypeController.unsubscribe', middlewares: ['auth', 'requireAuth'] },
 
+    'get /bottleaction': { action: 'BottleActionController.find', middlewares: ['auth', 'requireAuth'] },
+    'post /bottleaction': { action: 'BottleActionController.create', middlewares: ['auth', 'requireAuth'] },
     'post /bottleaction/subscribe': { action: 'BottleActionController.subscribe', middlewares: ['auth', 'requireAuth'] },
     'post /bottleaction/unsubscribe': { action: 'BottleActionController.unsubscribe', middlewares: ['auth', 'requireAuth'] },
     'get /bottleaction/count': { action: 'BottleActionController.count', middlewares: ['auth', 'requireAuth'] },
 
+    'get /bottletype': { action: 'BottleTypeController.find', middlewares: ['auth', 'requireAuth'] },
+    'put /bottletype/:id': { action: 'BottleTypeController.update', middlewares: ['auth', 'requireAuth'] },
+    'post /bottletype': { action: 'BottleTypeController.create', middlewares: ['auth', 'requireAuth'] },
+    'delete /bottletype/:id': { action: 'BottleTypeController.destroy', middlewares: ['auth', 'requireAuth'] },
     'post /bottletype/subscribe': { action: 'BottleTypeController.subscribe', middlewares: ['auth', 'requireAuth'] },
     'post /bottletype/unsubscribe': { action: 'BottleTypeController.unsubscribe', middlewares: ['auth', 'requireAuth'] },
 
     'post /developer/refresh': { action: 'DeveloperController.refresh', middlewares: ['auth', 'requireAuth'] },
 
     'get /message': { action: 'MessageController.find', middlewares: ['auth', 'requireAuth'] },
+    'post /message': { action: 'MessageController.create', middlewares: ['auth', 'requireAuth'] },
     'get /message/channels': { action: 'MessageController.getChannels', middlewares: ['auth', 'requireAuth'] },
     'post /message/subscribe': { action: 'MessageController.subscribe', middlewares: ['auth', 'requireAuth'] },
     'post /message/unsubscribe': { action: 'MessageController.unsubscribe', middlewares: ['auth', 'requireAuth'] },
@@ -59,6 +73,7 @@ module.exports = {
     'post /user/subscribe': { action: 'UserController.subscribe', middlewares: ['auth', 'requireAuth'] },
     'post /user/unsubscribe': { action: 'UserController.unsubscribe', middlewares: ['auth', 'requireAuth'] },
 
+    'get /session': { action: 'SessionController.find', middlewares: ['auth', 'requireAuth'] },
     'post /session/open': { action: 'SessionController.open', middlewares: ['auth', 'requireAuth'] },
     'post /session/subscribe': { action: 'SessionController.subscribe', middlewares: ['auth', 'requireAuth'] },
     'post /session/unsubscribe': { action: 'SessionController.unsubscribe', middlewares: ['auth', 'requireAuth'] },

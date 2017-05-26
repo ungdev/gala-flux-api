@@ -1,6 +1,6 @@
 const Sequelize = require('sequelize');
 const Flux = require('../../Flux');
-const inheritBaseModel = require('./baseModel');
+const inheritBaseModel = require('../../lib/BaseModel');
 
 const Session = Flux.sequelize.define('session', {
 
@@ -41,8 +41,7 @@ Model.buildReferences = () => {
     // This function will be called once all models are initialized by Flux Object.
     Model.belongsTo(Flux.User, {
         foreignKey: { allowNull: false },
-        onUpdate: 'CASCADE',
-        onDelete: 'CASCADE',
+        hooks: true,
     });
 };
 inheritBaseModel(Session);
@@ -64,20 +63,6 @@ Model.getUserDestroyGroups = Model.getUserCreateGroups;
 module.exports = Model;
 
 /*
-module.exports = {
-
-
-    // Override the default toJSON method
-    toJSON: function() {
-        let obj = this.toObject();
-
-        delete obj.socketId;
-        delete obj.firebaseToken;
-        delete obj.androidId;
-
-        return obj;
-    },
-
     // Attribute hidden on when sending to client
     hiddenAttr: ['firebaseToken', 'androidId', 'socketId'],
 

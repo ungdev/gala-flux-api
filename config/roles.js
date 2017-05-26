@@ -48,7 +48,7 @@
  *
  * - ui/admin : Can see admin panel. If not set, the user will be thrown on bar interface
  * - ui/receiveAlerts : Can be selected as a receiver for alerts
- * - ui/receiveDefaultAlerts : Will see automatic alert with null receiver
+ * - alert/nullReceiver : Will see automatic alert with null receiver
  * - ui/receiveStock : Can receive barrel and bottles
  *
  * - user/read : Can read all users
@@ -103,7 +103,7 @@ module.exports = {
         'team/read',
         'ui/admin',
         'ui/receiveAlerts',
-        'ui/receiveDefaultAlerts',
+        'alert/nullReceiver',
         'user/team',
         'session/read',
         'user/read',
@@ -136,20 +136,20 @@ module.exports = {
         'user/admin',
         'session/read',
     ],
-    'Admin': [
-        // 'alert/admin',
-        // 'alertButton/admin',
-        // 'auth/as',
-        // 'barrel/admin',
-        // 'barrelType/admin',
-        // 'bottleAction/admin',
-        // 'bottleType/admin',
-        // 'message/private',
+    'Développeur': [
+        'alert/admin',
+        'alertButton/admin',
+        'auth/as',
+        'barrel/admin',
+        'barrelType/admin',
+        'bottleAction/admin',
+        'bottleType/admin',
+        'message/private',
         'message/admin',
         'team/admin',
         'ui/admin',
         'user/admin',
-        // 'session/read',
-        // 'developer/refresh',
+        'session/read',
+        'developer/refresh',
     ]
 };

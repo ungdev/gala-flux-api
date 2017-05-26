@@ -11,7 +11,7 @@ const inquirer = require('inquirer');
 const Flux = require('../Flux.js');
 Flux.initModels();
 
-// Begin console form
+// CLI form
 Flux.info();
 Flux.info();
 Flux.info('=========== Create team ===========');

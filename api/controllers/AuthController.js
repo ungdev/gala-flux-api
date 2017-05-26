@@ -1,5 +1,6 @@
 const Flux = require('../../Flux');
 const SessionService = require('../services/SessionService');
+const { ExpectedError } = require('../../lib/Errors');
 
 /**
  * AuthController
@@ -65,7 +66,7 @@ class AuthController {
         Flux.User.find({ where: {ip: req.ip} })
         .then(user => {
             if (!user) {
-                return res.error(401, 'IPNotFound', 'There is no User associated with this IP');
+                throw new ExpectedError(401, 'IPNotFound', 'There is no User associated with this IP');
             }
 
             // Create session
@@ -74,9 +75,7 @@ class AuthController {
         .then(jwt => {
             res.ok({jwt});
         })
-        .catch((error) => {
-            res.error(error);
-        });
+        .catch(res.error);
     }
 
 
@@ -277,9 +276,7 @@ class AuthController {
         .then(jwt => {
             res.ok({jwt});
         })
-        .catch((error) => {
-            res.error(error);
-        });
+        .catch(res.error);
     }
 
     /**

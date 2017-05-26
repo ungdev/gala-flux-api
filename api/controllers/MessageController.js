@@ -1,5 +1,5 @@
 const Flux = require('../../Flux');
-const Controller = require('./Controller');
+const ModelController = require('../../lib/ModelController');
 /**
  * @apiDefine badRequestError
  * @apiError BadRequest Parameters are not valid for this api endpoint
@@ -29,7 +29,7 @@ const Controller = require('./Controller');
  *
  */
 
-class MessageController extends Controller {
+class MessageController extends ModelController {
 
     constructor() {
         super(Flux.Message);
@@ -68,56 +68,7 @@ class MessageController extends Controller {
      * * `private:[teamname]` : For internal private messages inside the team
      * * `group:[groupname]` : For group discutions according to the `group` field in team
      */
-    //  find(req, res) {
-    //     let where = false;
-    //
-    //     // Receive #group:[groupname] and #[teamname] but can send only in #[teamname]
-    //     if(req.team.can('message/oneChannel')) {
-    //         where = {
-    //             or: [
-    //                 {'channel': 'public:'+Message.toChannel(req.team.name)},
-    //                 {'channel': 'group:'+Message.toChannel(req.team.group)},
-    //             ]
-    //         };
-    //     }
-    //
-    //     // Send/read message to/from everywhere also private channels
-    //     else if(req.team.can('message/admin')) {
-    //         where = {};
-    //     }
-    //
-    //     // Not compatible with `oneChannel`. Can send and receive in any
-    //     // public #[teamname] channel, can also receive and send in
-    //     // its own #group:[groupname] channel
-    //     else if(req.team.can('message/public')) {
-    //         where = {
-    //             or: [
-    //                 {'channel': {'like': 'public:%'}},
-    //                 {'channel': 'group:'+Message.toChannel(req.team.group)},
-    //             ]
-    //         };
-    //
-    //         // Can send and receive in any #group:[groupname] channel
-    //         if(req.team.can('message/group')) {
-    //             where.or.push({'channel': {'like': 'group:%'}});
-    //         }
-    //
-    //         // Can send and receive in its own #private:[teamname] channel
-    //         if(req.team.can('message/private')) {
-    //             where.or.push({'channel': 'private:'+Message.toChannel(req.team.name)});
-    //         }
-    //     }
-    //
-    //     Message.find(where).sort('createdAt ASC')
-    //     .exec((error, messages) => {
-    //         if (error) {
-    //             return res.negotiate(error);
-    //         }
-    //
-    //         // Return message list
-    //         return res.ok(messages);
-    //     });
-    // }
+    // find(req, res) {}
 
 
     /**
@@ -134,72 +85,11 @@ class MessageController extends Controller {
      * @apiUse badRequestError
      * @apiUse forbiddenError
      */
-     create(req, res) {
-        // Default values
-        let channel = req.param('channel');
-        if(!channel) {
-            channel = 'public:'+Message.toChannel(req.team.name);
-        }
+    create(req, res) {
+        // User can only create message from himself
+        req.data.userId = req.user.id;
 
-        // Check permissions
-        // Receive #group:[groupname] and #[teamname] but can send only in #[teamname]
-        if(req.team.can('message/oneChannel')
-            && channel != 'public:'+Message.toChannel(req.team.name)) {
-
-            return res.error(403, 'forbidden', 'You cannot send message in another channel than ' + 'public:'+Message.toChannel(req.team.name));
-        }
-
-        // Not compatible with `oneChannel`. Can send and receive in any
-        // public #[teamname] channel, can also receive and send in
-        // its own #group:[groupname] channel
-        else if(req.team.can('message/public')) {
-            let authorized = [
-                '^public\:.+$',
-                '^group\:' + Message.toChannel(req.team.group) + '$',
-            ];
-
-            if(req.team.can('message/group')) {
-                authorized.push('^group\:.+$');
-            }
-            if(req.team.can('message/private')) {
-                authorized.push('^private\:' + Message.toChannel(req.team.name) + '$');
-            }
-
-            var match = _.some(authorized, (regex) => {
-                return (new RegExp(regex, 'g')).test(channel);
-            });
-            if(!match) {
-                return res.error(403, 'forbidden', 'You are not authorized to send in this channel');
-            }
-        }
-        // No permission
-        else if(!req.team.can('message/admin') && !req.team.can('message/public') && !req.team.can('message/oneChannel')) {
-            return res.error(403, 'forbidden', 'You are not authorized to send any messages');
-        }
-
-        // Check parameters
-        if(!req.param('text')) {
-            return res.error(400, 'BadRequest', 'The parameter `text` is empty.');
-        }
-        else if (req.param('recipientTeam') && req.param('recipientGroup')) {
-            return res.error(400, 'BadRequest', 'You cannot use `recipientTeam` and `recipientGroup` at the same time');
-        }
-
-        // Create message
-        Message.create({
-            sender: req.user,
-            text: req.param('text'),
-            channel: channel,
-        }).exec((error, message) => {
-            if (error) {
-                return res.negotiate(error);
-            }
-
-            FirebaseService.notifyChatMessage(message, req.user, req.team);
-
-            return res.ok(message);
-        });
-
+        return super.create(req, res);
     }
 
 
@@ -260,6 +150,6 @@ class MessageController extends Controller {
             return res.error(403, 'forbidden', 'You are not authorized to read any channel');
         }
     }
-};
+}
 
 module.exports = MessageController;

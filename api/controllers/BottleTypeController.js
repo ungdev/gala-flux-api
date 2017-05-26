@@ -1,11 +1,13 @@
-/**
- * BottleTypeController
- *
- * @description :: Server-side logic for managing BottleTypes
- * @help        :: See http://sailsjs.org/#!/documentation/concepts/Controllers
- */
+const Flux = require('../../Flux');
+const { ExpectedError } = require('../../lib/Errors');
+const ModelController = require('../../lib/ModelController');
 
-class BottleTypeController {
+class BottleTypeController extends ModelController {
+
+    constructor() {
+        super(Flux.BottleType);
+    }
+
 
     /**
      * @api {post} /bottletype/subscribe Subscribe to new items
@@ -13,19 +15,7 @@ class BottleTypeController {
      * @apiGroup BottleType
      * @apiDescription Subscribe to all new items.
      */
-     subscribe(req, res) {
-        if(req.team.can('bottleType/read') || req.team.can('bottleType/admin')) {
-            BottleType.watch(req);
-            BottleType.find().exec((error, items) => {
-                if(error) return res.negotiate(error);
-                BottleType.subscribe(req, _.pluck(items, 'id'));
-                return res.ok();
-            });
-        }
-        else {
-            return res.ok();
-        }
-    }
+    //  subscribe(req, res) {}
 
 
     /**
@@ -34,14 +24,7 @@ class BottleTypeController {
      * @apiGroup BottleType
      * @apiDescription Unsubscribe from new items
      */
-     unsubscribe(req, res) {
-        BottleType.unwatch(req);
-        BottleType.find().exec((error, items) => {
-            if(error) return res.negotiate(error);
-            BottleType.unsubscribe(req, _.pluck(items, 'id'));
-            return res.ok();
-        });
-    }
+    //  unsubscribe(req, res) {}
 
     /**
      * @api {get} /bottletype/find Find all bottletypes
@@ -60,64 +43,8 @@ class BottleTypeController {
      * @apiSuccess {integer} Array.bottletype.supplierPrice Price at which the bottletypes were bought in cents
      * @apiSuccess {integer} Array.bottletype.originalStock Number of bottletypes at the beginning of the event
      */
+    //  find(req, res) {}
 
-     find(req, res) {
-        // Check permissions
-        if(req.team.can('bottleType/read') || req.team.can('bottleType/admin')) {
-            BottleType.find()
-                .exec((error, bottletype) => {
-                    if (error) {
-                        return res.negotiate(error);
-                    }
-
-                    return res.ok(bottletype);
-                });
-        }
-        else {
-            return res.error(403, 'forbidden', 'You are not authorized to view the bottletype list');
-        }
-    }
-
-    /**
-     * @api {get} /bottletype/find/:id Find one bottletype
-     * @apiName findOne
-     * @apiGroup BottleType
-     * @apiDescription Find one bottletype based on its id
-     *
-     * @apiUse forbiddenError
-     * @apiUse notFoundError
-     *
-     * @apiParam {id} id Id of the bottletype you are looking for
-     *
-     * @apiSuccess {BottleType} bottletype A bottletype object
-     * @apiSuccess {string} bottletype.name Complete display name of the bottletype
-     * @apiSuccess {string} bottletype.shortName Short display name of the bottletype
-     * @apiSuccess {integer} bottletype.quantityPerBox Number of bottletypes per box
-     * @apiSuccess {integer} bottletype.sellPrice Price at which the bottletypes are sold in cents
-     * @apiSuccess {integer} bottletype.supplierPrice Price at which the bottletypes were bought in cents
-     * @apiSuccess {integer} bottletype.originalStock Number of bottletypes at the beginning of the event
-     */
-     findOne(req, res) {
-        // Check permissions
-        if(req.team.can('bottleType/read') || req.team.can('bottleType/admin')) {
-
-            // Find bottletype
-            BottleType.findOne({id: req.param('id')})
-                .exec((error, bottletype) => {
-                    if (error) {
-                        return res.negotiate(error);
-                    }
-                    if(!bottletype) {
-                        return res.error(400, 'BadRequest', 'The requested bottletype cannot be found');
-                    }
-
-                    return res.ok(bottletype);
-                });
-        }
-        else {
-            return res.error(403, 'forbidden', 'You are not authorized to read bottletype data');
-        }
-    }
 
     /**
      * @api {post} /bottletype/create Create bottletype
@@ -137,35 +64,7 @@ class BottleTypeController {
      * @apiUse badRequestError
      * @apiUse forbiddenError
      */
-     create(req, res) {
-        // Check permissions
-        if(!req.team.can('bottleType/admin')) {
-            return res.error(403, 'forbidden', 'You are not authorized to create a bottletype.');
-        }
-
-        BottleType.findOne({id: req.param('id')}).exec((error, bottletype) => {
-            if(bottletype) {
-                return res.error(400, 'BadRequest', 'BottleType short name is not valid.');
-            }
-
-            // Create bottletype
-            bottletype = {};
-            if(req.param('name')) bottletype.name = req.param('name');
-            if(req.param('shortName')) bottletype.shortName = req.param('shortName');
-            if(req.param('quantityPerBox')) bottletype.quantityPerBox = req.param('quantityPerBox');
-            if(req.param('sellPrice')) bottletype.sellPrice = req.param('sellPrice');
-            if(req.param('supplierPrice')) bottletype.supplierPrice = req.param('supplierPrice');
-            if(req.param('originalStock')) bottletype.originalStock = req.param('originalStock');
-
-            BottleType.create(bottletype).exec((error, bottletype) => {
-                if (error) {
-                    return res.negotiate(error);
-                }
-
-                return res.ok(bottletype);
-            });
-        })
-    }
+    //  create(req, res) {}
 
     /**
      * @api {delete} /bottletype/:id Delete a bottletype
@@ -179,30 +78,7 @@ class BottleTypeController {
      * @apiUse forbiddenError
      * @apiUse notFoundError
      */
-     destroy(req, res) {
-        // Check permissions
-        if(!req.team.can('bottleType/admin')) {
-            return res.error(403, 'forbidden', 'You are not authorized to delete a bottletype.');
-        }
-
-        // Find bottletype
-        BottleType.findOne({id: req.param('id')})
-            .exec((error, bottletype) => {
-                if (error) {
-                    return res.negotiate(error);
-                }
-                if(!bottletype) {
-                    return res.error(400, 'BadRequest', 'The requested bottletype cannot be found');
-                }
-                BottleType.destroy({id: bottletype.id}).exec((error) => {
-                    if (error) {
-                        return res.negotiate(error);
-                    }
-
-                    return res.ok();
-                });
-            });
-    }
+    //  destroy(req, res) {}
 
 
     /**
@@ -224,39 +100,7 @@ class BottleTypeController {
      * @apiUse forbiddenError
      * @apiUse notFoundError
      */
-     update(req, res) {
-        // Check permissions
-        if(!req.team.can('bottleType/admin')) {
-            return res.error(403, 'forbidden', 'You are not authorized to update a bottletype.');
-        }
-
-        // Find bottletype
-        BottleType.findOne({id: req.param('id')})
-            .exec((error, bottletype) => {
-                if (error) {
-                    return res.negotiate(error);
-                }
-                if(!bottletype) {
-                    return res.error(404, 'NotFound', 'The requested bottletype cannot be found');
-                }
-
-                // Update bottletype
-                bottletype.name = req.param('name', bottletype.name);
-                bottletype.shortName = req.param('shortName', bottletype.shortName);
-                bottletype.quantityPerBox = req.param('quantityPerBox', bottletype.quantityPerBox);
-                bottletype.sellPrice = req.param('sellPrice', bottletype.sellPrice);
-                bottletype.supplierPrice = req.param('supplierPrice', bottletype.supplierPrice);
-                bottletype.originalStock = req.param('originalStock', bottletype.originalStock);
-
-                bottletype.save((error) => {
-                    if (error) {
-                        return res.negotiate(error);
-                    }
-
-                    return res.ok(bottletype);
-                });
-            });
-    }
+    //  update(req, res) {}
 };
 
 module.exports = BottleTypeController;

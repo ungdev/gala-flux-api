@@ -1,11 +1,12 @@
-/**
- * BottleActionController
- *
- * @description :: Server-side logic for managing BottleActions
- * @help        :: See http://sailsjs.org/#!/documentation/concepts/Controllers
- */
+const Flux = require('../../Flux');
+const { ForbiddenError } = require('../../lib/Errors');
+const ModelController = require('../../lib/ModelController');
 
-class BottleActionController {
+class BottleActionController extends ModelController {
+
+    constructor() {
+        super(Flux.BottleAction);
+    }
 
     /**
      * @api {post} /bottleAction/subscribe Subscribe to new items
@@ -13,26 +14,7 @@ class BottleActionController {
      * @apiGroup BottleAction
      * @apiDescription Subscribe to all new items.
      */
-     subscribe(req, res) {
-        if(req.team.can('bottleAction/read') || req.team.can('bottleAction/admin')) {
-            BottleAction.watch(req);
-            BottleAction.find().exec((error, items) => {
-                if(error) return res.negotiate(error);
-                BottleAction.subscribe(req, _.pluck(items, 'id'));
-                return res.ok();
-            });
-        }
-        else if(req.team.can('bottleAction/restricted')) {
-            // Join only for update of it own bottles
-            sails.sockets.join(req, 'bottleAction/' + req.team.id, (error) => {
-                if (error) return res.negotiate(error);
-                return res.ok();
-            });
-        }
-        else {
-            return res.ok();
-        }
-    }
+    //  subscribe(req, res) {}
 
     /**
      * @api {post} /bottleAction/unsubscribe Unsubscribe from new items
@@ -40,16 +22,7 @@ class BottleActionController {
      * @apiGroup BottleAction
      * @apiDescription Unsubscribe from new items
      */
-     unsubscribe(req, res) {
-        sails.sockets.leave(req, 'bottleAction/' + req.team.id, () => {
-            BottleAction.unwatch(req);
-            BottleAction.find().exec((error, items) => {
-                if(error) return res.negotiate(error);
-                BottleAction.unsubscribe(req, _.pluck(items, 'id'));
-                return res.ok();
-            });
-        });
-    }
+    //  unsubscribe(req, res) {}
 
 
     /**
@@ -67,35 +40,7 @@ class BottleActionController {
      * @apiSuccess {integer} Array.bottle.quantity Number of bottles sold or moved (can be negative)
      * @apiSuccess {string} Array.bottle.operation Operation performed on the bottle (sold or moved)
      */
-
-     find(req, res) {
-        // Check permissions
-        if (!(req.team.can('bottleAction/admin') || req.team.can('bottleAction/read') || req.team.can('bottleAction/restricted'))) {
-            return res.error(403, 'forbidden', 'You are not authorized to view the bottle actions list.');
-        }
-
-        // read filters
-        let where = [];
-        if (req.allParams().filters) {
-            where = req.allParams().filters;
-        }
-        // if the requester is not admin, show only his team's bottleActions
-        if (req.team.can('bottleAction/restricted')) {
-            // "or and or" is not possibile in waterline, so we ignore other filters
-            where = [{ team: req.team.id }, { fromTeam: req.team.id }];
-        }
-
-        // Find bottleActions
-        BottleAction.find(where)
-            .exec((error, bottleActions) => {
-                if (error) {
-                    return res.negotiate(error);
-                }
-
-                return res.ok(bottleActions);
-            });
-    }
-
+    //  find(req, res) {}
 
     /**
      * @api {get} /bottleAction/count Give the counts of bottles
@@ -107,72 +52,81 @@ class BottleActionController {
      */
 
      count(req, res) {
-        // Check permissions
-        if (!(req.team.can('bottleAction/admin') || req.team.can('bottleAction/read') || req.team.can('bottleAction/restricted'))) {
-            return res.error(403, 'forbidden', 'You are not authorized to view the bottle count list.');
-        }
-
-        // read filters
-        let where = {};
-        // if the requester is not admin, show only his team's bottleActions
-        if (req.team.can('bottleAction/restricted')) {
-            where = [{ team: req.team.id }, { fromTeam: req.team.id }];
-        }
-
-        // Find bottleTypes
-        BottleType.find()
-        .exec((error, bottleTypes) => {
-            if (error) {
-                return res.negotiate(error);
-            }
-
-            // Find bottleActions
-            BottleAction.find(where)
-            .exec((error, bottleActions) => {
-                if (error) {
-                    return res.negotiate(error);
-                }
-
-                // Init result object
+        //  let filters = req.data.filters || {true: true};
+        //  if(!Array.isArray(filters)) {
+        //      filters = [filters];
+        //  }
+        //
+        //  let where = {
+        //      $or: this._model.getReadFilters(req.team, req.user),
+        //      $and: { $or: filters }
+        //  };
+        //
+        //  this._model.findAll(where)
+        //  .then(res.ok)
+        //  .catch(res.error);
+        //
+        // // read filters
+        // let where = {};
+        // // if the requester is not admin, show only his team's bottleActions
+        // if (req.team.can('bottleAction/restricted')) {
+        //     where = [{ team: req.team.id }, { fromTeam: req.team.id }];
+        // }
+        //
+        // // Find bottleTypes
+        // BottleType.find()
+        // .exec((error, bottleTypes) => {
+        //     if (error) {
+        //         return res.negotiate(error);
+        //     }
+        //
+        //     // Find bottleActions
+        //     BottleAction.find(where)
+        //     .exec((error, bottleActions) => {
+        //         if (error) {
+        //             return res.negotiate(error);
+        //         }
+        //
+        //         // Init result object
                 let result = {
                     null: {},
                 };
-                for (let type of bottleTypes) {
-                    result[null][type.id] = {new: type.originalStock, empty: 0};
-                }
-
-                // Update it with actions
-                for (let bottleAction of bottleActions) {
-                    // Init team level
-                    if(!result[bottleAction.team || null]) {
-                        result[bottleAction.team || null] = {};
-                    }
-                    if(!result[bottleAction.fromTeam || null]) {
-                        result[bottleAction.fromTeam || null] = {};
-                    }
-
-                    // Init bottleType level
-                    if(!result[bottleAction.team || null][bottleAction.type]) {
-                        result[bottleAction.team || null][bottleAction.type] = {new: 0, empty: 0};
-                    }
-                    if(!result[bottleAction.fromTeam || null][bottleAction.type]) {
-                        result[bottleAction.fromTeam || null][bottleAction.type] = {new: 0, empty: 0};
-                    }
-
-                    // Update state entry
-                    if(bottleAction.operation == 'purchased') {
-                        result[bottleAction.team || null][bottleAction.type].new -= bottleAction.quantity;
-                        result[bottleAction.team || null][bottleAction.type].empty += bottleAction.quantity;
-                    }
-                    else if(bottleAction.operation == 'moved') {
-                        result[bottleAction.fromTeam || null][bottleAction.type].new -= bottleAction.quantity;
-                        result[bottleAction.team || null][bottleAction.type].new += bottleAction.quantity;
-                    }
-                }
-
+        //         for (let type of bottleTypes) {
+        //             result[null][type.id] = {new: type.originalStock, empty: 0};
+        //         }
+        //
+        //         // Update it with actions
+        //         for (let bottleAction of bottleActions) {
+        //             // Init team level
+        //             if(!result[bottleAction.team || null]) {
+        //                 result[bottleAction.team || null] = {};
+        //             }
+        //             if(!result[bottleAction.fromTeam || null]) {
+        //                 result[bottleAction.fromTeam || null] = {};
+        //             }
+        //
+        //             // Init bottleType level
+        //             if(!result[bottleAction.team || null][bottleAction.type]) {
+        //                 result[bottleAction.team || null][bottleAction.type] = {new: 0, empty: 0};
+        //             }
+        //             if(!result[bottleAction.fromTeam || null][bottleAction.type]) {
+        //                 result[bottleAction.fromTeam || null][bottleAction.type] = {new: 0, empty: 0};
+        //             }
+        //
+        //             // Update state entry
+        //             if(bottleAction.operation == 'purchased') {
+        //                 result[bottleAction.team || null][bottleAction.type].new -= bottleAction.quantity;
+        //                 result[bottleAction.team || null][bottleAction.type].empty += bottleAction.quantity;
+        //             }
+        //             else if(bottleAction.operation == 'moved') {
+        //                 result[bottleAction.fromTeam || null][bottleAction.type].new -= bottleAction.quantity;
+        //                 result[bottleAction.team || null][bottleAction.type].new += bottleAction.quantity;
+        //             }
+        //         }
+        //
                 return res.ok(result);
-            });
-        });
+        //     });
+        // });
     }
 
     /**
@@ -191,49 +145,7 @@ class BottleActionController {
      * @apiUse badRequestError
      * @apiUse forbiddenError
      */
-
-     create(req, res) {
-        // Check permissions
-        if(req.team.can('bottleAction/restricted') || req.team.can('bottleAction/admin')) {
-
-            // find bottleType
-            BottleType.findOne({id: req.param('type')}).exec((error, bottleType) => {
-                if (error) {
-                    return res.negotiate(error);
-                }
-                if (!bottleType) {
-                    return res.error(400, 'BadRequest', 'Bottle type is not valid.');
-                }
-
-                // Check restricted permission
-                if(req.team.can('bottleAction/restricted')) {
-                    if(req.param('team') != req.team.id || req.param('fromTeam') || req.param('operation') != 'purchased') {
-                        return res.error(400, 'BadRequest', "You are only allowed to update state of purchased bottle in you team.");
-                    }
-                }
-
-                // Create bottleAction
-                bottleAction = {};
-                if (req.param('team')) bottleAction.team = req.param('team');
-                if (req.param('fromTeam')) bottleAction.fromTeam = req.param('fromTeam');
-                if (req.param('type')) bottleAction.type = req.param('type');
-                if (req.param('quantity') !== undefined) bottleAction.quantity = req.param('quantity');
-                if (req.param('operation')) bottleAction.operation = req.param('operation');
-
-                BottleAction.create(bottleAction).exec((error, bottleAction) => {
-                    if (error) {
-                        return res.negotiate(error);
-                    }
-
-                    // Update alerts
-                    BottleAction.checkForAlert(bottleAction.team, bottleType);
-                    BottleAction.checkForAlert(bottleAction.fromTeam, bottleType);
-
-                    return res.ok(bottleAction);
-                });
-            });
-        }
-    }
-};
+    //  create(req, res) {}
+}
 
 module.exports = BottleActionController;

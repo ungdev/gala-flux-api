@@ -1,11 +1,12 @@
-/**
- * BarrelTypeController
- *
- * @description :: Server-side logic for managing BarrelTypes
- * @help        :: See http://sailsjs.org/#!/documentation/concepts/Controllers
- */
+const Flux = require('../../Flux');
+const { ExpectedError } = require('../../lib/Errors');
+const ModelController = require('../../lib/ModelController');
 
-class BarrelTypeController {
+class BarrelTypeController extends ModelController {
+
+    constructor() {
+        super(Flux.BarrelType);
+    }
 
     /**
      * @api {post} /barreltype/subscribe Subscribe to new items
@@ -13,19 +14,7 @@ class BarrelTypeController {
      * @apiGroup BarrelType
      * @apiDescription Subscribe to all new items.
      */
-     subscribe(req, res) {
-        if(req.team.can('barrelType/read') || req.team.can('barrelType/admin')) {
-            BarrelType.watch(req);
-            BarrelType.find().exec((error, items) => {
-                if(error) return res.negotiate(error);
-                BarrelType.subscribe(req, _.pluck(items, 'id'));
-                return res.ok();
-            });
-        }
-        else {
-            return res.ok();
-        }
-    }
+    //  subscribe(req, res) {}
 
     /**
      * @api {post} /barreltype/unsubscribe Unsubscribe from new items
@@ -33,14 +22,7 @@ class BarrelTypeController {
      * @apiGroup BarrelType
      * @apiDescription Unsubscribe from new items
      */
-     unsubscribe(req, res) {
-        BarrelType.unwatch(req);
-        BarrelType.find().exec((error, items) => {
-            if(error) return res.negotiate(error);
-            BarrelType.unsubscribe(req, _.pluck(items, 'id'));
-            return res.ok();
-        });
-    }
+    //  unsubscribe(req, res) {}
 
     /**
      * @api {get} /barreltype
@@ -52,30 +34,7 @@ class BarrelTypeController {
      *
      * @apiUse forbiddenError
      */
-     find(req, res) {
-
-        // Check permissions
-        if (!req.team.can('barrelType/admin') && !req.team.can('barrelType/read')) {
-            return res.error(403, 'forbidden', 'You are not authorized to read the barrel types.');
-        }
-
-        // read filters
-        let where = {};
-        if (req.allParams().filters) {
-            where = req.allParams().filters;
-        }
-
-        // Find BarrelType
-        BarrelType.find(where)
-            .exec((error, barrelTypes) => {
-                if (error) {
-                    return res.negotiate(error);
-                }
-
-                return res.ok(barrelTypes);
-            });
-
-    }
+    //  find(req, res) {}
 
     /**
      * @api {post} /barreltype
@@ -94,28 +53,7 @@ class BarrelTypeController {
      * @apiUse badRequestError
      * @apiUse forbiddenError
      */
-     create(req, res) {
-
-        // Check permissions
-        if (!req.team.can('barrelType/admin')) {
-            return res.error(403, 'forbidden', 'You are not authorized to create an Barrel Type.');
-        }
-
-        // Create the BarrelType
-        BarrelType.create({
-            name: req.param('name'),
-            shortName: req.param('shortName'),
-            liters: req.param('liters'),
-            supplierPrice: req.param('supplierPrice'),
-            sellPrice: req.param('sellPrice')
-        }).exec((error, barrelType) => {
-            if (error) {
-                return res.negotiate(error);
-            }
-            return res.ok(barrelType);
-        });
-
-    }
+    //  create(req, res) {}
 
     /**
      * @api {put} /barreltype/:id
@@ -135,41 +73,7 @@ class BarrelTypeController {
      * @apiUse forbiddenError
      * @apiUse notFoundError
      */
-     update(req, res) {
-
-        // Check permissions
-        if (!req.team.can('barrelType/admin')) {
-            return res.error(403, 'forbidden', 'You are not authorized to update a Barrel Type.');
-        }
-
-        // Find the barrel type
-        BarrelType.findOne({id: req.param('id')})
-            .exec((error, barrelType) => {
-                if (error) {
-                    return res.negotiate(error);
-                }
-                if(!barrelType) {
-                    return res.error(404, 'notfound', 'The requested barrel type cannot be found');
-                }
-
-                // Update
-                barrelType.name = req.param('name', barrelType.name);
-                barrelType.shortName = req.param('shortName', barrelType.shortName);
-                barrelType.liters = req.param('liters', barrelType.liters);
-                barrelType.sellPrice = req.param('sellPrice', barrelType.sellPrice);
-                barrelType.supplierPrice = req.param('supplierPrice', barrelType.supplierPrice);
-
-                barrelType.save((error) => {
-                    if (error) {
-                        return res.negotiate(error);
-                    }
-
-                    return res.ok(barrelType);
-                });
-
-            });
-
-    }
+    //  update(req, res) {}
 
     /**
      * @api {delete} /barreltype/:id
@@ -182,30 +86,7 @@ class BarrelTypeController {
      * @apiUse forbiddenError
      * @apiUse notFoundError
      */
-     destroy(req, res) {
-
-        // Check permissions
-        if(!req.team.can('barrelType/admin')) {
-            return res.error(403, 'forbidden', 'You are not authorized to delete a barrel type.');
-        }
-
-        // Find the barrel type
-        BarrelType.findOne({id: req.param('id')})
-            .exec((error, barrelType) => {
-                if (error) return res.negotiate(error);
-
-                if(!barrelType) {
-                    return res.error(404, 'notfound', 'The requested barrel type cannot be found');
-                }
-
-                BarrelType.destroy({id: barrelType.id})
-                    .exec((error) => {
-                        if (error) return res.negotiate(error);
-
-                        return res.ok();
-                    });
-            });
-    }
+    //  destroy(req, res) {}
 
     /**
      * @api {post} /barreltype/barrel
@@ -238,82 +119,7 @@ class BarrelTypeController {
         }
 
         // get the barrel type
-        BarrelType.findOne({
-            'id': req.param('id')
-        }).exec((error, barrelType) => {
-            if (error) {
-                return res.negotiate(error);
-            }
-
-            // If the barrel type doesn't exists, throw error
-            if (!barrelType) {
-                return res.error(404, 'notFound', "Can't find the requested barrel type.");
-            }
-
-            // Get current list of barrel
-            Barrel.find({
-                type: barrelType.id
-            }).exec((error, barrels) => {
-                if (error) {
-                    return res.negotiate(error);
-                }
-
-                // Insert if the barrel doesn't exists
-                let toInsert = [];
-                for (let i = 1; i <= parseInt(req.param('number')); i++) {
-                    // Find in barrel list
-                    let found = false;
-                    for (let index in barrels) {
-                        if(barrels[index].num == i) {
-                            found = true;
-                            delete barrels[index];
-                            break;
-                        }
-                    }
-
-                    // If not found, add to insert list
-                    if(!found) {
-                        toInsert.push({
-                            type: req.param('id'),
-                            num: i,
-                            reference: barrelType.shortName + i,
-                        })
-                    }
-                }
-
-                // Add id of what's left to the delete list
-                let toDelete = [];
-                for (let barrel of barrels) {
-                    if(barrel) {
-                        toDelete.push(barrel.id);
-                    }
-                }
-
-                // Insert
-                Barrel.create(toInsert).exec((error, barrels) => {
-                    if (error) {
-                        return res.negotiate(error);
-                    }
-
-                    // log the list of new barrels
-                    BarrelHistory.pushToHistory(barrels, (error, barrelHistory) => {
-                        // if an error happened, call the callback with the error
-                        if (error) {
-                            return res.negotiate(error);
-                        }
-
-                        // Delete what's left
-                        Barrel.destroy({id: toDelete}).exec((error) => {
-                            if (error) {
-                                return res.negotiate(error);
-                            }
-
-                            return res.ok();
-                        });
-                    });
-                });
-            });
-        });
+        
     }
 };
 

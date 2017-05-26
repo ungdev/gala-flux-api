@@ -1,5 +1,5 @@
 const Flux = require('../../Flux');
-const Controller = require('./Controller');
+const ModelController = require('../../lib/ModelController');
 
 /**
  * @apiDefine badRequestError
@@ -45,7 +45,7 @@ const Controller = require('./Controller');
  */
 
 
-class TeamController extends Controller {
+class TeamController extends ModelController {
 
     constructor() {
         super(Flux.Team);

@@ -53,7 +53,7 @@ module.exports = {
                                     if (error) return sails.log.error('Error while checking team activity: cannot create the alert', error);
 
                                     // push this modification in the alert history
-                                    AlertHistory.pushToHistory(alert, (error, result) => {
+                                    AlertLog.pushToHistory(alert, (error, result) => {
                                         if (error) return sails.log.error('Error while checking team activity: cannot update alert history', error);
                                     });
 
