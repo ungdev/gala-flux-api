@@ -29,9 +29,10 @@ const Alert = Flux.sequelize.define('alert', {
     // users on this alert
     users: {
         type: Sequelize.TEXT,
-        defaultsTo: '[]',
         get: function () {
-            return JSON.parse(this.getDataValue('users'));
+            let value = this.getDataValue('users');
+            if(!value) return [];
+            return JSON.parse(value);
         },
         set: function (value) {
             this.setDataValue('users', JSON.stringify(value));
@@ -53,6 +54,7 @@ Model.buildReferences = () => {
     });
     Model.belongsTo(Flux.AlertButton, {
         hooks: true,
+        as: 'button',
     });
 };
 inheritBaseModel(Alert);
@@ -77,22 +79,26 @@ Model.getUserReadGroups = function(team, user) {
     return groups;
 };
 Model.getUserUpdateGroups = Model.getUserReadGroups;
-Model.getUserCreateGroups = () => {
-    return [];
+Model.getUserCreateGroups = (team, user) => {
+    let groups = [];
+    if(team.can(Model.name + '/admin')) {
+        return ['all'];
+    }
+    if(team.can(Model.name + '/restrictedSender')) {
+        groups.push('senderTeam:'+team.id);
+    }
+    return groups;
 };
-Model.getUserDestroyGroups = () => {
+Model.getUserDestroyGroups = (team, user) => {
     return [];
 };
 
 /**********************************************
  * Customize Item groups
  **********************************************/
-Model.prototype.getReadGroups = function() {
+Model.prototype.getItemGroups = function() {
     return ['all', 'senderTeam:'+this.senderTeamId, 'receiverTeam:'+(this.receiverTeamId || 'null') ];
 };
-Model.prototype.getCreateGroups = Model.prototype.getReadGroups;
-Model.prototype.getUpdateGroups = Model.prototype.getReadGroups;
-Model.prototype.getDestroyGroups = Model.prototype.getReadGroups;
 
 /**********************************************
  * Customize Filters

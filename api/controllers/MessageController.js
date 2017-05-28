@@ -89,6 +89,11 @@ class MessageController extends ModelController {
         // User can only create message from himself
         req.data.userId = req.user.id;
 
+        // Default send to own public channel
+        if(req.data.channel === null) {
+            req.data.channel = 'public:'+Flux.Message.toChannel(req.team.name);
+        }
+
         return super.create(req, res);
     }
 

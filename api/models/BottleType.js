@@ -58,6 +58,13 @@ const BottleType = Flux.sequelize.define('bottleType', {
 
 });
 const Model = BottleType;
+Model.buildReferences = () => {
+    // This function will be called once all models are initialized by Flux Object.
+    Model.hasMany(Flux.BottleAction, {
+        hooks: true,
+        foreignKey: 'typeId',
+    });
+};
 inheritBaseModel(BottleType);
 
 

@@ -1,7 +1,7 @@
 module.exports = {
     'get /alert': { action: 'AlertController.find', middlewares: ['auth', 'requireAuth'] },
     'put /alert/:id': { action: 'AlertController.update', middlewares: ['auth', 'requireAuth'] },
-    'put /alert/:id/users': { action: 'AlertController.updateAssignedUsers', middlewares: ['auth', 'requireAuth'] },
+    'post /alert': { action: 'AlertController.create', middlewares: ['auth', 'requireAuth'] },
     'post /alert/subscribe': { action: 'AlertController.subscribe', middlewares: ['auth', 'requireAuth'] },
     'post /alert/unsubscribe': { action: 'AlertController.unsubscribe', middlewares: ['auth', 'requireAuth'] },
 
@@ -9,7 +9,6 @@ module.exports = {
     'put /alertbutton/:id': { action: 'AlertButtonController.update', middlewares: ['auth', 'requireAuth'] },
     'post /alertbutton': { action: 'AlertButtonController.create', middlewares: ['auth', 'requireAuth'] },
     'delete /alertbutton/:id': { action: 'AlertButtonController.destroy', middlewares: ['auth', 'requireAuth'] },
-    'post /alertbutton/alert': { action: 'AlertButtonController.createAlert', middlewares: ['auth', 'requireAuth'] },
     'post /alertbutton/subscribe': { action: 'AlertButtonController.subscribe', middlewares: ['auth', 'requireAuth'] },
     'post /alertbutton/unsubscribe': { action: 'AlertButtonController.unsubscribe', middlewares: ['auth', 'requireAuth'] },
 
@@ -22,8 +21,8 @@ module.exports = {
     'post /auth/logout': { action: 'AuthController.logout', middlewares: ['auth', 'requireAuth'] },
 
     'get /barrel': { action: 'BarrelController.find', middlewares: ['auth', 'requireAuth'] },
-    'put /barrel/:id': { action: 'BarrelController.update', middlewares: ['auth', 'requireAuth'] },
     'put /barrel/location': { action: 'BarrelController.setLocation', middlewares: ['auth', 'requireAuth'] },
+    'put /barrel/:id': { action: 'BarrelController.update', middlewares: ['auth', 'requireAuth'] },
     'post /barrel/subscribe': { action: 'BarrelController.subscribe', middlewares: ['auth', 'requireAuth'] },
     'post /barrel/unsubscribe': { action: 'BarrelController.unsubscribe', middlewares: ['auth', 'requireAuth'] },
 
@@ -31,7 +30,7 @@ module.exports = {
     'put /barreltype/:id': { action: 'BarrelTypeController.update', middlewares: ['auth', 'requireAuth'] },
     'post /barreltype': { action: 'BarrelTypeController.create', middlewares: ['auth', 'requireAuth'] },
     'delete /barreltype/:id': { action: 'BarrelTypeController.destroy', middlewares: ['auth', 'requireAuth'] },
-    'post /barreltype/barrel': { action: 'BarrelTypeController.setBarrelNumber', middlewares: ['auth', 'requireAuth'] },
+    'post /barreltype/barrel': { action: 'BarrelTypeController.setBarrelCount', middlewares: ['auth', 'requireAuth'] },
     'post /barreltype/subscribe': { action: 'BarrelTypeController.subscribe', middlewares: ['auth', 'requireAuth'] },
     'post /barreltype/unsubscribe': { action: 'BarrelTypeController.unsubscribe', middlewares: ['auth', 'requireAuth'] },
 

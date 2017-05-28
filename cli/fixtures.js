@@ -165,15 +165,15 @@ inquirer.prompt({
 
     // set barrel counts
     return Promise.all([
-        Flux.Barrel.setCount(1, 30),
-        Flux.Barrel.setCount(2, 9),
-        Flux.Barrel.setCount(3, 8),
-        Flux.Barrel.setCount(4, 8),
-        Flux.Barrel.setCount(5, 15),
-        Flux.Barrel.setCount(6, 20),
-        Flux.Barrel.setCount(7, 8),
-        Flux.Barrel.setCount(8, 5),
-        Flux.Barrel.setCount(9, 8),
+        data[0].setCount(30),
+        data[1].setCount(9),
+        data[2].setCount(8),
+        data[3].setCount(8),
+        data[4].setCount(15),
+        data[5].setCount(20),
+        data[6].setCount(8),
+        data[7].setCount(5),
+        data[8].setCount(8),
     ]);
 })
 .then(() => {
@@ -208,10 +208,10 @@ inquirer.prompt({
 
     // Create bottletypes
     return Flux.BottleType.bulkCreate([
-        { name: 'Champagne', shortName: 'CHP', supplierPrice: 11.35, sellPrice: 21, quantityPerBox: 30, originalStock: 1464 },
-        { name: 'Vin blanc', shortName: 'VB', supplierPrice: 10.01, sellPrice: 17, quantityPerBox: 20, originalStock: 42 },
-        { name: 'Vin rosé', shortName: 'VRS', supplierPrice: 6.67, sellPrice: 15, quantityPerBox: 30, originalStock: 42 },
-        { name: 'Vin rouge', shortName: 'VRO', supplierPrice: 6.67, sellPrice: 15, quantityPerBox: 30, originalStock: 42 },
+        { name: 'Champagne', shortName: 'CHP', supplierPrice: 11.35, sellPrice: 21, quantityPerBox: 6, originalStock: 1464 },
+        { name: 'Vin blanc', shortName: 'VB', supplierPrice: 10.01, sellPrice: 17, quantityPerBox: 6, originalStock: 42 },
+        { name: 'Vin rosé', shortName: 'VRS', supplierPrice: 6.67, sellPrice: 15, quantityPerBox: 6, originalStock: 42 },
+        { name: 'Vin rouge', shortName: 'VRO', supplierPrice: 6.67, sellPrice: 15, quantityPerBox: 6, originalStock: 42 },
     ], options);
 })
 .then((data) => {
@@ -240,9 +240,9 @@ inquirer.prompt({
 
     // Create alerts
     return Flux.Alert.bulkCreate([
-        { title: 'Demande de délestage', severity: 'serious', message: '', users: '[]', senderTeamId: 18, receiverTeamId: 4, AlertButtonId: 1 },
-        { title: 'Gobelets pour softs', severity: 'warning', message: '', users: '[]', senderTeamId: 8, receiverTeamId: 2, AlertButtonId: 1 },
-        { title: 'Problème au niveau de la tireuse', severity: 'serious', message: 'Ça mousse trop !', users: '[]', senderTeamId: 10, receiverTeamId: 2, AlertButtonId: 1 },
+        { title: 'Demande de délestage', severity: 'serious', message: '', senderTeamId: 18, receiverTeamId: 4, AlertButtonId: 1 },
+        { title: 'Gobelets pour softs', severity: 'warning', message: '', senderTeamId: 8, receiverTeamId: 2, AlertButtonId: 1 },
+        { title: 'Problème au niveau de la tireuse', severity: 'serious', message: 'Ça mousse trop !', senderTeamId: 10, receiverTeamId: 2, AlertButtonId: 1 },
     ], options);
 
 

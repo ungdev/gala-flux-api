@@ -8,7 +8,7 @@ const BottleAction = Flux.sequelize.define('bottleAction', {
         type: Sequelize.INTEGER,
         allowNull: false,
         validate: {
-            min: 1,
+            notIn: [[0]],
         },
     },
 
@@ -29,6 +29,7 @@ Model.buildReferences = () => {
     });
     Model.belongsTo(Flux.BottleType, {
         hooks: true,
+        as: 'type',
     });
 };
 inheritBaseModel(BottleAction);
@@ -68,7 +69,7 @@ Model.getUserDestroyGroups = () => {
 /**********************************************
  * Customize Item groups
  **********************************************/
-Model.prototype.getReadGroups = function() {
+Model.prototype.getItemGroups = function() {
     let groups = ['all', 'team:'+this.fromTeamId, 'team:'+this.teamId ];
     if(this.operation == 'purchased') {
         groups.push('purchasedTeam:'+this.fromTeamId);
@@ -76,9 +77,6 @@ Model.prototype.getReadGroups = function() {
     }
     return groups;
 };
-Model.prototype.getCreateGroups = Model.prototype.getReadGroups;
-Model.prototype.getUpdateGroups = Model.prototype.getReadGroups;
-Model.prototype.getDestroyGroups = Model.prototype.getReadGroups;
 
 /**********************************************
  * Customize Filters

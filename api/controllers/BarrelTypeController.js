@@ -1,5 +1,5 @@
 const Flux = require('../../Flux');
-const { ExpectedError } = require('../../lib/Errors');
+const { ExpectedError, ForbiddenError, badRequestError, NotFoundError } = require('../../lib/Errors');
 const ModelController = require('../../lib/ModelController');
 
 class BarrelTypeController extends ModelController {
@@ -95,7 +95,7 @@ class BarrelTypeController extends ModelController {
      * @apiDescription Set the number of barrels from a barrel type
      *
      * @apiParam {string} id : The id of the barrel type (required)
-     * @apiParam {integer} number : the number of barrels to set for this Type
+     * @apiParam {integer} count : the number of barrels to set for this Type
      *
      * @apiSuccess {null} This endpoint return nothing, if you want to whole new list of barrel ask `find`
      *
@@ -103,24 +103,35 @@ class BarrelTypeController extends ModelController {
      * @apiUse forbiddenError
      * @apiUse notFoundError
      */
-     setBarrelNumber(req, res) {
+     setBarrelCount(req, res) {
 
         // Check permissions
         if(!req.team.can('barrelType/admin')) {
-            return res.error(403, 'forbidden', 'You are not authorized to create new barrels.');
+            throw new ForbiddenError('You are not authorized to update the number of barrels.');
         }
 
         // check parameters
-        if (!req.param('id')) {
-            return res.error(400, 'BadRequest', "Missing barrel type id");
+        if (!req.data.id) {
+            throw new BadRequestError('Missing barrel type id');
         }
-        if (req.param('number') && (parseInt(req.param('number')) < 0 || parseInt(req.param('number')) > 500)) {
-            return res.error(400, 'BadRequest', "The number of barrels to create must be a positive integer (less than 500).");
+        if (req.data.count && (parseInt(req.data.count) < 0 || parseInt(req.data.count) > 500)) {
+            throw new BadRequestError('The number of barrels to create must be a positive integer (less than 500).');
         }
 
-        // get the barrel type
-        
+        // Find barre type
+        Flux.BarrelType.findById(req.data.id)
+        .then(barrelType => {
+            if(!barrelType) throw new NotFoundError('Barrel type not found');
+
+            // Update barel count
+            return barrelType.setCount(parseInt(req.data.count));
+        })
+        .then(() => {
+            res.ok();
+        })
+        .catch(res.error);
+
     }
-};
+}
 
 module.exports = BarrelTypeController;

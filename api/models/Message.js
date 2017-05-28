@@ -96,13 +96,10 @@ Model.getUserDestroyGroups = () => {
 /**********************************************
  * Customize Item groups
  **********************************************/
-Model.prototype.getReadGroups = function() {
+Model.prototype.getItemGroups = function() {
     let category = this.channel ? this.channel.split(':')[0] : undefined;
     return ['all', 'channel:'+this.channel, 'category:'+category ];
 };
-Model.prototype.getCreateGroups = Model.prototype.getReadGroups;
-Model.prototype.getUpdateGroups = Model.prototype.getReadGroups;
-Model.prototype.getDestroyGroups = Model.prototype.getReadGroups;
 
 /**********************************************
  * Customize Filters
@@ -117,16 +114,15 @@ Model.getReadFilters = function(team, user) {
             return [true];
         }
         // Can read only one channel
-        else if(split.length == 2 && split[0] == 'channel') {
-            filters.push({'channel': split[1]});
+        else if(split[0] == 'channel') {
+            filters.push({'channel': group.substr(split[0].length+1)});
         }
         // Can read only one category of channel
-        else if(split.length == 2 && split[0] == 'category') {
-            filters.push({'channel': { $like: split[1]+':%'}});
+        else if(split[0] == 'category') {
+            filters.push({'channel': { $like: group.substr(split[0].length+1)+':%'}});
         }
     }
     return filters;
 };
-
 
 module.exports = Model;

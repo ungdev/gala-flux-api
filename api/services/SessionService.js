@@ -112,7 +112,7 @@ class SessionService {
      * @param  {Session} session Session to disconnect
      */
     static disconnect(session) {
-        session.disconnectedAt = Sequelize.NOW;
+        session.disconnectedAt = new Date();
         return session.save();
     }
 

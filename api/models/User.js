@@ -121,12 +121,9 @@ Model.getUserDestroyGroups = Model.getUserCreateGroups;
 /**********************************************
  * Customize Item groups
  **********************************************/
-Model.prototype.getReadGroups = function() {
+Model.prototype.getItemGroups = function() {
     return ['id:' + this.id, 'all', 'team:'+this.teamId];
 };
-Model.prototype.getCreateGroups = Model.prototype.getReadGroups;
-Model.prototype.getUpdateGroups = Model.prototype.getReadGroups;
-Model.prototype.getDestroyGroups = Model.prototype.getReadGroups;
 
 /**********************************************
  * Customize Filters
