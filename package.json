@@ -26,6 +26,7 @@
     "node": "7.6"
   },
   "scripts": {
+    "doc": "apidoc -f api",
     "start": "NODE_ENV=production node app",
     "test": "NODE_ENV=production node cli/test",
     "dev": "nodemon --ignore 'assets/uploads/*' app"

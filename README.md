@@ -2,16 +2,21 @@
 
 Sever side of the communication system created for the Gala UTT
 
+There is two documentations available for this project
+
+* [User documentation](https://github.com/ungdev/flux2-server/wiki/User-documentation): Use the API from a client
+* [Dev documentation](https://github.com/ungdev/flux2-server/wiki/Dev-documentation): Code on this project
+
 ## Steps for dev installation
 
 * Install [Yarn](https://yarnpkg.com/lang/en/docs/install/) and NodeJS 7
 * Clone the repo
 * `yarn install`
-* Copy `/config/local.js.dist` to `/config/local.js` and configure it.
-* Try to run the server a first time : `yarn dev`
+* If you need, copy `config/database.developemnt.js` into `config/database.developemnt.js` and update it.
+* You can now run the server with : `yarn dev`
 
 ### Fill the database
-To fill the database with half-random fixtures, run the following command.
+To reset the database and fill it with half-random fixtures, run the following command.
 
 ```
 node cli/fixtures.js
@@ -49,7 +54,7 @@ dokku config:set api.flux-dev.uttnetgroup.fr DOKKU_APP_NAME=api.flux-dev.uttnetg
 
 ## Create an admin account
 To start to use the application, you need at least one admin user.
-To create an admin account from command line, the server has to be stopped. Then run thoses two commands and follow the instructions.
+To create an admin account from command line. Then run thoses two commands and follow the instructions.
 
 ```
 node cli/createTeam.js # Not needed if you already fill the database with fixtures
