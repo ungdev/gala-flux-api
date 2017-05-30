@@ -92,7 +92,8 @@ class Flux {
             this.log.info('Websocket Server.. ');
             return FluxBootstrap.initWebsocket();
         })
-        .then(() => {
+        .then((io) => {
+            this._io = io;
             this.log.info(' -> OK');
             this.log.info('');
             this.log.info('Flux server started!');
@@ -187,13 +188,6 @@ class Flux {
      */
     get env() {
         return (process.env.NODE_ENV ? process.env.NODE_ENV : 'development');
-    }
-
-    /**
-     * Set socket io instance
-     */
-    set io(io) {
-        this._io = io;
     }
 
     /**

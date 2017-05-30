@@ -3,7 +3,7 @@ const Flux = require('./Flux');
 Flux.start()
 .then(() => {
     // Clean sessions disconnected on the last server shutdown
-    Flux.Session.update({disconnectedAt: new Date()}, { where: {$or: [true]} })
+    Flux.Session.update({disconnectedAt: new Date()}, { where: {disconnectedAt: null} })
     .catch((error) => {
         Flux.log.error('Error while trying to clean disconnected sessions');
         Flux.log.error(error);
