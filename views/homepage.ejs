@@ -1,63 +1,80 @@
-<style>
-    body, html {
-        font-family: Arial, Helvetica, sans-serif;
-        color: #1a1a1a;
-    }
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Flux API</title>
 
-    a {
-        text-decoration: none;
-        color: #00b8d4;
-    }
+        <!-- Viewport mobile tag for sensible mobile support -->
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
-    .HomePage {
-        height: 100%;
-        padding: 0;
-        margin: 0;
-        display: flex;
-        align-items: center;
-        flex-direction: column;
-    }
+<!-- Monitoring test content
+repo=<%= sails.config.git.repoSlug  %>
+branch=<%= sails.config.git.branch  %>
+commit=<%= sails.config.git.commit %>
+dokkuApp=<%= process.env.DOKKU_APP_NAME %>
+-->
+        <style>
+            body, html {
+                font-family: Arial, Helvetica, sans-serif;
+                color: #1a1a1a;
+            }
 
-    .HomePage > div {
-        max-width: 600px;
-        text-align: center;
-    }
+            a {
+                text-decoration: none;
+                color: #00b8d4;
+            }
 
-    .HomePage > div > h2 {
-        font-size: 7em;
-        font-weight: normal;
-        margin-bottom: 20px;
-    }
+            .HomePage {
+                height: 100%;
+                padding: 0;
+                margin: 0;
+                display: flex;
+                align-items: center;
+                flex-direction: column;
+            }
 
-    .HomePage__button {
-        display: inline-block;
-        text-decoration: none;
-        color: #fff;
-        background-color: #37474f;
-        border-radius: 2px;
-        padding: 0 16px;
-        margin-bottom: 20px;
-        height: 36px;
-        line-height: 36px;
-        box-shadow: 0px 1px 6px rgba(0, 0, 0, 0.12), 0px 1px 4px rgba(0, 0, 0, 0.12);
-        transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms;
-        font-size: 14px;
-        text-transform: uppercase;
-    }
+            .HomePage > div {
+                max-width: 600px;
+                text-align: center;
+            }
 
-    .HomePage__button:hover {
-        background-color: #879196;
-    }
-</style>
+            .HomePage > div > h2 {
+                font-size: 7em;
+                font-weight: normal;
+                margin-bottom: 20px;
+            }
 
-<div class="HomePage">
-    <div>
-        <h2>Flux API</h2>
-        <p>
-            Vous vous trouvez sur serveur de donnée de Flux. Il n'y a pas d'autres pages que celle-ci, mais si vous êtes intéressé par le projet, vous pouvez consulter le code source sur <a href="http://github.com/ungdev/flux2-server">Github</a>.
-        </p>
-        <a href="https://bar.utt.fr" class="HomePage__button">
-            Aller sur Flux
-        </a>
-    </div>
-</div>
+            .HomePage__button {
+                display: inline-block;
+                text-decoration: none;
+                color: #fff;
+                background-color: #37474f;
+                border-radius: 2px;
+                padding: 0 16px;
+                margin-bottom: 20px;
+                height: 36px;
+                line-height: 36px;
+                box-shadow: 0px 1px 6px rgba(0, 0, 0, 0.12), 0px 1px 4px rgba(0, 0, 0, 0.12);
+                transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms;
+                font-size: 14px;
+                text-transform: uppercase;
+            }
+
+            .HomePage__button:hover {
+                background-color: #879196;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="HomePage">
+            <div>
+                <h2>Flux API</h2>
+                <p>
+                    Vous vous trouvez sur serveur de donnée de Flux. Il n'y a pas d'autres pages que celle-ci, mais si vous êtes intéressé par le projet, vous pouvez consulter le code source sur <a href="http://github.com/ungdev/flux2-server">Github</a>.
+                </p>
+                <a href="https://bar.utt.fr" class="HomePage__button">
+                    Aller sur Flux
+                </a>
+            </div>
+        </div>
+    </body>
+</html>

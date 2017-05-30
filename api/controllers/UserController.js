@@ -257,7 +257,7 @@ class UserController extends ModelController {
             res.setHeader("Content-Type", "image/png");
             fs.createReadStream(Flux.rootdir + '/assets/images/default-avatar.png')
             .on('error', (error) => {
-                Flux.error('Error while streaming fallback avatar:', error);
+                Flux.log.error('Error while streaming fallback avatar:', error);
                 res.end();
             })
             .pipe(res);

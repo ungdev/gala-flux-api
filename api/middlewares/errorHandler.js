@@ -9,7 +9,7 @@ module.exports = function(err, req, res, next) {
         res.error(err);
     }
     else {
-        Flux.error(err);
+        Flux.log.error(err);
         res.status(500).json({});
     }
 };

@@ -83,7 +83,7 @@ module.exports = function (req, res, next) {
         // Print error only if there is something to print (not just an empty reject)
         // Anyway, the error will be ignored
         if(error) {
-            Flux.warn('Error while looking for session', error);
+            Flux.log.warn('Error while looking for session', error);
         }
         return next();
     });

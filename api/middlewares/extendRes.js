@@ -17,7 +17,7 @@ module.exports = function (req, res, next) {
             data = {};
         }
         if(typeof data !== 'object' && !Array.isArray(data)) {
-            Flux.error('res.ok(data) : `data` should be an object or an array, `' + (typeof data) + '` given');
+            Flux.log.error('res.ok(data) : `data` should be an object or an array, `' + (typeof data) + '` given');
             data = {};
         }
 
@@ -86,8 +86,8 @@ module.exports = function (req, res, next) {
         }
         // Unexpected error
         else if(code instanceof Error || !Number.isInteger(code)) {
-            Flux.error('Error 500:');
-            Flux.error(code);
+            Flux.log.error('Error 500:');
+            Flux.log.error(code);
 
             return res.error(500, 'UnexpectedError', 'Unexpected server error');
         }

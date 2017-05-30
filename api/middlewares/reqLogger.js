@@ -5,23 +5,23 @@ const Flux = require('../../Flux');
  */
 module.exports = function(req, res, next) {
     // Simple
-    Flux.debug('### Req:', req.method, req.originalUrl)
+    Flux.log.debug('### Req:', req.method, req.originalUrl)
 
     // Full mode
-    // Flux.debug('--------------- New request ---------------');
-    // Flux.debug('hostname', req.hostname);
-    // Flux.debug('protocol', req.protocol);
-    // Flux.debug('method', req.method);
-    // Flux.debug('path', req.path);
-    // Flux.debug('url', req.originalUrl);
-    // Flux.debug('headers', req.headers);
-    // Flux.debug('body', req.body);
-    // Flux.debug('ip', req.ip);
-    // Flux.debug('ips', req.ips);
-    // Flux.debug('params', req.params);
-    // Flux.debug('query', req.query);
-    // Flux.debug('route.path', req.route && req.route.path);
-    // Flux.debug('socket.id', req.socket && req.socket.id);
-    // Flux.debug('-------------------------------------------');
+    // Flux.log.debug('--------------- New request ---------------');
+    // Flux.log.debug('hostname', req.hostname);
+    // Flux.log.debug('protocol', req.protocol);
+    // Flux.log.debug('method', req.method);
+    // Flux.log.debug('path', req.path);
+    // Flux.log.debug('url', req.originalUrl);
+    // Flux.log.debug('headers', req.headers);
+    // Flux.log.debug('body', req.body);
+    // Flux.log.debug('ip', req.ip);
+    // Flux.log.debug('ips', req.ips);
+    // Flux.log.debug('params', req.params);
+    // Flux.log.debug('query', req.query);
+    // Flux.log.debug('route.path', req.route && req.route.path);
+    // Flux.log.debug('socket.id', req.socket && req.socket.id);
+    // Flux.log.debug('-------------------------------------------');
     return next();
 };

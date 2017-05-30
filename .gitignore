@@ -19,6 +19,8 @@
 
 assets/uploads/*
 !assets/uploads/.gitkeep
+assets/logs/*
+!assets/logs/.gitkeep
 
 ################################################
 # Local Configuration
@@ -39,7 +41,7 @@ assets/uploads/*
 #
 ################################################
 
-config/local.js
+config/*.local.js
 
 
 

@@ -23,7 +23,7 @@ module.exports = function(user) {
                 user.tokenExpiration = tokenExpiration;
                 user.save()
                 .catch((error) => {
-                    Flux.error('Error while trying to save new etuutt token to user:', user, error)
+                    Flux.log.error('Error while trying to save new etuutt token to user:', user, error)
                 });
             }
         },

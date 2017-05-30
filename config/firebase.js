@@ -1,4 +1,4 @@
-module.exports.firebase = {
+module.exports = {
     serviceAccount: {
         type: process.env.FIREBASE_TYPE,
         project_id: process.env.FIREBASE_PROJECT_ID,

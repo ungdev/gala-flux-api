@@ -63,7 +63,7 @@ class ErrorLogController extends ModelController {
         })
         // Don't send error to client because we already have an error in the client
         .catch((error) => {
-            Flux.error('Error while creating a new error log', error);
+            Flux.log.error('Error while creating a new error log', error);
             res.ok();
         });
     }
