@@ -54,7 +54,8 @@ dokku config:set api.flux-dev.uttnetgroup.fr DOKKU_APP_NAME=api.flux-dev.uttnetg
 ```
 
 And configure MySQL credentials
-dokku config:set api.flux-dev.uttnetgroup.fr FLUX_DB_HOST= FLUX_DB_NAME=flux FLUX_DB_USER=flux FLUX_DB_PASSWORD=
+dokku config:set api.flux.uttnetgroup.fr FLUX_DB_HOST= FLUX_DB_NAME=flux FLUX_DB_USER=flux FLUX_DB_PASSWORD=
+dokku config:set api.flux-dev.uttnetgroup.fr FLUX_DB_HOST= FLUX_DB_NAME=flux_dev FLUX_DB_USER=flux_dev FLUX_DB_PASSWORD=
 
 ## Create an admin account
 To start to use the application, you need at least one admin user.
