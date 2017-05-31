@@ -30,6 +30,7 @@ Model.buildReferences = () => {
         hooks: true,
         as: 'type',
     });
+
     // Place where the barrel is currently
     Model.belongsTo(Flux.Team, {
         hooks: true,
@@ -40,3 +41,6 @@ Model.buildReferences = () => {
     });
 };
 inheritBaseModel(BarrelLog);
+
+
+module.exports = Model;

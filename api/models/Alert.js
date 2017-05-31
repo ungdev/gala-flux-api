@@ -126,5 +126,26 @@ Model.getReadFilters = function(team, user) {
     return filters;
 };
 
+/**********************************************
+ * Log every create/update
+ **********************************************/
+Model.addHook('afterCreate', function(instance, options) {
+    // Log every creation
+    let alertLog = instance.get({plain: true});
+    delete alertLog.id;
+    alertLog.alertId = instance.id;
+
+    Flux.AlertLog.create(alertLog)
+    .catch(Flux.log.error);
+});
+Model.addHook('afterUpdate', function(instance, options) {
+    // Log every creation
+    let alertLog = instance.get({plain: true});
+    delete alertLog.id;
+    alertLog.alertId = instance.id;
+
+    Flux.AlertLog.create(alertLog)
+    .catch(Flux.log.error);
+});
 
 module.exports = Model;

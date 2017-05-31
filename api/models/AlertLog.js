@@ -29,9 +29,10 @@ const AlertLog = Flux.sequelize.define('alertLog', {
     // users on this alert
     users: {
         type: Sequelize.TEXT,
-        defaultsTo: '[]',
         get: function () {
-            return JSON.parse(this.getDataValue('users'));
+            let value = this.getDataValue('users');
+            if(!value) return [];
+            return JSON.parse(value);
         },
         set: function (value) {
             this.setDataValue('users', JSON.stringify(value));
@@ -51,8 +52,15 @@ Model.buildReferences = () => {
         hooks: true,
         as: 'receiverTeam',
     });
+    Model.belongsTo(Flux.AlertButton, {
+        hooks: true,
+        as: 'button',
+    });
     Model.belongsTo(Flux.Alert, {
         hooks: true,
     });
 };
 inheritBaseModel(AlertLog);
+
+
+module.exports = Model;

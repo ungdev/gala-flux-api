@@ -98,4 +98,26 @@ Model.getReadFilters = function(team, user) {
     return filters;
 };
 
+/**********************************************
+ * Log every create/update
+ **********************************************/
+Model.addHook('afterCreate', function(instance, options) {
+    // Log every creation
+    let barrelLog = instance.get({plain: true});
+    delete barrelLog.id;
+    barrelLog.barrelId = instance.id;
+
+    Flux.BarrelLog.create(barrelLog)
+    .catch(Flux.log.error);
+});
+Model.addHook('afterUpdate', function(instance, options) {
+    // Log every creation
+    let barrelLog = instance.get({plain: true});
+    delete barrelLog.id;
+    barrelLog.barrelId = instance.id;
+
+    Flux.BarrelLog.create(barrelLog)
+    .catch(Flux.log.error);
+});
+
 module.exports = Model;
