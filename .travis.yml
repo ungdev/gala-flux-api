@@ -11,8 +11,7 @@ cache:
 
 script:
     # Try to build and start
-    - yarn run build
-    - yarn run test
+    - yarn test
 deploy:
     - provider: script
       skip_cleanup: true

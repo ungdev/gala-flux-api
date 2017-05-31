@@ -22,6 +22,7 @@ To reset the database and fill it with half-random fixtures, run the following c
 node cli/fixtures.js
 ```
 
+
 ## Production deployment
 This app is made to have an auto deployment on master push. The app will be started as a test on travis-ci, which will then trigger the auto-deployment to a dokku server.
 
@@ -51,6 +52,9 @@ On the dokku app, you can configure EtuUTT api configuration and the JWT secret
 dokku config:set api.flux.uttnetgroup.fr DOKKU_APP_NAME=api.flux.uttnetgroup.fr ETUUTT_ID= ETUUTT_SECRET= JWT_SECRET=
 dokku config:set api.flux-dev.uttnetgroup.fr DOKKU_APP_NAME=api.flux-dev.uttnetgroup.fr ETUUTT_ID= ETUUTT_SECRET= JWT_SECRET=
 ```
+
+And configure MySQL credentials
+dokku config:set api.flux-dev.uttnetgroup.fr FLUX_DB_HOST= FLUX_DB_NAME=flux FLUX_DB_USER=flux FLUX_DB_PASSWORD=
 
 ## Create an admin account
 To start to use the application, you need at least one admin user.
