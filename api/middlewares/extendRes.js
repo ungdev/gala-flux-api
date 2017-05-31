@@ -89,6 +89,10 @@ module.exports = function (req, res, next) {
             Flux.log.error('Error 500:');
             Flux.log.error(code);
 
+            if(code instanceof Error) {
+                Flux.log.error(code, '');
+            }
+
             return res.error(500, 'UnexpectedError', 'Unexpected server error');
         }
         // Custom error
