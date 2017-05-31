@@ -102,7 +102,8 @@ class Flux {
         })
         .catch((error) => {
             this.log.error('Error during Flux bootstrap', error);
-        })
+            process.exit(1);
+        });
     }
 
     /**
@@ -110,7 +111,7 @@ class Flux {
      * @return {Promise} to the end of the stop
      */
     stop() {
-        this.log.info('Bye !')
+        this.log.info('Bye !');
         if(this.server) this.server.close();
         if(this.sequelize) this.sequelize.close();
     }
@@ -149,6 +150,7 @@ class Flux {
         })
         .catch((error) => {
             this.log.error('Error during Flux bootstrap', error);
+            process.exit(1);
         });
     }
 
