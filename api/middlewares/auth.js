@@ -8,8 +8,6 @@ const Flux = require('../../Flux');
  * If authentication is not possible, nothing will change, and the query will happened
  *
  * If you need the user to be authenticated, you can use the requireAuth middleware
- *
- * TODO update last activity in session even for http
  */
 module.exports = function (req, res, next) {
     // Find session entry

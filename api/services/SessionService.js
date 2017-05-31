@@ -30,7 +30,6 @@ class SessionService {
         if(socketId) or.push({socketId: socketId});
         if(deviceId) or.push({deviceId: deviceId});
         if(firebaseToken) or.push({firebaseToken: firebaseToken});
-        if(oldSessionId) or.push({id: oldSessionId});
         let where = {};
 
         if(or.length) {
@@ -60,8 +59,6 @@ class SessionService {
                 Flux.config.jwt.secret,
                 { expiresIn: Flux.config.jwt.expiresIn }
             );
-
-            console.log('jwt', jwt)
 
             return Promise.resolve(jwt);
         });
@@ -102,6 +99,7 @@ class SessionService {
         session.socketId = socketId;
         session.deviceId = deviceId;
         session.firebaseToken = firebaseToken;
+        session.lastAction = new Date();
 
         return session.save();
     }

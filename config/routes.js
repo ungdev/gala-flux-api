@@ -19,6 +19,7 @@ module.exports = {
     'get  /auth/roles': { action: 'AuthController.getRoles', middlewares: ['auth', 'requireAuth'] },
     'post /auth/as/:id': { action: 'AuthController.loginAs', middlewares: ['auth', 'requireAuth'] },
     'post /auth/logout': { action: 'AuthController.logout', middlewares: ['auth', 'requireAuth'] },
+    'post /auth/keepalive': { action: 'AuthController.keepAlive', middlewares: ['auth', 'requireAuth'] },
 
     'get /barrel': { action: 'BarrelController.find', middlewares: ['auth', 'requireAuth'] },
     'put /barrel/location': { action: 'BarrelController.setLocation', middlewares: ['auth', 'requireAuth'] },

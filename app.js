@@ -9,6 +9,33 @@ Flux.start()
         Flux.log.error(error);
     });
 
+    // Regularly try to clean timeout sessions
+    // (Not so often because it's only needed for HTTP sessions
+    // or if socket disconnection event didn't fire)
+    setInterval(() => {
+        let expiration = new Date();
+        expiration.setSeconds(expiration.getSeconds() - 90);
+
+        Flux.Session.findAll({ where: {disconnectedAt: null, lastAction: { lt: expiration } }})
+        .then((sessions) => {
+            for (let session of sessions) {
+                // If it's not socket, set disconnected
+                if(!Flux.io.sockets.connected[session.socketId]) {
+                    session.disconnectedAt = new Date();
+                    session.save()
+                    .catch(error => {
+                        Flux.log.warn('Error while trying set a session as disconnected');
+                        Flux.log.warn(error);
+                    });
+                }
+            }
+        })
+        .catch(error => {
+            Flux.log.warn('Error while trying to clean sessions');
+            Flux.log.warn(error);
+        });
+    }, 60000);
+
     // Init firebase
     if(Flux.config.firebase.database) {
         const admin = require("firebase-admin");

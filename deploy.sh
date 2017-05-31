@@ -16,7 +16,7 @@ if [[ -n $encrypted_799a7c5f264a_key ]] ; then
     ssh-keyscan -H $DOKKU_HOST >> ~/.ssh/known_hosts
     # Add commit with git original repo informations
     echo "
-    module.exports.git = {
+    module.exports = {
         repoSlug: '$TRAVIS_REPO_SLUG',
         branch: '$TRAVIS_BRANCH',
         commit: '$TRAVIS_COMMIT',

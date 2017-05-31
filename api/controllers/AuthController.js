@@ -338,10 +338,10 @@ class AuthController {
     }
 
     /**
-     * @api {post} /logout Inform that a user is disconnected
+     * @api {post} /auth/logout Inform that a user is disconnected
      * @apiName logout
      * @apiGroup Authentication
-     * @apiDescription Will give the disconnected user
+     * @apiDescription Will register the user as disconnected
      */
     logout(req, res) {
         SessionService.disconnect(req.session)
@@ -350,6 +350,18 @@ class AuthController {
         })
         .catch(res.error);
     }
-};
+
+    /**
+     * @api {post} /auth/keepalive Inform that a user is still connected
+     * @apiName keepalive
+     * @apiGroup Authentication
+     * @apiDescription 90 sec after the last request, the server will consider
+     * that user is disconnected. Use this method to tell to the server that
+     * user is still connected.
+     */
+    keepAlive(req, res) {
+        res.ok();
+    }
+}
 
 module.exports = AuthController;

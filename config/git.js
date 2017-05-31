@@ -3,7 +3,7 @@
  * It will be modified by travis on deploy
  */
 
-module.exports.git = {
+module.exports = {
     repoSlug: '',
     branch: '',
     commit: '',
