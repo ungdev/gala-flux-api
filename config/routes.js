@@ -39,7 +39,6 @@ module.exports = {
     'post /bottleaction': { action: 'BottleActionController.create', middlewares: ['auth', 'requireAuth'] },
     'post /bottleaction/subscribe': { action: 'BottleActionController.subscribe', middlewares: ['auth', 'requireAuth'] },
     'post /bottleaction/unsubscribe': { action: 'BottleActionController.unsubscribe', middlewares: ['auth', 'requireAuth'] },
-    'get /bottleaction/count': { action: 'BottleActionController.count', middlewares: ['auth', 'requireAuth'] },
 
     'get /bottletype': { action: 'BottleTypeController.find', middlewares: ['auth', 'requireAuth'] },
     'put /bottletype/:id': { action: 'BottleTypeController.update', middlewares: ['auth', 'requireAuth'] },

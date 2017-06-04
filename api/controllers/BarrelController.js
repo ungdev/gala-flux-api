@@ -1,5 +1,5 @@
 const Flux = require('../../Flux');
-const { ExpectedError, ForbiddenError, badRequestError, NotFoundError } = require('../../lib/Errors');
+const { ExpectedError, ForbiddenError, BadRequestError, NotFoundError } = require('../../lib/Errors');
 const ModelController = require('../../lib/ModelController');
 
 class BarrelController extends ModelController {

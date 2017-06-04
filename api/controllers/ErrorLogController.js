@@ -51,10 +51,10 @@ class ErrorLogController extends ModelController {
         req.data.userId = (req.user ? req.user.id : null);
 
         // Anti flood
-        Flux.ErrorLog.count({where: {ip: req.ip}})
+        Flux.ErrorLog.count({where: {ip: req.data.ip}})
         .then(count => {
             if(count >= 100) {
-                throw new Error('IP', ip, 'reach 100 errors. Next errors will not be logged into db');
+                throw new Error('IP '+ req.data.ip + ' reached 100 errors. Next errors will not be logged into db');
             }
 
             // Forward to parent
