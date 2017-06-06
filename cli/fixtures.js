@@ -53,7 +53,7 @@ Flux.startCLI().then(() => {
         return Flux.Team.bulkCreate([
             { name: 'Informatique', group: '', location: '', role: 'Développeur' },
             { name: 'Logistique', group: '', location: 'Foyer', role: 'Logistique' },
-            { name: 'SecUTT', group: '', location: 'Snack', role: 'SecUTT' },
+            { name: 'SecUTT', group: '', location: 'Snack', role: 'Receuveur d\'alerte' },
             { name: 'Tréso', group: '', location: '', role: 'Coord' },
             { name: 'Coord', group: '', location: '', role: 'Coord' },
             { name: 'Bar PMOM', group: 'Bar', location: 'B101', role: 'Bar' },
@@ -67,11 +67,11 @@ Flux.startCLI().then(() => {
             { name: 'Bar UNG', group: 'Bar', location: 'Hall M', role: 'Bar' },
             { name: 'Bar BDE/ISM', group: 'Bar', location: 'Amphi Ext', role: 'Bar' },
             { name: 'Bar DEFI', group: 'Bar', location: 'Chapiteau', role: 'Bar' },
-            { name: 'PDV Etu', group: 'PDV', location: 'Hall Etu', role: 'Point de vente' },
-            { name: 'PDV Entrée', group: 'PDV', location: 'Entrée', role: 'Point de vente' },
-            { name: 'PDV Accueil', group: 'PDV', location: 'Accueil UTT', role: 'Point de vente' },
-            { name: 'Vestiaire', group: '', location: 'Cafet', role: 'Point de vente' },
-            { name: 'Entrée', group: '', location: 'Entre H et M', role: 'Point de vente' },
+            { name: 'PDV Etu', group: 'PDV', location: 'Hall Etu', role: 'Espace orga' },
+            { name: 'PDV Entrée', group: 'PDV', location: 'Entrée', role: 'Espace orga' },
+            { name: 'PDV Accueil', group: 'PDV', location: 'Accueil UTT', role: 'Espace orga' },
+            { name: 'Vestiaire', group: '', location: 'Cafet', role: 'Espace orga' },
+            { name: 'Entrée', group: '', location: 'Entre H et M', role: 'Espace orga' },
             { name: 'Son & Lumière', group: '', location: '', role: 'Orga' },
             { name: 'Orgas', group: '', location: '', role: 'Orga' },
         ], options);
@@ -186,7 +186,7 @@ Flux.startCLI().then(() => {
 
         // Take only team that can receive barrels
         barrelTeams = teams.filter(team => {
-            return team.can('ui/receiveStock');
+            return team.can('ui/stockReceiver');
         });
 
 
