@@ -9,7 +9,7 @@ There is two documentations available for this project
 
 ## Steps for dev installation
 
-* Install [Yarn](https://yarnpkg.com/lang/en/docs/install/) and NodeJS 7
+* Install [Yarn](https://yarnpkg.com/lang/en/docs/install/) and NodeJS 8.9
 * Clone the repo
 * `yarn install`
 * Install a MariaDB server and create an empty database for Flux
