@@ -12,7 +12,8 @@ There is two documentations available for this project
 * Install [Yarn](https://yarnpkg.com/lang/en/docs/install/) and NodeJS 7
 * Clone the repo
 * `yarn install`
-* If you need, copy `config/database.developemnt.js` into `config/database.developemnt.js` and update it.
+* Install a MariaDB server and create an empty database for Flux
+* If needed, copy `config/database.js` into `config/database.local.js` and update it
 * You can now run the server with : `yarn dev`
 
 ### Fill the database
