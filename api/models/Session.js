@@ -5,17 +5,17 @@ const inheritBaseModel = require('../../lib/BaseModel');
 const Session = Flux.sequelize.define('session', {
 
     deviceId: {
-        type: Sequelize.STRING,
+        type: Sequelize.STRING(191),
         unique: true,
     },
 
     firebaseToken: {
-        type: Sequelize.STRING,
+        type: Sequelize.STRING(191),
         unique: true,
     },
 
     socketId: {
-        type: Sequelize.STRING,
+        type: Sequelize.STRING(191),
         unique: true,
     },
 

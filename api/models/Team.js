@@ -5,7 +5,7 @@ const inheritBaseModel = require('../../lib/BaseModel');
 const Team = Flux.sequelize.define('team', {
 
     name: {
-        type: Sequelize.STRING,
+        type: Sequelize.STRING(191),
         allowNull: false,
         unique: true,
         validate: {

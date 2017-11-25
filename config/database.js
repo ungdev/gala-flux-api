@@ -7,6 +7,6 @@ module.exports = {
     password: process.env.FLUX_DB_PASSWORD || '',
 
     // Will log every query into console
-    logging: false,
+    logging: true,
 
 };

@@ -5,7 +5,7 @@ const inheritBaseModel = require('../../lib/BaseModel');
 const BottleType = Flux.sequelize.define('bottleType', {
 
     name: {
-        type: Sequelize.STRING,
+        type: Sequelize.STRING(191),
         unique: true,
         allowNull: false,
         validate: {
@@ -14,7 +14,7 @@ const BottleType = Flux.sequelize.define('bottleType', {
     },
 
     shortName: {
-        type: Sequelize.STRING,
+        type: Sequelize.STRING(191),
         allowNull: false,
         unique: true,
         validate: {

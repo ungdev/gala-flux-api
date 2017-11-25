@@ -6,7 +6,7 @@ const BarrelType = Flux.sequelize.define('barrelType', {
 
     // full name of the barrel's content (example: Chouffe)
     name: {
-        type: Sequelize.STRING,
+        type: Sequelize.STRING(191),
         unique: true,
         allowNull: false,
         validate: {
@@ -16,7 +16,7 @@ const BarrelType = Flux.sequelize.define('barrelType', {
 
     // short name of the barrel's content (example: CH)
     shortName: {
-        type: Sequelize.STRING,
+        type: Sequelize.STRING(191),
         allowNull: false,
         unique: true,
         validate: {

@@ -4,12 +4,12 @@ const inheritBaseModel = require('../../lib/BaseModel');
 
 const User = Flux.sequelize.define('user', {
     login: {
-        type: Sequelize.STRING,
+        type: Sequelize.STRING(191),
         unique: true,
     },
 
     ip: {
-        type: Sequelize.STRING,
+        type: Sequelize.STRING(191),
         unique: true,
         validate: {
             isIP: true,

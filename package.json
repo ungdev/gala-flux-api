@@ -25,7 +25,7 @@
     "winston": "^2.3.1"
   },
   "engines": {
-    "node": "7.6"
+    "node": "8.9"
   },
   "scripts": {
     "doc": "apidoc -f api",
