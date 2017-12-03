@@ -17,8 +17,8 @@
 # to fit your needs!
 ################################################
 
-assets/uploads/*
-!assets/uploads/.gitkeep
+assets/uploads/user/avatar/*
+!assets/uploads/user/avatar/.gitkeep
 assets/logs/*
 !assets/logs/.gitkeep
 
