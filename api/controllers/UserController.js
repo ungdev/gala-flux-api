@@ -265,6 +265,66 @@ class UserController extends ModelController {
     }
 
 
+    /**
+     * @api {put} /user/preferences
+     * @apiName Update own preferences
+     * @apiGroup User
+     * @apiDescription User entity should not be modified by all user except for
+     * the preferences json field. This endpoint let you edit your own preference
+     * field.
+     *
+     * @apiParam {Object} preferences : A preferences object
+     *
+     * @apiSuccess {Object} This preferences object you just submitted (but with
+     * filtered of useless values)
+     *
+     * @apiUse badRequestError
+     */
+     setPreferences(req, res) {
+        // check parameters
+        if (!req.data.preferences) {
+            throw new BadRequestError('Missing preferences object');
+        }
+
+        // Clean the object
+        Flux.User.cleanPreferences(req.data.preferences, req.team)
+        .then(preferences => {
+
+            // Update it
+            req.user.preferences = preferences;
+            return req.user.save()
+        })
+        .then(() => {
+            Flux.io.to('user:' + req.user.id).emit('preferences', {
+                userId: req.user.id,
+                preferences: req.user.preferences,
+            });
+            return res.ok();
+        })
+        .catch(res.error);
+    }
+
+
+    /**
+     * @api {get} /user/preferences
+     * @apiName Get own preferences
+     * @apiGroup User
+     * @apiDescription You cannot read preferences on classical endpoint because
+     * you cannot read preferences of other users. So use this endpoint to read
+     * your own preferencces. Preferences are cleaned in this endpoint so you can
+     * easily use this object as channel list and receiver team list
+     *
+     * @apiParam {Object} preferences : A preferences object
+     *
+     * @apiSuccess {Object} This preferences object of the authenticated user
+     */
+     getPreferences(req, res) {
+        // Clean the object
+        Flux.User.cleanPreferences(req.user.preferences, req.team)
+        .then(res.ok)
+        .catch(res.error);
+    }
+
 
     /**
      * @api {post} /user/subscribe Subscribe to new items

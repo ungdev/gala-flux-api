@@ -71,7 +71,7 @@ class AuthController {
             }
 
             // Create session
-            return SessionService.create(user, req.ip, req.socket.id, req.data.deviceId, req.data.firebaseToken);
+            return SessionService.create(user, req.ip, req.socket, req.data.deviceId, req.data.firebaseToken);
         })
         .then(jwt => {
             res.ok({jwt});
@@ -208,7 +208,7 @@ class AuthController {
         })
         .then((user) => {
             // Create session
-            return SessionService.create(user, req.ip, req.socket.id, req.data.deviceId, req.data.firebaseToken);
+            return SessionService.create(user, req.ip, req.socket, req.data.deviceId, req.data.firebaseToken);
         })
         .then(jwt => {
             res.ok({jwt});
@@ -260,7 +260,7 @@ class AuthController {
         })
         .then((user) => {
             // Create session
-            return SessionService.create(user, req.ip, req.socket.id, req.data.deviceId, req.data.firebaseToken, sessionId);
+            return SessionService.create(user, req.ip, req.socket, req.data.deviceId, req.data.firebaseToken, sessionId);
         })
         .then(jwt => {
             res.ok({jwt});
@@ -305,7 +305,7 @@ class AuthController {
             }
 
             // Create session
-            return SessionService.create(user, req.ip, req.socket.id, req.data.deviceId, req.data.firebaseToken);
+            return SessionService.create(user, req.ip, req.socket, req.data.deviceId, req.data.firebaseToken);
         })
         .then(jwt => {
             res.ok({jwt});

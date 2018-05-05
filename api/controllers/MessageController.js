@@ -105,55 +105,17 @@ class MessageController extends ModelController {
      * @apiDescription Get the list of channels according to read permissions
      * @apiSuccess {Array} list An array of channel name (without #)
      */
-     getChannels(req, res) {
-        let list = new Set();
-
-        // Receive #group:[groupname] and #[teamname] but can send only in #[teamname]
-        if(req.team.can('message/oneChannel')) {
-            list.add('public:'+Flux.Message.toChannel(req.team.name));
-            list.add('group:'+Flux.Message.toChannel(req.team.group));
-            return res.ok([...list]);
-        }
-        else if(req.team.can('message/admin') || req.team.can('message/public')) {
-            list.add('public:General');
-            Flux.Team.findAll()
-            .then(teams => {
-                // Public
-                for (let team of teams) {
-                    list.add('public:'+Flux.Message.toChannel(team.name));
-                }
-
-                // Group
-                if(req.team.can('message/group') || req.team.can('message/admin')) {
-                    for (let team of teams) {
-                        list.add('group:'+Flux.Message.toChannel(team.group));
-                    }
-                }
-                else {
-                    list.add('group:'+Flux.Message.toChannel(req.team.group));
-                }
-
-                // Private
-                if(req.team.can('message/private')) {
-                    list.add('private:'+Flux.Message.toChannel(req.team.name));
-                }
-                else if(req.team.can('message/admin')){
-                    for (let team of teams) {
-                        if(team.can('message/private') || team.can('message/admin')) {
-                            list.add('private:'+Flux.Message.toChannel(team.name));
-                        }
-                    }
-                }
-
-                let out = [...list];
-                out.sort();
-                return res.ok(out);
-            })
-            .catch(res.error);
-        }
-        else {
-            return res.error(403, 'forbidden', 'You are not authorized to read any channel');
-        }
+    getChannels(req, res) {
+        Flux.Message.getChannelList(req.team)
+        .then(list => {
+            if(list.length > 0) {
+                return res.ok(list);
+            }
+            else {
+                return res.error(403, 'forbidden', 'You are not authorized to read any channel');
+            }
+        })
+        .catch(res.error);
     }
 }
 

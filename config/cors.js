@@ -7,6 +7,6 @@
  */
 
 module.exports = {
-    origin: ['http://localhost:8080','https://flux.uttnetgroup.fr','https://flux-dev.uttnetgroup.fr','https://bar.utt.fr'],
+    origin: ['http://localhost:8080','http://localhost:8081','https://flux.uttnetgroup.fr','https://flux-dev.uttnetgroup.fr','https://bar.utt.fr'],
     allowedHeaders: ['Authorization','content-type'],
 };

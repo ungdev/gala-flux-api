@@ -14,20 +14,24 @@ class SessionService {
      *
      * @param  {User} user The user  associated with this session
      * @param  {string} ip Required ip from which the user the connect
-     * @param  {string} socketId Socket id if its a socket connection
+     * @param  {Socket} socket Socket object if its a socket connection
      * @param  {string} deviceId device id if its a smartphone
      * @param  {string} firebaseToken firebaseToken if its a smartphone
      * @param  {int} oldSessionId facultative session to be replaced
      * @return {Promise} A promise to the generated JWT
      */
-    static create(user, ip, socketId, deviceId, firebaseToken, oldSessionId) {
+    static create(user, ip, socket, deviceId, firebaseToken, oldSessionId) {
         if(!user) {
             return Promise.reject(new Error('User is null'));
         }
 
+        // Subscribe this socket to the user-specific room
+        // (to update user perences for instance)
+        socket.join('user:' + user.id);
+
         // Delete session to be replaced
         let or = [];
-        if(socketId) or.push({socketId: socketId});
+        if(socket.id) or.push({socketId: socket.id});
         if(deviceId) or.push({deviceId: deviceId});
         if(firebaseToken) or.push({firebaseToken: firebaseToken});
         let where = {};
@@ -43,7 +47,7 @@ class SessionService {
             let session = Flux.Session.build({
                 userId: user.id,
                 ip,
-                socketId,
+                socketId: socket.id,
                 deviceId,
                 firebaseToken,
             });

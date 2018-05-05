@@ -44,6 +44,61 @@ Model.toChannel = function(name) {
     return name.replace(':','-');
 };
 
+/**
+ * Get channel list available for a specified team
+ * @param {Team} team The team
+ * @return {Promise(array)} The promise to an array of channel name as string
+ */
+Model.getChannelList = function(team) {
+    return new Promise((resolve, reject) => {
+        let list = new Set();
+        // Receive #group:[groupname] and #[teamname] but can send only in #[teamname]
+        if(team.can('message/oneChannel')) {
+            list.add('public:'+Flux.Message.toChannel(team.name));
+            list.add('group:'+Flux.Message.toChannel(team.group));
+            return resolve([...list]);
+        }
+        else if(team.can('message/admin') || team.can('message/public')) {
+            list.add('public:General');
+            Flux.Team.findAll()
+            .then(teams => {
+                // Public
+                for (let team of teams) {
+                    list.add('public:'+Flux.Message.toChannel(team.name));
+                }
+
+                // Group
+                if(team.can('message/group') || team.can('message/admin')) {
+                    for (let team of teams) {
+                        if(team.group) {
+                            list.add('group:'+Flux.Message.toChannel(team.group));
+                        }
+                    }
+                }
+                else {
+                    list.add('group:'+Flux.Message.toChannel(team.group));
+                }
+
+                // Private
+                if(team.can('message/private')) {
+                    list.add('private:'+Flux.Message.toChannel(team.name));
+                }
+                else if(team.can('message/admin')){
+                    for (let team of teams) {
+                        if(team.can('message/private') || team.can('message/admin')) {
+                            list.add('private:'+Flux.Message.toChannel(team.name));
+                        }
+                    }
+                }
+
+                let out = [...list];
+                out.sort();
+                return resolve(out);
+            })
+            .catch(reject);
+        }
+    });
+}
 
 /**********************************************
  * Customize User groups

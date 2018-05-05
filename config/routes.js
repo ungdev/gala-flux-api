@@ -65,6 +65,8 @@ module.exports = {
     'post /team/unsubscribe': { action: 'TeamController.unsubscribe', middlewares: ['auth', 'requireAuth'] },
 
     'get /user': { action: 'UserController.find', middlewares: ['auth', 'requireAuth'] },
+    'put /user/preferences': { action: 'UserController.setPreferences', middlewares: ['auth', 'requireAuth'] },
+    'get /user/preferences': { action: 'UserController.getPreferences', middlewares: ['auth', 'requireAuth'] },
     'put /user/:id': { action: 'UserController.update', middlewares: ['auth', 'requireAuth'] },
     'post /user': { action: 'UserController.create', middlewares: ['auth', 'requireAuth'] },
     'delete /user/:id': { action: 'UserController.destroy', middlewares: ['auth', 'requireAuth'] },
@@ -73,7 +75,6 @@ module.exports = {
     'post /user/avatar/:id': { action: 'UserController.uploadAvatar', middlewares: ['auth', 'requireAuth'], file: 'avatar' },
     'post /user/subscribe': { action: 'UserController.subscribe', middlewares: ['auth', 'requireAuth'] },
     'post /user/unsubscribe': { action: 'UserController.unsubscribe', middlewares: ['auth', 'requireAuth'] },
-
     'get /session': { action: 'SessionController.find', middlewares: ['auth', 'requireAuth'] },
     'post /session/subscribe': { action: 'SessionController.subscribe', middlewares: ['auth', 'requireAuth'] },
     'post /session/unsubscribe': { action: 'SessionController.unsubscribe', middlewares: ['auth', 'requireAuth'] },
