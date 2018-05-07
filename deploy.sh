@@ -7,7 +7,7 @@ if [[ -n $SSH_DEPLOY_KEY ]] ; then
     # Set up ssh key
     mkdir -p ~/.ssh
     eval $(ssh-agent -s)
-    ssh-add <(echo "$SSH_DEPLOY_KEY")
+    ssh-add - <<< "${SSH_DEPLOY_KEY}"
     # SSH config
     echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
     # Add dokku to known hosts
