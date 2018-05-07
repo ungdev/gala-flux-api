@@ -53,11 +53,15 @@ module.exports = function (req, res, next) {
                         session.save(err => {
                             if (err) return res.negotiate(error);
 
-                            AlertService.checkTeamActivity(user.team);
+                            if (user.ip) {
+                                AlertService.checkTeamActivity(user.team);
+                            }
                             return next();
                         });
                     } else {
-                        AlertService.checkTeamActivity(user.team);
+                        if (user.ip) {
+                            AlertService.checkTeamActivity(user.team);
+                        }
                         return next();
                     }
                 });

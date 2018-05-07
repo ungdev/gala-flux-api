@@ -202,8 +202,6 @@ module.exports = {
 
                 user.save((error) => {
                     if (error) return res.negotiate(error);
-
-                    AlertService.checkTeamActivity(user.team);
                 });
 
 

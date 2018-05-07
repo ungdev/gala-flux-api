@@ -86,8 +86,6 @@ module.exports = {
                 session.disconnectedAt = Date.now();
                 session.save(err => {
                     if (err) return err;
-
-                    callCheckTeamActivity(session.user);
                     return null;
                 });
             } else {
@@ -106,7 +104,7 @@ module.exports = {
 
 function callCheckTeamActivity(userId) {
     User.findOne({id: userId}).exec((err, user) => {
-        if (!err && user) {
+        if (!err && user && user.ip) {
             AlertService.checkTeamActivity(user.team);
         }
     });
