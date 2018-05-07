@@ -9,8 +9,6 @@ if [[ -n $SSH_DEPLOY_KEY ]] ; then
     echo -e "${SSH_DEPLOY_KEY}" > ~/.ssh/id_rsa
     chmod 600 ~/.ssh/id_rsa
     eval $(ssh-agent -s)
-    cat ~/.ssh/id_rsa
-    echo $SSH_DEPLOY_KEY
     ssh-add ~/.ssh/id_rsa
     # SSH config
     echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
