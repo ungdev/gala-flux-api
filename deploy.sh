@@ -6,8 +6,10 @@ DOKKU_DEV=api.flux-dev.uttnetgroup.fr
 if [[ -n $SSH_DEPLOY_KEY ]] ; then
     # Set up ssh key
     mkdir -p ~/.ssh
+    echo "${SSH_DEPLOY_KEY}" > ~/.ssh/id_rsa
+    chmod 600 ~/.ssh/id_rsa
     eval $(ssh-agent -s)
-    ssh-add - <<< "${SSH_DEPLOY_KEY}"
+    ssh-add ~/.ssh/id_rsa
     # SSH config
     echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
     # Add dokku to known hosts
