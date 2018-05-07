@@ -6,7 +6,7 @@ DOKKU_DEV=api.flux-dev.uttnetgroup.fr
 if [[ -n $SSH_DEPLOY_KEY ]] ; then
     # Set up ssh key
     mkdir -p ~/.ssh
-    echo "${SSH_DEPLOY_KEY}" > ~/.ssh/id_rsa
+    echo -e "${SSH_DEPLOY_KEY}" > ~/.ssh/id_rsa
     chmod 600 ~/.ssh/id_rsa
     eval $(ssh-agent -s)
     ssh-add ~/.ssh/id_rsa
