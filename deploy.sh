@@ -3,13 +3,11 @@ DOKKU_HOST=ung.utt.fr
 DOKKU_PROD=api.flux.uttnetgroup.fr
 DOKKU_DEV=api.flux-dev.uttnetgroup.fr
 
-if [[ -n $encrypted_799a7c5f264a_key ]] ; then
+if [[ -n $SSH_DEPLOY_KEY ]] ; then
     # Set up ssh key
-    openssl aes-256-cbc -K $encrypted_799a7c5f264a_key -iv $encrypted_799a7c5f264a_iv -in deploy_key.enc -out deploy_key -d
-    chmod 600 deploy_key
-    mv deploy_key ~/.ssh/id_rsa
-    eval $(ssh-agent)
-    ssh-add ~/.ssh/id_rsa
+    mkdir -p ~/.ssh
+    eval $(ssh-agent -s)
+    ssh-add <(echo "$SSH_DEPLOY_KEY")
     # SSH config
     echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
     # Add dokku to known hosts
