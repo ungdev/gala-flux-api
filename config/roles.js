@@ -90,6 +90,7 @@ module.exports.roles = {
         'team/read',
         'ui/admin',
         'user/read',
+        'ui/receiveAlerts',
     ],
     'Logistique': [
         'alert/restrictedReceiver',
