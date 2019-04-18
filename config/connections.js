@@ -58,11 +58,7 @@ module.exports.connections = {
     ***************************************************************************/
     mongoDev: {
         adapter: 'sails-mongo',
-        host: 'localhost',
-        port: 27017,
-        // user: 'username', //optional
-        // password: 'password', //optional
-        database: 'flux'
+        url: process.env.MONGO_URL || 'mongodb://localhost:27017/flux',
     },
 
     mongoProd: {
