@@ -93,7 +93,7 @@ module.exports.roles = {
         'ui/receiveAlerts',
     ],
     'Logistique': [
-        'alert/restrictedReceiver',
+        'alert/admin', // set back to restrictedReceiver when issue is fixed (restrictedReceiver can't receive auto notifications)
         'alertButton/admin',
         'barrel/admin',
         'barrelType/admin',
