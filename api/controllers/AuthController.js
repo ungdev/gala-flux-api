@@ -56,7 +56,7 @@ module.exports = {
      *
      */
     ipLogin: function (req, res) {
-        User.attemptIpAuth((req.ip ? req.ip : req.socket.handshake.address), (err, user) => {
+        User.attemptIpAuth((req.ip ? req.ip.split(',')[0] : req.headers['x-forwarded-for'].split(',')[0]), (err, user) => {
             if (err) {
                 return res.negotiate(err);
             }
