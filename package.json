@@ -35,7 +35,7 @@
     "simple-oauth2": "^1.1.0"
   },
   "engines": {
-    "node": "^11.10.1"
+    "node": "^7.6"
   },
   "scripts": {
     "build": "node_modules/.bin/grunt prod",
