@@ -221,15 +221,15 @@ module.exports = {
         // its own #group:[groupname] channel
         else if(Team.can(req, 'message/public')) {
             let authorized = [
-                '/^public\:.+$/g',
-                '/^group\:' + Message.toChannel(req.team.group) + '$/g',
+                '^public\:.+$',
+                '^group\:' + Message.toChannel(req.team.group) + '$',
             ];
 
             if(Team.can(req, 'message/group')) {
-                authorized.push('/^group\:.+$/g');
+                authorized.push('^group\:.+$');
             }
             if(Team.can(req, 'message/private')) {
-                authorized.push('/^private\:' + Message.toChannel(req.team.name) + '$/g');
+                authorized.push('^private\:' + Message.toChannel(req.team.name) + '$');
             }
 
             var match = _.some(authorized, (regex) => {
