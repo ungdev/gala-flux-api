@@ -48,7 +48,13 @@
  */
 
 let interval = null
-
+let buckless = null
+try{
+  buckless = new BucklessService()
+}
+catch(e){
+  console.log(e)
+}
 module.exports = {
     /**
      * @api {post} /team/subscribe Subscribe to new items
@@ -75,42 +81,26 @@ module.exports = {
                         console.log(error)
                         return
                     }
-                    teams.forEach(team => {
-                        if (team.point) {
-                            //request @ buckless with team.point
-                            let result = [
-                                {
-                                    price: 200,
-                                    id: '29475ae6-ba01-409a-af8f-5bbf33b4dc92',
-                                    totalTI: '1200',
-                                    count: '60',
-                                    name: 'Chouffe'
-                                },
-                                {
-                                    price: 100,
-                                    id: '1d566842-b5d7-4722-be93-f7c3c6e53fba',
-                                    totalTI: '1000',
-                                    count: '10',
-                                    name: 'Flute'
-                                },
-                                {
-                                    price: 2500,
-                                    id: '1365b79d-53d2-4acf-9181-e28d44d1dc14',
-                                    totalTI: '25000',
-                                    count: '10',
-                                    name: 'Phlippaux Grand Brut Réserve'
-                                }
-                            ]
-                            console.log('saving result to team ', team.name)
-                            team.stats = JSON.stringify(result)
-                            team.save(error => {
-                                if (error) {
-                                    console.log(error)
-                                }
-                                console.log('saved !')
-                            })
-                        }
-                    })
+                    if(sails.config.buckless.mail && sails.config.buckless.password){
+                      teams.forEach(team => {
+                          if (team.point) {
+                              //request @ buckless with team.point
+                            buckless
+                                  .getPurchases(team.point)
+                                  .then(result => {
+                                      team.stats = JSON.stringify(result)
+                                      team.save(error => {
+                                          if (error) {
+                                              console.log(error)
+                                          }
+                                      })
+                                  })
+                                  .catch((err) => {
+                                    console.log(err.body)
+                                  })
+                          }
+                      })
+                    }
                 })
             }, 5000)
         }

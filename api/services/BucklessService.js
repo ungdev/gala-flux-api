@@ -6,10 +6,10 @@ const Buckless = require('../../lib/Buckless');
  *
  * @return {Object}  Buckless lib Object
  */
-module.exports = function(user) {
+module.exports = function() {
     return new Buckless({
         baseUri: sails.config.buckless.baseUri,
         mail: sails.config.buckless.mail,
-        password: sails.config.buckess.password
+        password: sails.config.buckless.password
     });
 }
