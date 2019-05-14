@@ -24,6 +24,14 @@ function Model () {
             via: 'team'
         },
 
+        stats: {
+            type: 'string',
+        },
+
+        point: {
+          type: 'string',
+        },
+
         role: {
             type: 'string',
             required: true,

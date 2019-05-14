@@ -47,9 +47,15 @@
  *
  */
 
-
+let interval = null
+let buckless = null
+try{
+  buckless = new BucklessService()
+}
+catch(e){
+  console.log(e)
+}
 module.exports = {
-
     /**
      * @api {post} /team/subscribe Subscribe to new items
      * @apiName subscribe
@@ -57,20 +63,48 @@ module.exports = {
      * @apiDescription Subscribe to all new items.
      */
     subscribe: function(req, res) {
-        if(Team.can(req, 'team/read') || Team.can(req, 'team/admin')) {
-            Team.watch(req);
+        if (Team.can(req, 'team/read') || Team.can(req, 'team/admin')) {
+            Team.watch(req)
             Team.find().exec((error, items) => {
-                if(error) return res.negotiate(error);
-                Team.subscribe(req, _.pluck(items, 'id'));
-                return res.ok();
-            });
+                if (error) return res.negotiate(error)
+                Team.subscribe(req, _.pluck(items, 'id'))
+                return res.ok()
+            })
+        } else {
+            Team.subscribe(req, [req.team.id])
+            return res.ok()
         }
-        else {
-            Team.subscribe(req, [req.team.id]);
-            return res.ok();
+        if (!interval) {
+            interval = setInterval(() => {
+                Team.find().exec((error, teams) => {
+                    if (error) {
+                        console.log(error)
+                        return
+                    }
+                    if(sails.config.buckless.mail && sails.config.buckless.password){
+                      teams.forEach(team => {
+                          if (team.point) {
+                              //request @ buckless with team.point
+                            buckless
+                                  .getPurchases(team.point)
+                                  .then(result => {
+                                      team.stats = JSON.stringify(result)
+                                      team.save(error => {
+                                          if (error) {
+                                              console.log(error)
+                                          }
+                                      })
+                                  })
+                                  .catch((err) => {
+                                    console.log(err.body)
+                                  })
+                          }
+                      })
+                    }
+                })
+            }, 5000)
         }
     },
-
 
     /**
      * @api {post} /team/unsubscribe Unsubscribe from new items
@@ -79,12 +113,12 @@ module.exports = {
      * @apiDescription Unsubscribe from new items
      */
     unsubscribe: function(req, res) {
-        Team.unwatch(req);
+        Team.unwatch(req)
         Team.find().exec((error, items) => {
-            if(error) return res.negotiate(error);
-            Team.unsubscribe(req, _.pluck(items, 'id'));
-            return res.ok();
-        });
+            if (error) return res.negotiate(error)
+            Team.unsubscribe(req, _.pluck(items, 'id'))
+            return res.ok()
+        })
     },
 
     /**
@@ -103,30 +137,31 @@ module.exports = {
      * @apiSuccess {string} Array.team.location Location of the team in the buildings
      * @apiSuccess {string} Array.team.role Role of the team
      */
-    find: function (req, res) {
-
+    find: function(req, res) {
         // check permissions
-        if(!(Team.can(req, 'team/read') || Team.can(req, 'team/admin'))) {
-            return res.error(req, 403, 'forbidden', 'You are not authorized read team list');
+        if (!(Team.can(req, 'team/read') || Team.can(req, 'team/admin'))) {
+            return res.error(
+                req,
+                403,
+                'forbidden',
+                'You are not authorized read team list'
+            )
         }
 
         // read filters
-        let where = {};
+        let where = {}
         if (req.allParams().filters) {
-            where = req.allParams().filters;
+            where = req.allParams().filters
         }
 
-        Team.find(where)
-            .exec((error, team) => {
-                if (error) {
-                    return res.negotiate(error);
-                }
+        Team.find(where).exec((error, team) => {
+            if (error) {
+                return res.negotiate(error)
+            }
 
-                return res.ok(team);
-            });
-
+            return res.ok(team)
+        })
     },
-
 
     /**
      * @api {get} /team/find/:id Find one team
@@ -147,27 +182,36 @@ module.exports = {
      * @apiSuccess {string} team.location Location of the team in the buildings
      * @apiSuccess {string} team.role Role of the team
      */
-    findOne: function (req, res) {
-        if(Team.can(req, 'team/read')
-        || Team.can(req, 'team/admin')
-        || req.param('id') == req.team.id) {
-            Team.findOne({id: req.param('id')})
-            .exec((error, team) => {
+    findOne: function(req, res) {
+        if (
+            Team.can(req, 'team/read') ||
+            Team.can(req, 'team/admin') ||
+            req.param('id') == req.team.id
+        ) {
+            Team.findOne({ id: req.param('id') }).exec((error, team) => {
                 if (error) {
-                    return res.negotiate(error);
+                    return res.negotiate(error)
                 }
-                if(!team) {
-                    return res.error(req, 404, 'notfound', 'The requested team cannot be found');
+                if (!team) {
+                    return res.error(
+                        req,
+                        404,
+                        'notfound',
+                        'The requested team cannot be found'
+                    )
                 }
 
-                return res.ok(team);
-            });
-        }
-        else {
-            return res.error(req, 403, 'forbidden', 'You are not authorized read team data');
+                return res.ok(team)
+            })
+        } else {
+            return res.error(
+                req,
+                403,
+                'forbidden',
+                'You are not authorized read team data'
+            )
         }
     },
-
 
     /**
      * @api {post} /team/create Create a team
@@ -185,29 +229,38 @@ module.exports = {
      * @apiUse badRequestError
      * @apiUse forbiddenError
      */
-    create: function (req, res) {
+    create: function(req, res) {
         // Check permissions
-        if(!Team.can(req, 'team/admin')) {
-            return res.error(req, 403, 'forbidden', 'You are not authorized to create a team.');
+        if (!Team.can(req, 'team/admin')) {
+            return res.error(
+                req,
+                403,
+                'forbidden',
+                'You are not authorized to create a team.'
+            )
         }
 
         // Check parameters
-        if(!req.param('role') || !Array.isArray(sails.config.roles[req.param('role')])) {
-            return res.error(req, 400, 'UnknownRole', 'Unknown role.');
+        if (
+            !req.param('role') ||
+            !Array.isArray(sails.config.roles[req.param('role')])
+        ) {
+            return res.error(req, 400, 'UnknownRole', 'Unknown role.')
         }
 
         // Create team
-        let team = {};
-        if(req.param('name')) team.name = req.param('name');
-        if(req.param('group')) team.group = req.param('group');
-        if(req.param('location')) team.location = req.param('location');
-        if(req.param('role')) team.role = req.param('role');
+        let team = {}
+        if (req.param('name')) team.name = req.param('name')
+        if (req.param('group')) team.group = req.param('group')
+        if (req.param('location')) team.location = req.param('location')
+        if (req.param('role')) team.role = req.param('role')
+        if (req.param('point')) team.point = req.param('point')
         Team.create(team).exec((error, team) => {
             if (error) {
-                return res.negotiate(error);
+                return res.negotiate(error)
             }
-            return res.ok(team);
-        });
+            return res.ok(team)
+        })
     },
 
     /**
@@ -228,42 +281,54 @@ module.exports = {
      * @apiUse forbiddenError
      * @apiUse notFoundError
      */
-    update: function (req, res) {
+    update: function(req, res) {
         // Check permissions
-        if(!Team.can(req, 'team/admin')) {
-            return res.error(req, 403, 'forbidden', 'You are not authorized to update a team.');
+        if (!Team.can(req, 'team/admin')) {
+            return res.error(
+                req,
+                403,
+                'forbidden',
+                'You are not authorized to update a team.'
+            )
         }
 
         // Check parameters
-        if(req.param('role') && !Array.isArray(sails.config.roles[req.param('role')])) {
-            return res.error(req, 400, 'BadRequest', 'Unknown role.');
+        if (
+            req.param('role') &&
+            !Array.isArray(sails.config.roles[req.param('role')])
+        ) {
+            return res.error(req, 400, 'BadRequest', 'Unknown role.')
         }
 
         // Find team
-        Team.findOne({id: req.param('id')})
-        .exec((error, team) => {
+        Team.findOne({ id: req.param('id') }).exec((error, team) => {
             if (error) {
-                return res.negotiate(error);
+                return res.negotiate(error)
             }
-            if(!team) {
-                return res.error(req, 404, 'notfound', 'The requested team cannot be found');
+            if (!team) {
+                return res.error(
+                    req,
+                    404,
+                    'notfound',
+                    'The requested team cannot be found'
+                )
             }
 
             // Update
-            team.name = req.param('name', team.name);
-            team.group = req.param('group', team.group);
-            team.location = req.param('location', team.location);
-            team.role = req.param('role', team.role);
+            team.name = req.param('name', team.name)
+            team.group = req.param('group', team.group)
+            team.location = req.param('location', team.location)
+            team.role = req.param('role', team.role)
+            team.point = req.param('point', team.point)
 
-            team.save((error) => {
+            team.save(error => {
                 if (error) {
-                    return res.negotiate(error);
+                    return res.negotiate(error)
                 }
-                return res.ok(team);
-            });
-        });
+                return res.ok(team)
+            })
+        })
     },
-
 
     /**
      * @api {delete} /team/:id Delete an team
@@ -277,30 +342,38 @@ module.exports = {
      * @apiUse forbiddenError
      * @apiUse notFoundError
      */
-    destroy: function (req, res) {
-
+    destroy: function(req, res) {
         // Check permissions
-        if(!Team.can(req, 'team/admin')) {
-            return res.error(req, 403, 'forbidden', 'You are not authorized to delete a team.');
+        if (!Team.can(req, 'team/admin')) {
+            return res.error(
+                req,
+                403,
+                'forbidden',
+                'You are not authorized to delete a team.'
+            )
         }
 
         // Find team
-        Team.findOne({id: req.param('id')})
-        .exec((error, team) => {
+        Team.findOne({ id: req.param('id') }).exec((error, team) => {
             if (error) {
-                return res.negotiate(error);
+                return res.negotiate(error)
             }
-            if(!team) {
-                return res.error(req, 404, 'notfound', 'The requested team cannot be found');
+            if (!team) {
+                return res.error(
+                    req,
+                    404,
+                    'notfound',
+                    'The requested team cannot be found'
+                )
             }
 
-            Team.destroy({id: team.id}).exec((error) => {
+            Team.destroy({ id: team.id }).exec(error => {
                 if (error) {
-                    return res.negotiate(error);
+                    return res.negotiate(error)
                 }
 
-                return res.ok();
-            });
-        });
-    },
-};
+                return res.ok()
+            })
+        })
+    }
+}
