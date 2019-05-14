@@ -521,29 +521,20 @@ module.exports = {
         // Find target user
         User.findOne({id: req.param('id')})
         .exec((userError, user) => {
-            fs.access(sails.config.appPath + '/assets/uploads/user/avatar/' + req.param('id'), fs.constants.R_OK, (accessError) => {
-                if (userError || !user || accessError) {
-                    res.setHeader("Content-Disposition", "inline; filename=avatar.png");
-                    res.setHeader("Content-Type", "image/png");
-                    fs.createReadStream(sails.config.appPath + '/assets/images/default-avatar.png')
-                    .on('error', (error) => {
-                        sails.log.error('Error while streaming default avatar:', userError, accessError, error);
-                        res.end();
-                    })
-                    .pipe(res);
-                    return;
-                }
+          if (userError || !user) {
+              res.setHeader("Content-Disposition", "inline; filename=avatar.png");
+              res.setHeader("Content-Type", "image/png");
+              fs.createReadStream(sails.config.appPath + '/assets/images/default-avatar.png')
+              .on('error', (error) => {
+                  sails.log.error('Error while streaming default avatar:', userError, error);
+                  res.end();
+              })
+              .pipe(res);
+              return;
+          }
 
-                res.setHeader("Content-Disposition", "inline; filename=avatar.jpg");
-                res.setHeader("Content-Type", "image/jpeg");
-                fs.createReadStream(sails.config.appPath + '/assets/uploads/user/avatar/' + user.id)
-                .on('error', (error) => {
-                    sails.log.error('Error while streaming user avatar:', error);
-                    res.end();
-                })
-                .pipe(res);
-                return;
-            });
+          res.redirect(`https://etu.utt.fr/uploads/photos/${user.login}_official.jpg`)
+          return;
         });
     },
 };
