@@ -521,7 +521,7 @@ module.exports = {
         // Find target user
         User.findOne({id: req.param('id')})
         .exec((userError, user) => {
-          if (userError || !user) {
+          if (userError || !user || !user.login) {
               res.setHeader("Content-Disposition", "inline; filename=avatar.png");
               res.setHeader("Content-Type", "image/png");
               fs.createReadStream(sails.config.appPath + '/assets/images/default-avatar.png')
