@@ -89,12 +89,6 @@ module.exports = {
                                 .getPurchases(team.point)
                                 .then(result => {
                                     team.stats = JSON.stringify(result)
-                                    team.save(error => {
-                                        if (error) {
-                                          console.log(error)
-                                        }
-                                    })
-
                                     return buckless.getReloads(team.point)
                                 })
                                 .then(result => {
