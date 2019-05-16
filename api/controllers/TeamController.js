@@ -88,7 +88,7 @@ module.exports = {
                             buckless
                                 .getPurchases(team.point)
                                 .then(result => {
-                                    team.stats = JSON.stringify(result)
+                                    team.sells = JSON.stringify(result)
                                     return buckless.getReloads(team.point)
                                 })
                                 .then(result => {

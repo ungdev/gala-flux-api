@@ -24,7 +24,7 @@ function Model () {
             via: 'team'
         },
 
-        stats: {
+        sells: {
             type: 'string'
         },
 
