@@ -86,18 +86,28 @@ module.exports = {
                           if (team.point) {
                               //request @ buckless with team.point
                             buckless
-                                  .getPurchases(team.point)
-                                  .then(result => {
-                                      team.stats = JSON.stringify(result)
-                                      team.save(error => {
-                                          if (error) {
-                                              console.log(error)
-                                          }
-                                      })
-                                  })
-                                  .catch((err) => {
+                                .getPurchases(team.point)
+                                .then(result => {
+                                    team.stats = JSON.stringify(result)
+                                    team.save(error => {
+                                        if (error) {
+                                          console.log(error)
+                                        }
+                                    })
+
+                                    return buckless.getReloads(team.point)
+                                })
+                                .then(result => {
+                                    team.reloads = JSON.stringify(result)
+                                    team.save(error => {
+                                        if (error) {
+                                          console.log(error)
+                                        }
+                                    })
+                                })
+                                .catch((err) => {
                                     console.log(err.body)
-                                  })
+                                })
                           }
                       })
                     }

@@ -7,16 +7,16 @@ function Model () {
         name : {
             type: 'string',
             required: true,
-            unique: true,
+            unique: true
         },
 
         group : {
             type: 'string',
-            required: true,
+            required: true
         },
 
         location : {
-            type: 'string',
+            type: 'string'
         },
 
         members: {
@@ -25,17 +25,21 @@ function Model () {
         },
 
         stats: {
-            type: 'string',
+            type: 'string'
+        },
+
+        reloads: {
+            type: 'string'
         },
 
         point: {
-          type: 'string',
+            type: 'string'
         },
 
         role: {
             type: 'string',
-            required: true,
-        },
+            required: true
+        }
     };
 
     // Attribute hidden on when sending to client
