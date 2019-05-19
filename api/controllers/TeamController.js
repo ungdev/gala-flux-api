@@ -74,7 +74,7 @@ module.exports = {
             Team.subscribe(req, [req.team.id])
             return res.ok()
         }
-        if (!interval) {
+        if (!interval && process.env.BUCKLESS_ENABLED == '1') {
             interval = setInterval(() => {
                 Team.find().exec((error, teams) => {
                     if (error) {
