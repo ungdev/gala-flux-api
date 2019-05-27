@@ -1786,12 +1786,11 @@ grunt-legacy-util@~1.0.0:
     underscore.string "~3.2.3"
     which "~1.2.1"
 
-grunt-run@^0.6.0:
-  version "0.6.0"
-  resolved "https://registry.yarnpkg.com/grunt-run/-/grunt-run-0.6.0.tgz#6dc8f4e592a0c900fb93d608d73286465022d648"
-  integrity sha1-bcj05ZKgyQD7k9YI1zKGRlAi1kg=
+grunt-run@^0.8.1:
+  version "0.8.1"
+  resolved "https://registry.yarnpkg.com/grunt-run/-/grunt-run-0.8.1.tgz#502f988947a59f9ad567e2dcb5eeedec712980ec"
+  integrity sha512-+wvoOJevugcjMLldbVCyspRHHntwVIJiTGjx0HFq+UwXhVPe7AaAiUdY4135CS68pAoRLhd7pAILpL2ITe1tmA==
   dependencies:
-    lodash "^3.10.0"
     strip-ansi "^3.0.0"
 
 grunt-sails-linker@~0.10.1:
@@ -2428,7 +2427,7 @@ lodash@2.4.1:
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-2.4.1.tgz#5b7723034dda4d262e5a46fb2c58d7cc22f71420"
   integrity sha1-W3cjA03aTSYuWkb7LFjXzCL3FCA=
 
-lodash@3.10.1, lodash@^3.10.0, lodash@^3.10.1, lodash@^3.8.0, lodash@~3.10.1:
+lodash@3.10.1, lodash@^3.10.1, lodash@^3.8.0, lodash@~3.10.1:
   version "3.10.1"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-3.10.1.tgz#5bf45e8e49ba4189e17d482789dfd15bd140b7b6"
   integrity sha1-W/Rejkm6QYnhfUgnid/RW9FAt7Y=
