@@ -30,7 +30,7 @@
     "inquirer": "^3.0.6",
     "jsonwebtoken": "^7.3.0",
     "rc": "1.0.1",
-    "request": "^2.81.0",
+    "request": "^2.88.2",
     "sails": "~0.12.13",
     "sails-disk": "~0.10.9",
     "sails-mongo": "^0.12.2",
