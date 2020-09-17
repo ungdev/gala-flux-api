@@ -2719,9 +2719,9 @@ mock-res@0.3.0:
   integrity sha1-DCA0zGM20FlaOvEJ90SCg+6cR/U=
 
 moment@2.x.x:
-  version "2.18.1"
-  resolved "https://registry.yarnpkg.com/moment/-/moment-2.18.1.tgz#c36193dd3ce1c2eed2adb7c802dbbc77a81b1c0f"
-  integrity sha1-w2GT3Tzhwu7SrbfIAtu8d6gbHA8=
+  version "2.28.0"
+  resolved "https://registry.yarnpkg.com/moment/-/moment-2.28.0.tgz#cdfe73ce01327cee6537b0fafac2e0f21a237d75"
+  integrity sha512-Z5KOjYmnHyd/ukynmFd/WwyXHd7L4J9vTI/nn5Ap9AVUgaAE15VvQ9MOGmJJygEUklupqIrFnor/tjTwRU+tQw==
 
 mongodb-core@2.1.7:
   version "2.1.7"
