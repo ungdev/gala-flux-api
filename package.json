@@ -31,7 +31,7 @@
     "jsonwebtoken": "^7.3.0",
     "rc": "1.0.1",
     "request": "^2.81.0",
-    "sails": "~0.12.13",
+    "sails": "~1.4.0",
     "sails-disk": "~0.10.9",
     "sails-mongo": "^0.12.2",
     "simple-oauth2": "^1.1.0"
