@@ -10,7 +10,7 @@
     "crypto": "^1.0.1",
     "ejs": "2.3.4",
     "faker": "^4.1.0",
-    "firebase-admin": "^4.2.1",
+    "firebase-admin": "^9.4.2",
     "gm": "^1.23.0",
     "grunt": "1.0.1",
     "grunt-apidoc": "^0.11.0",
