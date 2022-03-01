@@ -1,0 +1,44 @@
+version: "3.9"
+
+networks:
+  public:
+    # This network is exposed
+    driver: bridge
+    name: public
+  internal:
+    # This Docker network is only used for the database.
+    driver: bridge
+    name: internal
+    internal: true
+
+services:
+  database:
+    image: docker.io/bitnami/mongodb
+    volumes:
+      - fluxdb:/bitnami/mongodb
+    networks:
+      - internal
+    ports:
+      - 27017:27017
+    restart: always
+  api:
+    build: .
+    ports:
+      - 1337:1337
+    env_file: .env
+    networks:
+      - public
+      - internal
+    restart: always
+  front:
+     build: /home/rinkichi/gala-flux-front
+     ports:
+       - 8080:8080
+     networks:
+       - public
+     restart: always
+
+volumes:
+  fluxdb:
+    driver: local
+    name: fluxdb
