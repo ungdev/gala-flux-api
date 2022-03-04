@@ -19,7 +19,8 @@ cd gala-flux-api
 yarn
 ```
 * Modify the config files
-you have to created .env files based on the .enc.example
+
+you have to created .env file based on the .env.example file. and configure it
 ```
 cp .env.example .env
 ```
@@ -27,12 +28,6 @@ cp .env.example .env
 ```
 yarn dev
 ```
-
-* Install [Yarn](https://yarnpkg.com/lang/en/docs/install/) and NodeJS 7
-* Clone the repo
-* `yarn install`
-* Copy `/config/local.js.dist` to `/config/local.js` and configure it.
-* Try to run the server a first time : `yarn dev`
 
 ### Fill the database
 To fill the database with half-random fixtures, run the following command.
@@ -83,13 +78,3 @@ node cli/createUser.js
 ## Firebase setup
 
 You have to generate a config file. [Go here and read the instructions](https://firebase.google.com/docs/admin/setup).
-
-## With Docker
-
-If you have docker, you can:
-    - Start docker
-    ```
-    service docker start
-    ```
-    - the launch the project in local
-    ```docker-compose up```
