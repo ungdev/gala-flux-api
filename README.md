@@ -2,7 +2,31 @@
 
 Sever side of the communication system created for the Gala UTT
 
+## Prerequire
+
+* [Yarn](https://yarnpkg.com/lang/en/docs/install/)
+* NodeJS 7
+
 ## Steps for dev installation
+
+* Clone the repo
+```
+git clone https://github.com/ungdev/gala-flux-api
+```
+* install dependencies
+```
+cd gala-flux-api
+yarn
+```
+* Modify the config files
+you have to created .env files based on the .enc.example
+```
+cp .env.example .env
+```
+* Try to run the server a first time
+```
+yarn dev
+```
 
 * Install [Yarn](https://yarnpkg.com/lang/en/docs/install/) and NodeJS 7
 * Clone the repo
@@ -59,3 +83,13 @@ node cli/createUser.js
 ## Firebase setup
 
 You have to generate a config file. [Go here and read the instructions](https://firebase.google.com/docs/admin/setup).
+
+## With Docker
+
+If you have docker, you can:
+    - Start docker
+    ```
+    service docker start
+    ```
+    - the launch the project in local
+    ```docker-compose up```
