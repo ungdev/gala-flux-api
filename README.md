@@ -38,7 +38,7 @@ node cli/fixtures.js
 
 ## Run With Docker
 ```
-docker-compose --build -d
+docker-compose build
 docker-compose up
 ```
 
