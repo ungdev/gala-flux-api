@@ -58,12 +58,12 @@ module.exports.connections = {
     ***************************************************************************/
     mongoDev: {
         adapter: 'sails-mongo',
-        url: process.env.MONGO_URL || 'mongodb://database:27017/flux',
+        url: process.env.MONGO_URL || 'mongodb://localhost:27017/flux',
     },
 
     mongoProd: {
         adapter: 'sails-mongo',
-        url: process.env.MONGO_URL || 'mongodb://database:27017/flux',
+        url: process.env.MONGO_URL || 'mongodb://localhost:27017/flux',
     },
 
     /***************************************************************************
