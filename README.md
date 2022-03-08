@@ -36,6 +36,12 @@ To fill the database with half-random fixtures, run the following command.
 node cli/fixtures.js
 ```
 
+## Run With Docker
+```
+docker-compose --build -d
+docker-compose up
+```
+
 ## Production deployment
 This app is made to have an auto deployment on master push. The app will be started as a test on travis-ci, which will then trigger the auto-deployment to a dokku server.
 
