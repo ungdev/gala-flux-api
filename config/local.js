@@ -36,8 +36,8 @@ module.exports = {
     environment: process.env.NODE_ENV || 'development',
 
     etuutt : {
-        id: '',
-        secret: '',
+        id:  process.env.ETU_UTT_ID,
+        secret: process.env.ETU_UTT_SECRET,
     },
 
     /************************************************************************************

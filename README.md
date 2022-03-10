@@ -2,19 +2,44 @@
 
 Sever side of the communication system created for the Gala UTT
 
+## Prerequire
+
+* [Yarn](https://yarnpkg.com/lang/en/docs/install/)
+* NodeJS 7
+
 ## Steps for dev installation
 
-* Install [Yarn](https://yarnpkg.com/lang/en/docs/install/) and NodeJS 7
 * Clone the repo
-* `yarn install`
-* Copy `/config/local.js.dist` to `/config/local.js` and configure it.
-* Try to run the server a first time : `yarn dev`
+```
+git clone https://github.com/ungdev/gala-flux-api
+```
+* install dependencies
+```
+cd gala-flux-api
+yarn
+```
+* Modify the config files
+
+you have to created .env file based on the .env.example file. and configure it
+```
+cp .env.example .env
+```
+* Try to run the server a first time
+```
+yarn dev
+```
 
 ### Fill the database
 To fill the database with half-random fixtures, run the following command.
 
 ```
 node cli/fixtures.js
+```
+
+## Run With Docker
+```
+docker-compose build
+docker-compose up
 ```
 
 ## Production deployment
