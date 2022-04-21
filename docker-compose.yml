@@ -31,7 +31,7 @@ services:
       - internal
     restart: always
   front:
-     build: /home/rinkichi/gala-flux-front
+     build: ../gala-flux-front
      ports:
        - 8080:8080
      networks:

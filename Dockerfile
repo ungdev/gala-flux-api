@@ -15,4 +15,6 @@ COPY --chown=node:node ./ ./
 
 RUN yarn build
 
+ENV MONGO_URL='mongodb://database:27017/flux'
+
 CMD yarn start
