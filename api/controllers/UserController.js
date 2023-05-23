@@ -533,6 +533,8 @@ module.exports = {
               return;
           }
 
+          // Route decommissioned on EtuUTT as of may 2023 !
+          // You may need to proxy this request and authenticate it with your etuutt token
           res.redirect(`https://etu.utt.fr/uploads/photos/${user.login}_official.jpg`)
           return;
         });
